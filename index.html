@@ -825,16 +825,24 @@
             document.getElementById('modalLoginGlobal').classList.add('hidden');
             document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
 
-            // TRAVA DE SEGURANÇA: Restringe a barra de navegação superior apenas aos módulos permitidos para o perfil
-            const botoesNav = document.querySelectorAll('#navBarPerfis button');
-            botoesNav.forEach(btn => {
-                const moduloBtn = btn.getAttribute('data-modulo');
-                if (modulosPermitidos.includes(moduloBtn)) {
-                    btn.classList.remove('hidden');
-                } else {
-                    btn.classList.add('hidden');
-                }
-            });
+            const navBar = document.getElementById('navBarPerfis');
+
+            // SE FOR TOTEM: Oculta totalmente a barra de navegação superior
+            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
+                if (navBar) navBar.classList.add('hidden');
+            } else {
+                if (navBar) navBar.classList.remove('hidden');
+                
+                // Exibe apenas os botões dos módulos permitidos
+                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
+                    const moduloBtn = btn.getAttribute('data-modulo');
+                    if (modulosPermitidos.includes(moduloBtn)) {
+                        btn.classList.remove('hidden');
+                    } else {
+                        btn.classList.add('hidden');
+                    }
+                });
+            }
 
             mudarPerfil(modulosPermitidos[0]);
         }
@@ -845,12 +853,14 @@
             document.getElementById('boxSenhaLogin').classList.add('hidden');
             document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
             
-            // Restaura todos os botões da barra ao deslogar
+            // Restaura todos os botões e a barra ao deslogar
+            const navBar = document.getElementById('navBarPerfis');
+            if (navBar) navBar.classList.remove('hidden');
             document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
         }
 
         function mudarPerfil(perfilId) {
-            // Valida se o usuário logado tem permissão para acessar este módulo
+            // Se for login Totem ou restrito e tentar trocar por atalhos, bloqueia
             if (ymsStore.usuarioLogado && !ymsStore.usuarioLogado.modulosCustom.includes(perfilId)) {
                 alert("Acesso negado a este módulo!");
                 return;
