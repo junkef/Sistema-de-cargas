@@ -209,7 +209,7 @@
                         <select id="inpDoca" onchange="atualizarHorariosDisponiveis()"></select>
                     </div>
                     <div>
-                        <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">DATA (Apenas Hoje ou Futura)</label>
+                        <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">DATA (Hoje ou Futura)</label>
                         <input type="date" id="inpData" onchange="atualizarHorariosDisponiveis()">
                     </div>
                 </div>
@@ -458,7 +458,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL INTERLIGADO COM VALIDAÇÃO DE DATAS -->
+    <!-- SCRIPT CENTRAL INTERLIGADO -->
     <script>
         function obterDataHojeISO() {
             const hoje = new Date();
@@ -699,20 +699,37 @@
 
         function finalizarCheckinTotem() {
             const cpfDig = document.getElementById('displayTotem').value.trim();
-            const ag = ymsStore.agendamentos.find(i => i.cpf === cpfDig && (i.status === 'CONFIRMADO_FORNECEDOR' || i.status === 'AGENDADO'));
-
-            if (!ag) {
-                alert("Nenhum agendamento confirmado encontrado para este CPF.");
+            
+            if (!cpfDig) {
+                alert("Digite o CPF do motorista.");
                 return;
             }
 
-            // 3. VALIDAÇÃO DO TOTEM: MOTORISTA SÓ ENTRA DA DATA DO EVENTO PARA FRENTE
-            if (dataEhPassada(ag.data)) {
-                alert(`🚫 CHECK-IN RECUSADO NO TOTEM!\n\nSua janela agendada era para o dia ${ag.data} (DATA PASSADA).\nO sistema não permite entrada de caminhões com janelas vencidas.\n\nPor favor, dirija-se ao setor de logística/PCP para novo agendamento.`);
+            // 1. Busca todos os agendamentos confirmados para este CPF
+            const agendamentosDoCpf = ymsStore.agendamentos.filter(i => 
+                i.cpf === cpfDig && (i.status === 'CONFIRMADO_FORNECEDOR' || i.status === 'AGENDADO')
+            );
+
+            if (agendamentosDoCpf.length === 0) {
+                alert("Nenhum agendamento encontrado para este CPF.");
                 limparTotem();
                 return;
             }
 
+            // 2. Filtra APENAS os agendamentos VÁLIDOS (de hoje em diante)
+            const agendamentosValidos = agendamentosDoCpf.filter(i => !dataEhPassada(i.data));
+
+            // Se só existirem agendamentos antigos (vencidos):
+            if (agendamentosValidos.length === 0) {
+                alert(`🚫 CHECK-IN RECUSADO NO TOTEM!\n\nVocê possui agendamento(s) com data VENCIDA (passada).\nO sistema não permite entrada para janelas antigas.\n\nProcure o PCP / Logística para novo agendamento.`);
+                limparTotem();
+                return;
+            }
+
+            // 3. Pega o agendamento válido mais próximo (ex: o de HOJE)
+            const ag = agendamentosValidos[0];
+
+            // Realiza o Check-in com sucesso
             ag.ticket = `T-${Math.floor(100 + Math.random() * 900)}`;
             ag.status = "CHECKIN_PATIO";
 
@@ -721,7 +738,7 @@
             document.getElementById('ticketImpressaoCpf').textContent = ag.cpf || cpfDig;
             document.getElementById('ticketImpressaoPlaca').textContent = ag.cavalo || '-';
 
-            alert(`CHECK-IN APROVADO! Ticket de pátio: ${ag.ticket}`);
+            alert(`✅ CHECK-IN REALIZADO COM SUCESSO!\n\nAgendamento do dia ${ag.data} aprovado.\nTicket de Pátio: ${ag.ticket}`);
             window.print();
             limparTotem();
         }
