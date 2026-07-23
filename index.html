@@ -167,32 +167,43 @@
 
     <div class="flex-1 flex flex-col">
 
-        <!-- MÓDULO 1: PCP PROGRAMADOR -->
+        <!-- MÓDULO 1: PCP PROGRAMADOR (OFERTA MANUAL E CARGA EM MASSA RESTAURADA) -->
         <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6">
-            <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
+            <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between space-y-4">
+                <!-- SEÇÃO 1: SUBIDA EM MASSA (EXCEL/CSV) -->
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-indigo-500/40 space-y-2">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <h3 class="text-xs font-black text-indigo-300 uppercase flex items-center gap-1.5">📊 Subida de Grade em Massa</h3>
+                        <span class="text-[10px] text-slate-400 font-mono">Excel / CSV</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400">Selecione uma planilha contendo as colunas: Data, Doca, Fornecedor, Inicio, Fim.</p>
+                    <input type="file" id="fileImportExcel" accept=".xlsx, .xls, .csv" onchange="processarExcelGradeEmMassa(event)" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-slate-300 font-mono outline-none file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-indigo-600 file:text-white">
+                </div>
+
+                <!-- SEÇÃO 2: OFERTA MANUAL DE JANELA -->
                 <div class="space-y-3">
-                    <h2 class="text-base font-black text-white mb-1">Ofertar Nova Janela Manual</h2>
+                    <h2 class="text-xs font-black text-white uppercase tracking-wider mb-1">Ofertar Nova Janela Manual</h2>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">FORNECEDOR CADASTRADO</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">FORNECEDOR CADASTRADO</label>
                         <select id="inpFornecedor" size="4" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1 border border-slate-700 rounded-xl"></select>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Doca</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Doca</label>
                             <select id="inpDoca" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-bold outline-none cursor-pointer"></select>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Data (Apenas Hoje/Futura)</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data (Apenas Hoje/Futura)</label>
                             <input type="date" id="inpData" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white outline-none">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Início</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Início</label>
                             <select id="inpHora" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-yellow-400 outline-none"></select>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Fim</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fim</label>
                             <select id="inpHoraFim" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 outline-none"></select>
                         </div>
                     </div>
@@ -672,6 +683,83 @@
             });
         }
 
+        // FUNÇÃO DE PROCESSAMENTO EM MASSA (EXCEL/CSV)
+        function processarExcelGradeEmMassa(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                    if (!json || json.length === 0) {
+                        alert("Planilha vazia ou sem dados válidos.");
+                        return;
+                    }
+
+                    let inseridos = 0;
+                    let ignoradosDataPassada = 0;
+
+                    json.forEach(row => {
+                        // Busca colunas ignorando maiúsculas/minúsculas
+                        const getVal = (col) => {
+                            const key = Object.keys(row).find(k => k.toLowerCase().trim() === col.toLowerCase());
+                            return key ? row[key] : null;
+                        };
+
+                        const rawData = getVal("data") || getVal("data janela") || obterDataHojeISO();
+                        const rawDoca = getVal("doca") || "Doca - (04N/06N)";
+                        const rawForn = getVal("fornecedor") || "LINKPLAS";
+                        const rawIni = getVal("inicio") || getVal("hora inicio") || "08:00";
+                        const rawFim = getVal("fim") || getVal("hora fim") || "09:00";
+
+                        // Formata a data para dd/mm/yyyy para checagem
+                        let dataFormatada = rawData;
+                        if (String(rawData).includes('-')) {
+                            const p = String(rawData).split('-');
+                            dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
+                        }
+
+                        // Valida se a data do Excel é passada
+                        if (dataEhPassada(dataFormatada)) {
+                            ignoradosDataPassada++;
+                            return;
+                        }
+
+                        const novaOrdem = `ORD-${ymsStore.agendamentos.length + 1000}`;
+                        ymsStore.agendamentos.push({
+                            ordem: novaOrdem,
+                            data: dataFormatada,
+                            fornecedor: String(rawForn).toUpperCase(),
+                            doca: rawDoca,
+                            horaIni: rawIni,
+                            horaFim: rawFim,
+                            status: "AGENDADO"
+                        });
+                        inseridos++;
+                    });
+
+                    renderizarGradePCP();
+                    document.getElementById('fileImportExcel').value = '';
+
+                    let msg = `✅ Processamento concluído!\n\n${inseridos} janelas foram importadas para a grade.`;
+                    if (ignoradosDataPassada > 0) {
+                        msg += `\n\n⚠️ ${ignoradosDataPassada} registro(s) foram ignorados por possuírem DATAS PASSADAS/RETROATIVAS.`;
+                    }
+                    alert(msg);
+
+                } catch(err) {
+                    alert("Erro ao ler o arquivo Excel/CSV. Verifique o formato do arquivo.");
+                    console.error(err);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
         function criarJanelaManual(e) {
             e.preventDefault();
             const rawData = document.getElementById('inpData').value;
@@ -860,7 +948,6 @@
         }
 
         function mudarPerfil(perfilId) {
-            // Se for login Totem ou restrito e tentar trocar por atalhos, bloqueia
             if (ymsStore.usuarioLogado && !ymsStore.usuarioLogado.modulosCustom.includes(perfilId)) {
                 alert("Acesso negado a este módulo!");
                 return;
@@ -918,6 +1005,22 @@
             input.value = input.value.slice(0, -1);
         }
 
+        function popularHorariosOpcoes() {
+            const selIni = document.getElementById('inpHora');
+            const selFim = document.getElementById('inpHoraFim');
+            if (!selIni || !selFim) return;
+
+            selIni.innerHTML = '';
+            selFim.innerHTML = '';
+
+            for (let h = 6; h <= 22; h++) {
+                const horaStr = String(h).padStart(2, '0') + ':00';
+                selIni.insertAdjacentHTML('beforeend', `<option value="${horaStr}">${horaStr}</option>`);
+                selFim.insertAdjacentHTML('beforeend', `<option value="${horaStr}">${horaStr}</option>`);
+            }
+            selFim.value = "09:00";
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             setInterval(() => {
                 document.getElementById('relogioGlobal').textContent = new Date().toLocaleTimeString('pt-BR');
@@ -945,6 +1048,7 @@
                 selDocaOp.appendChild(opt);
             });
 
+            popularHorariosOpcoes();
             atualizarTodasListasFornecedores();
         });
     </script>
