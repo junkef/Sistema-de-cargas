@@ -86,7 +86,7 @@
                 </button>
             </div>
 
-            <!-- CARD DE LOGIN DO FORNECEDOR -->
+            <!-- CARD DE LOGIN DO FORNECEDOR (ACESSO DIRETO POR RAZÃO SOCIAL) -->
             <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
                 <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
                     <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
@@ -108,7 +108,7 @@
                 </div>
             </div>
 
-            <!-- FORMULÁRIO COMPLETO DE LOGIN (USUÁRIO + SENHA INDIVIDUAL) -->
+            <!-- FORMULÁRIO DE LOGIN DE USUÁRIOS CUSTOMIZADOS (INTERNOS OU DE FORNECEDORES) -->
             <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
@@ -118,7 +118,7 @@
                 <div class="space-y-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
-                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário (ex: joao.doca)..." onkeydown="if(event.key==='Enter') document.getElementById('inputPinLogin').focus();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." onkeydown="if(event.key==='Enter') document.getElementById('inputPinLogin').focus();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
@@ -637,14 +637,14 @@
                 </div>
             </div>
 
-            <!-- PAINEL DE CRIAR USUÁRIOS E DEFINIR ACESSO ÀS FILAS -->
+            <!-- PAINEL DE CRIAR USUÁRIOS E DEFINIR ACESSO ÀS FILAS E FORNECEDORES -->
             <div class="bg-slate-800 p-6 rounded-3xl border border-purple-500/40 shadow-xl space-y-4">
                 <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
                     <div>
                         <h3 class="text-base font-black text-purple-300 flex items-center gap-2">
                             <span>🔑</span> GESTÃO DE USUÁRIOS E PERMISSÃO DE FILAS
                         </h3>
-                        <p class="text-xs text-slate-400">Cadastre usuários operacionais e selecione exatamente quais módulos e filas cada um poderá acessar.</p>
+                        <p class="text-xs text-slate-400">Cadastre usuários operacionais e selecione exatamente quais módulos e fornecedores cada um poderá acessar.</p>
                     </div>
                     <span id="badgeQtdUsuarios" class="bg-purple-600 text-white font-black text-xs px-3 py-1 rounded-full">0 Cadastrados</span>
                 </div>
@@ -670,12 +670,12 @@
 
                         <div>
                             <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Filas e Módulos Permitidos para Acesso *</label>
-                            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 mb-2">
                                 <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer">
                                     <input type="checkbox" value="pcp" class="chk-modulo-usr rounded border-slate-700 accent-purple-600"> 🗓️ PCP
                                 </label>
                                 <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer">
-                                    <input type="checkbox" value="fornecedor" class="chk-modulo-usr rounded border-slate-700 accent-purple-600"> 🏢 Fornecedor
+                                    <input type="checkbox" value="fornecedor" id="chkModuloFornecedor" onchange="alternarExibicaoEmpresaUsr()" class="chk-modulo-usr rounded border-slate-700 accent-purple-600"> 🏢 Fornecedor
                                 </label>
                                 <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer">
                                     <input type="checkbox" value="totem" class="chk-modulo-usr rounded border-slate-700 accent-purple-600"> 🏭 Totem
@@ -698,6 +698,13 @@
                             </div>
                         </div>
 
+                        <!-- SELETOR DINÂMICO DE EMPRESA PARA USUÁRIO FORNECEDOR -->
+                        <div id="usrEmpresaContainer" class="hidden bg-purple-950/40 p-3 rounded-xl border border-purple-500/30 space-y-1">
+                            <label class="block text-[10px] font-bold text-amber-400 uppercase">🏢 Empresa / Fornecedor Vinculado *</label>
+                            <select id="selUsrEmpresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white outline-none focus:border-purple-500">
+                            </select>
+                        </div>
+
                         <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer transition">
                             💾 CADASTRAR USUÁRIO E LIBERAR PERMISSÕES
                         </button>
@@ -710,7 +717,7 @@
                                 <tr>
                                     <th class="p-2.5">Nome</th>
                                     <th class="p-2.5">Login</th>
-                                    <th class="p-2.5">Filas com Acesso</th>
+                                    <th class="p-2.5">Filas / Empresa</th>
                                     <th class="p-2.5 text-center">Ações</th>
                                 </tr>
                             </thead>
@@ -870,8 +877,9 @@
                 try { return JSON.parse(salvos); } catch(e) {}
             }
             return [
-                { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"] },
-                { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"] }
+                { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
+                { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+                { id: "usr_3", nome: "Representante 5 Estrelas", login: "5estrelas", senha: "123", modulos: ["fornecedor"], fornecedorEmpresa: "5 ESTRELAS" }
             ];
         }
 
@@ -1022,6 +1030,27 @@
             });
         }
 
+        function popularSelectCadastroEmpresasUsr() {
+            const sel = document.getElementById('selUsrEmpresa');
+            sel.innerHTML = "";
+            listaTodosFornecedores.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f;
+                opt.textContent = f;
+                sel.appendChild(opt);
+            });
+        }
+
+        function alternarExibicaoEmpresaUsr() {
+            const chkFornecedor = document.getElementById('chkModuloFornecedor');
+            const container = document.getElementById('usrEmpresaContainer');
+            if (chkFornecedor.checked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
         // CONFIRMAÇÃO E VALIDAÇÃO DA SENHA EXCLUSIVA DO FORNECEDOR
         function confirmarLoginFornecedorEmpresa() {
             const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
@@ -1066,6 +1095,9 @@
             );
 
             if (usuarioCustom) {
+                if (usuarioCustom.fornecedorEmpresa) {
+                    ymsStore.empresaFornecedorLogada = usuarioCustom.fornecedorEmpresa;
+                }
                 concluirLoginPerfil(keyPendente, usuarioCustom.nome, usuarioCustom.modulos);
             } else {
                 alert("🚫 Usuário ou Senha incorretos!\n\nVerifique suas credenciais com o administrador.");
@@ -1086,8 +1118,8 @@
             document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
             document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
 
-            if (keyPerfil === 'fornecedor') {
-                document.getElementById('txtEmpresaLogadaFornecedor').textContent = ymsStore.empresaFornecedorLogada || 'Fornecedor';
+            if (keyPerfil === 'fornecedor' || (modulosPermitidosCustom && modulosPermitidosCustom.includes('fornecedor'))) {
+                document.getElementById('txtEmpresaLogadaFornecedor').textContent = ymsStore.empresaFornecedorLogada || 'Todas/Global';
             }
 
             aplicarPermissoesPerfilNaInterface();
@@ -1237,6 +1269,7 @@
             document.getElementById('repDataFim').value = hojeIso;
 
             popularSelectFornecedores(listaTodosFornecedores);
+            popularSelectCadastroEmpresasUsr();
             
             const selDoca = document.getElementById('inpDoca');
             selDoca.innerHTML = "";
@@ -2413,7 +2446,11 @@
             }
 
             ymsStore.baseUsuariosCustom.forEach(u => {
-                const modulosBadges = u.modulos.map(m => `<span class="bg-indigo-900/60 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] uppercase font-bold">${m}</span>`).join(" ");
+                let modulosBadges = u.modulos.map(m => `<span class="bg-indigo-900/60 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] uppercase font-bold">${m}</span>`).join(" ");
+
+                if (u.fornecedorEmpresa) {
+                    modulosBadges += ` <span class="bg-amber-950 text-amber-300 border border-amber-500 px-2 py-0.5 rounded text-[10px] font-bold">🏢 ${u.fornecedorEmpresa}</span>`;
+                }
 
                 const row = `
                     <tr class="hover:bg-slate-900 transition">
@@ -2438,6 +2475,11 @@
             const checkboxes = document.querySelectorAll('.chk-modulo-usr:checked');
             const modulosSelecionados = Array.from(checkboxes).map(cb => cb.value);
 
+            let empresaVinculada = null;
+            if (modulosSelecionados.includes('fornecedor')) {
+                empresaVinculada = document.getElementById('selUsrEmpresa').value;
+            }
+
             if (!nome || !login || !senha) {
                 alert("Preencha Nome, Login e Senha do usuário.");
                 return;
@@ -2453,7 +2495,8 @@
                 nome: nome,
                 login: login,
                 senha: senha,
-                modulos: modulosSelecionados
+                modulos: modulosSelecionados,
+                fornecedorEmpresa: empresaVinculada
             };
 
             ymsStore.baseUsuariosCustom.push(novoUsr);
@@ -2463,9 +2506,10 @@
             document.getElementById('usrLogin').value = "";
             document.getElementById('usrSenha').value = "";
             document.querySelectorAll('.chk-modulo-usr').forEach(cb => cb.checked = false);
+            document.getElementById('usrEmpresaContainer').classList.add('hidden');
 
             renderizarTabelaUsuariosCustom();
-            exibirToast("Usuário Criado!", `${nome} cadastrado com acesso às filas selecionadas.`, "👤");
+            exibirToast("Usuário Criado!", `${nome} cadastrado com sucesso.`, "👤");
         }
 
         function excluirUsuarioCustom(id) {
