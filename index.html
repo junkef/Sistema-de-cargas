@@ -273,9 +273,12 @@
                     </div>
                 </div>
 
-                <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 space-y-3">
-                    <button type="button" onclick="confirmarESubirJanelas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer">
-                        🚀 CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
+                <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 grid grid-cols-12 gap-3">
+                    <button type="button" onclick="limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <span>🗑️</span> LIMPAR GRADE
+                    </button>
+                    <button type="button" onclick="confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
+                        <span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
                     </button>
                 </div>
             </div>
@@ -700,7 +703,7 @@
                 </div>
             </div>
 
-            <!-- GESTÃO DE USUÁRIOS DA PLANTA (SEM RECARREGAR A PÁGINA) -->
+            <!-- GESTÃO DE USUÁRIOS DA PLANTA -->
             <div class="bg-slate-800 p-6 rounded-3xl border border-purple-500/40 shadow-xl space-y-4">
                 <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
                     <div>
@@ -1168,7 +1171,7 @@
             ymsStore.baseUsuariosCustom.push(novoUsr);
             salvarUsuariosCustomizadosNaMemoria();
 
-            // Limpa o formulário sem recarregar a página
+            // Limpa formulário
             document.getElementById('usrNome').value = "";
             document.getElementById('usrLogin').value = "";
             document.getElementById('usrSenha').value = "";
@@ -1244,7 +1247,6 @@
             const usrEncontrado = ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
 
             if (usrEncontrado) {
-                // Checa se o usuário tem permissão para o perfil selecionado
                 if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
                     alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
                     return;
@@ -1837,6 +1839,20 @@
             alert(`⚡ ${count} janelas importadas.${ignorados > 0 ? ` (${ignorados} ignoradas por data passada)` : ''}`);
         }
 
+        function removerJanelaIndividual(ordem) {
+            ymsStore.agendamentos = ymsStore.agendamentos.filter(i => i.ordem !== ordem);
+            sincronizarTodosModulos();
+            exibirToast("Janela Removida", `Agendamento ${ordem} foi apagado.`, "🗑️");
+        }
+
+        function limparGradeTotal() {
+            if (!confirm("Tem certeza que deseja descartar e APAGAR TODAS as janelas da grade?")) return;
+            ymsStore.agendamentos = [];
+            ymsStore.ordemAtivaFornecedor = null;
+            sincronizarTodosModulos();
+            exibirToast("Grade Limpa", "Todos os agendamentos foram descartados.", "🗑️");
+        }
+
         function renderizarGradePCP() {
             const container = document.getElementById('containerJanelas');
             container.innerHTML = "";
@@ -1852,7 +1868,7 @@
 
             ymsStore.agendamentos.forEach(item => {
                 const card = `
-                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md hover:border-slate-600 transition">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
@@ -1860,9 +1876,14 @@
                             </div>
                             <p class="text-sm font-black text-white">📍 ${item.doca}</p>
                         </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
-                            <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                        <div class="flex items-center gap-3">
+                            <div class="text-right">
+                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
+                                <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                            </div>
+                            <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" title="Excluir este agendamento" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 transition text-xs cursor-pointer ml-1">
+                                🗑️
+                            </button>
                         </div>
                     </div>
                 `;
