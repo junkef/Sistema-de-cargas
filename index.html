@@ -1152,7 +1152,7 @@
             ymsStore.baseUsuariosCustom.push(novoUsr);
             salvarUsuariosCustomizadosNaMemoria();
 
-            // Limpa formulário
+            // Limpa o formulário
             document.getElementById('usrNome').value = "";
             document.getElementById('usrLogin').value = "";
             document.getElementById('usrSenha').value = "";
@@ -1219,8 +1219,8 @@
             const perfilSel = ymsStore.perfilSolicitadoTemp;
 
             // 1. Verificação Mestra Admin / Superusuário
-            if (pinDig === "1234" || pinDig === "admin" || (userDig.toLowerCase() === "admin" && pinDig === "123")) {
-                concluirLoginPerfil('admin', userDig || 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
+            if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
+                concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
                 return;
             }
 
