@@ -86,29 +86,29 @@
                 </button>
             </div>
 
-            <!-- FORMULÁRIO DE LOGIN EXCLUSIVO DO FORNECEDOR (E-MAIL OU RAZÃO SOCIAL + SENHA) -->
+            <!-- CARD DE LOGIN DO FORNECEDOR COM CAMPO DE SENHA -->
             <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-5 rounded-2xl border border-slate-800 hidden space-y-4">
                 <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                     <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN DO FORNECEDOR</span>
-                    <span class="text-[10px] text-slate-500">Senha Padrão: <strong class="text-white">1234</strong></span>
+                    <span class="text-[10px] text-slate-500">Senha Padrão Demo: <strong class="text-white">1234</strong></span>
                 </div>
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Empresa ou E-mail Cadastrado</label>
-                        <input type="text" id="inputIdentificadorFornecedor" placeholder="Digite seu e-mail ou selecione a empresa..." list="listaSugestoesEmpresas" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500">
-                        <datalist id="listaSugestoesEmpresas"></datalist>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa / Razão Social</label>
+                        <select id="selEmpresaFornecedorLogin" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha de Acesso</label>
-                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha de Acesso do Fornecedor *</label>
+                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha (ex: 1234)..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
                     </div>
                     <button onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs uppercase shadow transition cursor-pointer">
-                        🔑 ACESSAR PAINEL DO FORNECEDOR
+                        🔑 ACESSAR PORTAL DO FORNECEDOR
                     </button>
                 </div>
             </div>
 
-            <!-- CAMPO DE SENHA / PIN (PARA PERFIS INTERNOS) -->
+            <!-- CAMPO DE SENHA / PIN (PARA DEMAIS PERFIS INTERNOS) -->
             <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
                 <div class="flex justify-between items-center">
                     <span id="lblPerfilSelecionadoLogin" class="text-xs font-bold text-indigo-400 uppercase">PERFIL SELECIONADO</span>
@@ -124,7 +124,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR: NAVEGAÇÃO DE PERFIS -->
+    <!-- BARRA SUPERIOR -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -260,7 +260,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 2: PORTAL DO FORNECEDOR (PRIVACIDADE POR EMPRESA FILTRADA) -->
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR -->
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
             <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
                 <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
@@ -887,9 +887,9 @@
 
             if (cfg.eFornecedor) {
                 ymsStore.perfilPendenteLogin = keyPerfil;
-                popularSugestoesLoginEmpresas();
+                popularSelectLoginEmpresas();
                 document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
-                document.getElementById('inputIdentificadorFornecedor').focus();
+                document.getElementById('inputSenhaFornecedor').value = "";
             } else if (!cfg.precisaSenha) {
                 concluirLoginPerfil(keyPerfil, cfg.nome);
             } else {
@@ -901,47 +901,34 @@
             }
         }
 
-        function popularSugestoesLoginEmpresas() {
-            const datalist = document.getElementById('listaSugestoesEmpresas');
-            datalist.innerHTML = "";
+        function popularSelectLoginEmpresas() {
+            const sel = document.getElementById('selEmpresaFornecedorLogin');
+            sel.innerHTML = "";
             listaTodosFornecedores.forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f;
-                datalist.appendChild(opt);
+                opt.textContent = f;
+                sel.appendChild(opt);
             });
         }
 
         function confirmarLoginFornecedorEmpresa() {
-            const termoDig = document.getElementById('inputIdentificadorFornecedor').value.trim().toLowerCase();
+            const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
             const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
 
-            if (!termoDig) {
-                alert("Digite seu e-mail ou selecione a empresa.");
+            if (!empSel) {
+                alert("Selecione sua empresa para continuar.");
                 return;
             }
 
-            if (senhaForn !== "1234" && senhaForn !== "admin" && senhaForn !== "") {
-                alert("Senha incorreta! Tente a senha padrão: 1234");
+            if (senhaForn !== "1234" && senhaForn !== "admin") {
+                alert("Senha do Fornecedor incorreta! Tente a senha padrão: 1234");
+                document.getElementById('inputSenhaFornecedor').value = "";
+                document.getElementById('inputSenhaFornecedor').focus();
                 return;
             }
 
-            // BUSCA SE O TERMO É UM E-MAIL CADASTRADO OU NOME DA EMPRESA
-            let empresaAchada = null;
-            for (let item of mapaCredenciaisFornecedores) {
-                if (item.empresa.toLowerCase() === termoDig) {
-                    empresaAchada = item.empresa;
-                    break;
-                }
-                if (item.emails.some(e => e.toLowerCase() === termoDig)) {
-                    empresaAchada = item.empresa;
-                    break;
-                }
-            }
-
-            if (!empresaAchada) {
-                empresaAchada = extrairEmpresaLimpa(termoDig);
-            }
-
+            const empresaAchada = extrairEmpresaLimpa(empSel);
             ymsStore.empresaFornecedorLogada = empresaAchada;
             concluirLoginPerfil('fornecedor', `Fornecedor: ${empresaAchada}`);
         }
@@ -1676,7 +1663,6 @@
             const rawDataSel = document.getElementById('filtroDataFornecedor').value.split('-');
             const dataFiltroFormatted = `${rawDataSel[2]}/${rawDataSel[1]}/${rawDataSel[0]}`;
 
-            // ISOLAMENTO DE SEGURANÇA TOTAL:
             const empresaFiltro = ymsStore.empresaFornecedorLogada;
             let baseAgendamentos = ymsStore.agendamentos;
 
