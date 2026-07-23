@@ -143,7 +143,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR COM O RELÓGIO CORRIGIDO -->
+    <!-- BARRA SUPERIOR -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -167,7 +167,6 @@
         </nav>
 
         <div class="flex items-center gap-3">
-            <!-- RELÓGIO AMARELO SEM CONFLITO DE CONDIÇÕES HIDDEN -->
             <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-2">
                 <span>🕒</span> <span>00:00:00</span>
             </div>
@@ -956,6 +955,10 @@
             localStorage.setItem('yms_credenciais_fornecedores', JSON.stringify(mapaCredenciaisFornecedores));
         }
 
+        function salvarUsuariosCustomizadosNaMemoria() {
+            localStorage.setItem('yms_usuarios_customizados', JSON.stringify(ymsStore.baseUsuariosCustom));
+        }
+
         function salvarBaseMotoristasNaMemoria() {
             localStorage.setItem('yms_base_motoristas', JSON.stringify(ymsStore.baseMotoristas));
         }
@@ -970,7 +973,8 @@
             baseMotoristas: carregarBaseMotoristasInicial(),
             baseUsuariosCustom: carregarUsuariosCustomizadosIniciais(),
             usuarioLogado: null,
-            empresaFornecedorLogada: null
+            empresaFornecedorLogada: null,
+            perfilSolicitadoTemp: null
         };
 
         const configPerfisAcesso = {
@@ -985,6 +989,7 @@
         };
 
         function solicitarAcessoPerfil(keyPerfil) {
+            ymsStore.perfilSolicitadoTemp = keyPerfil;
             const cfg = configPerfisAcesso[keyPerfil];
             if (!cfg) return;
 
@@ -1089,20 +1094,80 @@
             if (!tbody) return;
             tbody.innerHTML = "";
 
+            if (ymsStore.baseUsuariosCustom.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-500 italic">Nenhum usuário cadastrado.</td></tr>`;
+                document.getElementById('badgeQtdUsuarios').textContent = `0 Cadastrados`;
+                return;
+            }
+
             ymsStore.baseUsuariosCustom.forEach(u => {
+                const modulosBadges = u.modulos.map(m => `<span class="bg-purple-950 text-purple-300 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold border border-purple-800 mr-1">${m}</span>`).join('');
+                
                 const row = `
                     <tr class="hover:bg-slate-900 transition">
                         <td class="p-2.5 font-bold text-white">${u.nome}</td>
                         <td class="p-2.5 font-mono text-indigo-300">${u.login}</td>
-                        <td class="p-2.5"><span class="bg-purple-950 text-purple-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold">${u.modulos.join(', ')}</span></td>
+                        <td class="p-2.5 flex flex-wrap gap-1">${modulosBadges}</td>
                         <td class="p-2.5 text-center">
-                            <button onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs">🗑️</button>
+                            <button onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs cursor-pointer">🗑️</button>
                         </td>
                     </tr>
                 `;
                 tbody.insertAdjacentHTML('beforeend', row);
             });
             document.getElementById('badgeQtdUsuarios').textContent = `${ymsStore.baseUsuariosCustom.length} Cadastrados`;
+        }
+
+        function salvarUsuarioCustomizado(e) {
+            e.preventDefault();
+            const nome = document.getElementById('usrNome').value.trim();
+            const login = document.getElementById('usrLogin').value.trim();
+            const senha = document.getElementById('usrSenha').value.trim();
+            const empresa = document.getElementById('selUsrEmpresa').value || null;
+
+            const modulosSelecionados = [];
+            document.querySelectorAll('.chk-modulo-usr:checked').forEach(chk => {
+                modulosSelecionados.push(chk.value);
+            });
+
+            if (!nome || !login || !senha) {
+                alert("Preencha Nome, Login e Senha.");
+                return;
+            }
+
+            if (modulosSelecionados.length === 0) {
+                alert("Selecione pelo menos um módulo permitido para o usuário!");
+                return;
+            }
+
+            const novoUsr = {
+                id: `usr_${Date.now()}`,
+                nome: nome,
+                login: login,
+                senha: senha,
+                modulos: modulosSelecionados,
+                fornecedorEmpresa: empresa
+            };
+
+            ymsStore.baseUsuariosCustom.push(novoUsr);
+            salvarUsuariosCustomizadosNaMemoria();
+
+            // Limpa formulário
+            document.getElementById('usrNome').value = "";
+            document.getElementById('usrLogin').value = "";
+            document.getElementById('usrSenha').value = "";
+            document.querySelectorAll('.chk-modulo-usr').forEach(chk => chk.checked = false);
+
+            renderizarTabelaUsuariosCustom();
+            exibirToast("Usuário Salvo!", `${nome} foi cadastrado com sucesso.`, "🔑");
+        }
+
+        function excluirUsuarioCustom(id) {
+            if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+            ymsStore.baseUsuariosCustom = ymsStore.baseUsuariosCustom.filter(u => u.id !== id);
+            salvarUsuariosCustomizadosNaMemoria();
+            renderizarTabelaUsuariosCustom();
+            exibirToast("Usuário Removido", "Operador excluído do sistema.", "🗑️");
         }
 
         function salvarNovoFornecedorDinamico(e) {
@@ -1151,9 +1216,24 @@
         function confirmarLoginComSenha() {
             const userDig = document.getElementById('inputUserLogin').value.trim();
             const pinDig = document.getElementById('inputPinLogin').value.trim();
+            const perfilSel = ymsStore.perfilSolicitadoTemp;
 
-            if (pinDig === "1234" || pinDig === "admin" || pinDig === "123") {
+            // 1. Verificação Mestra Admin / Superusuário
+            if (pinDig === "1234" || pinDig === "admin" || (userDig.toLowerCase() === "admin" && pinDig === "123")) {
                 concluirLoginPerfil('admin', userDig || 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
+                return;
+            }
+
+            // 2. Busca o operador na base personalizada criada pelo usuário
+            const usrEncontrado = ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
+
+            if (usrEncontrado) {
+                // Checa se o usuário tem permissão para o perfil selecionado
+                if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
+                    alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
+                    return;
+                }
+                concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
             } else {
                 alert("Usuário ou Senha incorretos!");
             }
