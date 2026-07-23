@@ -64,35 +64,35 @@
 
             <!-- GRID DE PERFIS -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <button onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
                     <span class="text-xs">PCP Programador</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('fornecedor')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('fornecedor')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🏢</span>
                     <span class="text-xs">Portal Fornecedor</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('totem')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('totem')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🏭</span>
                     <span class="text-xs">Totem Portaria</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('fiscal')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('fiscal')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">📑</span>
                     <span class="text-xs">Triagem Fiscal</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('doca')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('doca')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🚛</span>
                     <span class="text-xs">Operador Doca</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('checkout')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('checkout')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🚪</span>
                     <span class="text-xs">Check-out Portaria</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('motoristas')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('motoristas')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🪪</span>
                     <span class="text-xs">Cad. Motoristas</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('admin')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('admin')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">📡</span>
                     <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
@@ -114,7 +114,7 @@
                         <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
                         <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
                     </div>
-                    <button onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                    <button type="button" onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
                         🔑 AUTENTICAR E ACESSAR PORTAL
                     </button>
                 </div>
@@ -135,7 +135,7 @@
                         <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
                         <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
                     </div>
-                    <button onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
+                    <button type="button" onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
                         🔓 ENTRAR NO SISTEMA
                     </button>
                 </div>
@@ -156,21 +156,21 @@
         </div>
 
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button onclick="mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
-            <button onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
-            <button onclick="mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
-            <button onclick="mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
-            <button onclick="mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
-            <button onclick="mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
-            <button onclick="mudarPerfil('motoristas')" id="btn-motoristas" data-modulo="motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
-            <button onclick="mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
+            <button type="button" onclick="mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
+            <button type="button" onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
+            <button type="button" onclick="mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
+            <button type="button" onclick="mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
+            <button type="button" onclick="mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
+            <button type="button" onclick="mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
+            <button type="button" onclick="mudarPerfil('motoristas')" id="btn-motoristas" data-modulo="motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
+            <button type="button" onclick="mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
 
         <div class="flex items-center gap-3">
             <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-2">
                 <span>🕒</span> <span>00:00:00</span>
             </div>
-            <button onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
+            <button type="button" onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
                 <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
             </button>
         </div>
@@ -183,9 +183,9 @@
             <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-700/80 mb-4">
-                        <button id="tabIndividualBtn" onclick="alternarAbaPCP('individual')" class="flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow">✍️ Manual</button>
-                        <button id="tabMassaBtn" onclick="alternarAbaPCP('massa')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📊 Subida de Planilha</button>
-                        <button id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
+                        <button type="button" id="tabIndividualBtn" onclick="alternarAbaPCP('individual')" class="flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow">✍️ Manual</button>
+                        <button type="button" id="tabMassaBtn" onclick="alternarAbaPCP('massa')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📊 Subida de Planilha</button>
+                        <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
                     </div>
 
                     <div id="conteudoIndividual" class="space-y-3">
@@ -235,7 +235,7 @@
                                 <select id="inpHoraFim" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 outline-none"></select>
                             </div>
                         </div>
-                        <button onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer">🚀 DISPONIBILIZAR PARA FORNECEDOR</button>
+                        <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer">🚀 DISPONIBILIZAR PARA FORNECEDOR</button>
                     </div>
 
                     <div id="conteudoMassa" class="space-y-4 hidden">
@@ -254,7 +254,7 @@
 
                     <div id="conteudoTexto" class="space-y-3 hidden">
                         <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
-                        <button onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO BRUTO</button>
+                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO BRUTO</button>
                     </div>
                 </div>
             </div>
@@ -274,7 +274,7 @@
                 </div>
 
                 <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 space-y-3">
-                    <button onclick="confirmarESubirJanelas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer">
+                    <button type="button" onclick="confirmarESubirJanelas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer">
                         🚀 CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
                     </button>
                 </div>
@@ -293,10 +293,10 @@
 
                 <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex-1 flex flex-col">
                     <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700 mb-3">
-                        <button id="btnAbaPendentes" onclick="alternarAbaFornecedor('pendentes')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white cursor-pointer">
+                        <button type="button" id="btnAbaPendentes" onclick="alternarAbaFornecedor('pendentes')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white cursor-pointer">
                             ⏳ Pendentes
                         </button>
-                        <button id="btnAbaConfirmadas" onclick="alternarAbaFornecedor('confirmadas')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer">
+                        <button type="button" id="btnAbaConfirmadas" onclick="alternarAbaFornecedor('confirmadas')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer">
                             ✅ Confirmadas
                         </button>
                     </div>
@@ -317,21 +317,21 @@
                         <span id="txtStatusOrdem" class="bg-slate-700 text-slate-300 font-bold text-xs px-3 py-1 rounded-full">Aguardando Escolha</span>
                     </div>
 
-                    <form onsubmit="salvarConfirmacaoFornecedor(event)" class="space-y-4">
+                    <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Nota Fiscal (NF-e) *</label>
-                                <input type="text" id="fornNf" placeholder="Digite o número da NF-e..." required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono focus:border-indigo-500 outline-none">
+                                <input type="text" id="fornNf" placeholder="Digite o número da NF-e..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono focus:border-indigo-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Transportadora *</label>
-                                <input type="text" id="fornTransp" placeholder="Digite a transportadora..." required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold focus:border-indigo-500 outline-none">
+                                <input type="text" id="fornTransp" placeholder="Digite a transportadora..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold focus:border-indigo-500 outline-none">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Placa Cavalo (Trator) *</label>
-                                <input type="text" id="fornCavalo" placeholder="ABC1D23 / ABC1234" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase focus:border-indigo-500 outline-none">
+                                <input type="text" id="fornCavalo" placeholder="ABC1D23 / ABC1234" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase focus:border-indigo-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Placa Carreta / Reboque</label>
@@ -345,7 +345,7 @@
                                 <div class="col-span-6">
                                     <label class="block text-[11px] font-bold text-slate-400 mb-1">CPF (11 Dígitos) *</label>
                                     <div class="flex gap-1.5">
-                                        <input type="text" id="fornCpf" placeholder="00000000000" required onkeydown="if(event.key==='Enter'){event.preventDefault();buscarMotoristaPorCpf();}" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-indigo-500">
+                                        <input type="text" id="fornCpf" placeholder="00000000000" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarMotoristaPorCpf();}" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-indigo-500">
                                         <button type="button" onclick="buscarMotoristaPorCpf()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition cursor-pointer flex items-center justify-center shadow">
                                             🔍
                                         </button>
@@ -353,19 +353,19 @@
                                 </div>
                                 <div class="col-span-6">
                                     <label class="block text-[11px] font-bold text-slate-400 mb-1">Nome Completo *</label>
-                                    <input type="text" id="fornMotorista" placeholder="Nome completo..." required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold outline-none">
+                                    <input type="text" id="fornMotorista" placeholder="Nome completo..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold outline-none">
                                 </div>
                                 <div class="col-span-12">
                                     <label class="block text-[11px] font-bold text-slate-400 mb-1">Celular / Notificações (Com DDD) *</label>
-                                    <input type="text" id="fornCelular" placeholder="00900000000" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold outline-none">
+                                    <input type="text" id="fornCelular" placeholder="00900000000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold outline-none">
                                 </div>
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                        <button type="button" onclick="salvarConfirmacaoFornecedor(event)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
                             <span>💬</span> CONFIRMAR DADOS E LIBERAR CHECK-IN
                         </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </section>
@@ -398,7 +398,7 @@
                     <button type="button" onclick="apagarTotem()" class="bg-slate-600 hover:bg-slate-500 active:bg-slate-400 text-slate-200 font-bold py-3 rounded-xl transition cursor-pointer">⌫</button>
                 </div>
 
-                <button onclick="finalizarCheckinTotem()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-black py-4 rounded-xl shadow-xl transition border-b-4 border-emerald-800 cursor-pointer">
+                <button type="button" onclick="finalizarCheckinTotem()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-black py-4 rounded-xl shadow-xl transition border-b-4 border-emerald-800 cursor-pointer">
                     🖨️ FAZER CHECK-IN E GERAR TICKET DE PÁTIO
                 </button>
             </div>
@@ -453,7 +453,7 @@
                     </div>
                 </div>
 
-                <button onclick="liberarParaDocaFiscal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl text-xs uppercase tracking-wider shadow-lg cursor-pointer">
+                <button type="button" onclick="liberarParaDocaFiscal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl text-xs uppercase tracking-wider shadow-lg cursor-pointer">
                     🚀 SALVAR ROTA SEQUENCIAL E ENVIAR PARA A 1ª DOCA
                 </button>
             </div>
@@ -475,7 +475,7 @@
                     </div>
                 </div>
 
-                <button onclick="finalizarDescargaDoca()" class="w-full max-w-sm bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl text-base shadow-lg transition cursor-pointer">
+                <button type="button" onclick="finalizarDescargaDoca()" class="w-full max-w-sm bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl text-base shadow-lg transition cursor-pointer">
                     ✅ FINALIZAR DESCARGA E AVANÇAR ROTA
                 </button>
             </div>
@@ -492,7 +492,7 @@
                     </div>
                 </div>
 
-                <button onclick="chamarProximoSms()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-5 rounded-xl text-xl flex flex-col items-center gap-1 shadow-lg border-b-4 border-amber-700 cursor-pointer">
+                <button type="button" onclick="chamarProximoSms()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-5 rounded-xl text-xl flex flex-col items-center gap-1 shadow-lg border-b-4 border-amber-700 cursor-pointer">
                     <span>💬</span>
                     <span class="text-sm uppercase">CHAMAR PRÓXIMO (DISPARAR SMS / ALERTA)</span>
                 </button>
@@ -548,7 +548,7 @@
                     </div>
                 </div>
 
-                <button onclick="confirmarSaidaPortaria()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
+                <button type="button" onclick="confirmarSaidaPortaria()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
                     <span>🚪</span> CONFIRMAR SAÍDA DA PLANTA & REALIZAR CHECK-OUT
                 </button>
             </div>
@@ -565,18 +565,18 @@
                         <p class="text-xs text-slate-400">Incluir ou atualizar dados na base permanente</p>
                     </div>
 
-                    <form onsubmit="salvarMotoristaManual(event)" class="space-y-3.5">
+                    <div class="space-y-3.5">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">CPF (11 Dígitos) *</label>
-                            <input type="text" id="cadMotCpf" placeholder="00000000000" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-indigo-500">
+                            <input type="text" id="cadMotCpf" placeholder="00000000000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-indigo-500">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Nome Completo *</label>
-                            <input type="text" id="cadMotNome" placeholder="Digite o nome completo..." required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-bold outline-none focus:border-indigo-500">
+                            <input type="text" id="cadMotNome" placeholder="Digite o nome completo..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-bold outline-none focus:border-indigo-500">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Celular / WhatsApp *</label>
-                            <input type="text" id="cadMotCelular" placeholder="00900000000" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-yellow-400 font-mono font-bold outline-none focus:border-indigo-500">
+                            <input type="text" id="cadMotCelular" placeholder="00900000000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-yellow-400 font-mono font-bold outline-none focus:border-indigo-500">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Situação / Status *</label>
@@ -590,10 +590,10 @@
                             <textarea id="cadMotObs" rows="2" placeholder="Ex: Problema de segurança, Falta de EPI..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500"></textarea>
                         </div>
 
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow cursor-pointer">
+                        <button type="button" onclick="salvarMotoristaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow cursor-pointer">
                             💾 SALVAR MOTORISTA NA BASE
                         </button>
-                    </form>
+                    </div>
                 </div>
             </div>
 
@@ -663,20 +663,20 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <form onsubmit="salvarNovoFornecedorDinamico(event)" class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700/80 space-y-3">
+                    <div class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700/80 space-y-3">
                         <h4 class="text-xs font-black text-white uppercase tracking-wider">Cadastrar / Editar Fornecedor</h4>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Razão Social / Nome da Empresa *</label>
-                            <input type="text" id="cadFornNome" placeholder="Ex: NOVA LOGÍSTICA S/A" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold uppercase outline-none focus:border-amber-500">
+                            <input type="text" id="cadFornNome" placeholder="Ex: NOVA LOGÍSTICA S/A" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold uppercase outline-none focus:border-amber-500">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Senha Exclusiva (Opcional)</label>
                             <input type="text" id="cadFornSenha" placeholder="Ex: novalogistica@2026" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-yellow-300 font-mono outline-none focus:border-amber-500">
                         </div>
-                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer">
+                        <button type="button" onclick="salvarNovoFornecedorDinamico(event)" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer">
                             ➕ SALVAR FORNECEDOR NA BASE
                         </button>
-                    </form>
+                    </div>
 
                     <div class="lg:col-span-7 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-2">
                         <div class="flex justify-between items-center pb-2 border-b border-slate-800">
@@ -700,7 +700,7 @@
                 </div>
             </div>
 
-            <!-- GESTÃO DE USUÁRIOS DA PLANTA -->
+            <!-- GESTÃO DE USUÁRIOS DA PLANTA (SEM RECARREGAR A PÁGINA) -->
             <div class="bg-slate-800 p-6 rounded-3xl border border-purple-500/40 shadow-xl space-y-4">
                 <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
                     <div>
@@ -713,35 +713,48 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <form onsubmit="salvarUsuarioCustomizado(event)" class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">
-                        <input type="text" id="usrNome" placeholder="Nome do Operador *" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="usrLogin" placeholder="Login *" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono font-bold outline-none">
-                            <input type="password" id="usrSenha" placeholder="Senha *" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none">
+                    <div class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Nome do Operador *</label>
+                            <input type="text" id="usrNome" placeholder="Ex: João Silva (Doca)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none focus:border-purple-500">
                         </div>
 
-                        <div>
-                            <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Módulos Permitidos</label>
-                            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="pcp" class="chk-modulo-usr accent-purple-600"> 🗓️ PCP</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="fornecedor" class="chk-modulo-usr accent-purple-600"> 🏢 Fornecedor</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="totem" class="chk-modulo-usr accent-purple-600"> 🏭 Totem</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="fiscal" class="chk-modulo-usr accent-purple-600"> 📑 Fiscal</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="doca" class="chk-modulo-usr accent-purple-600"> 🚛 Doca</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="checkout" class="chk-modulo-usr accent-purple-600"> 🚪 Check-out</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="motoristas" class="chk-modulo-usr accent-purple-600"> 🪪 Motoristas</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-purple-300"><input type="checkbox" value="torre" class="chk-modulo-usr accent-purple-600"> 📡 Admin</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Login / Usuário *</label>
+                                <input type="text" id="usrLogin" placeholder="Ex: joao.doca" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono font-bold outline-none focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Senha *</label>
+                                <input type="password" id="usrSenha" placeholder="Digite a senha..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none focus:border-purple-500">
                             </div>
                         </div>
 
-                        <select id="selUsrEmpresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white outline-none">
-                            <option value="">--- Nenhuma (Acesso Interno) ---</option>
-                        </select>
+                        <div>
+                            <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Módulos Permitidos para Acesso *</label>
+                            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="pcp" class="chk-modulo-usr accent-purple-600"> 🗓️ PCP</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="fornecedor" class="chk-modulo-usr accent-purple-600"> 🏢 Fornecedor</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="totem" class="chk-modulo-usr accent-purple-600"> 🏭 Totem</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="fiscal" class="chk-modulo-usr accent-purple-600"> 📑 Fiscal</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="doca" class="chk-modulo-usr accent-purple-600"> 🚛 Doca</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="checkout" class="chk-modulo-usr accent-purple-600"> 🚪 Check-out</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="motoristas" class="chk-modulo-usr accent-purple-600"> 🪪 Motoristas</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-purple-300 cursor-pointer"><input type="checkbox" value="torre" class="chk-modulo-usr accent-purple-600"> 📡 Admin</label>
+                            </div>
+                        </div>
 
-                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Empresa Fornecedor (Se Aplicável)</label>
+                            <select id="selUsrEmpresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-white outline-none">
+                                <option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>
+                            </select>
+                        </div>
+
+                        <button type="button" onclick="salvarUsuarioCustomizado(event)" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow transition cursor-pointer">
                             💾 CADASTRAR USUÁRIO
                         </button>
-                    </form>
+                    </div>
 
                     <div class="lg:col-span-7 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 overflow-x-auto max-h-80 custom-scrollbar">
                         <table class="w-full text-left text-xs">
@@ -778,10 +791,10 @@
                             <span class="text-[10px] font-bold text-slate-400 uppercase block px-1">Até:</span>
                             <input type="date" id="repDataFim" class="bg-slate-950 border border-slate-800 rounded-lg text-xs p-1 font-mono font-bold text-white outline-none">
                         </div>
-                        <button onclick="carregarGraficosTorre()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition cursor-pointer self-end">
+                        <button type="button" onclick="carregarGraficosTorre()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition cursor-pointer self-end">
                             🔍 Filtrar
                         </button>
-                        <button onclick="exportarRelatorioExcelFormatado()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer self-end">
+                        <button type="button" onclick="exportarRelatorioExcelFormatado()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer self-end">
                             <span>📥</span> BAIXAR EXCEL
                         </button>
                     </div>
@@ -929,7 +942,8 @@
             if (salvos) { try { return JSON.parse(salvos); } catch(e) {} }
             return [
                 { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
-                { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null }
+                { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+                { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
             ];
         }
 
@@ -1022,7 +1036,7 @@
         function popularSelectCadastroEmpresasUsr() {
             const sel = document.getElementById('selUsrEmpresa');
             if (!sel) return;
-            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno) ---</option>`;
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
             obterListaNomesFornecedores().forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f; opt.textContent = f;
@@ -1081,7 +1095,7 @@
                         <td class="p-2.5 font-bold text-white uppercase">${item.empresa}</td>
                         <td class="p-2.5 font-mono text-yellow-300">${item.senha}</td>
                         <td class="p-2.5 text-center">
-                            <button onclick="excluirFornecedorDinamico('${item.empresa}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
+                            <button type="button" onclick="excluirFornecedorDinamico('${item.empresa}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -1101,7 +1115,7 @@
             }
 
             ymsStore.baseUsuariosCustom.forEach(u => {
-                const modulosBadges = u.modulos.map(m => `<span class="bg-purple-950 text-purple-300 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold border border-purple-800 mr-1">${m}</span>`).join('');
+                const modulosBadges = u.modulos.map(m => `<span class="bg-purple-950 text-purple-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-purple-800 mr-1">${m.toUpperCase()}</span>`).join('');
                 
                 const row = `
                     <tr class="hover:bg-slate-900 transition">
@@ -1109,17 +1123,19 @@
                         <td class="p-2.5 font-mono text-indigo-300">${u.login}</td>
                         <td class="p-2.5 flex flex-wrap gap-1">${modulosBadges}</td>
                         <td class="p-2.5 text-center">
-                            <button onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs cursor-pointer">🗑️</button>
+                            <button type="button" onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs cursor-pointer">🗑️</button>
                         </td>
                     </tr>
                 `;
                 tbody.insertAdjacentHTML('beforeend', row);
             });
+
             document.getElementById('badgeQtdUsuarios').textContent = `${ymsStore.baseUsuariosCustom.length} Cadastrados`;
         }
 
         function salvarUsuarioCustomizado(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
+            
             const nome = document.getElementById('usrNome').value.trim();
             const login = document.getElementById('usrLogin').value.trim();
             const senha = document.getElementById('usrSenha').value.trim();
@@ -1152,7 +1168,7 @@
             ymsStore.baseUsuariosCustom.push(novoUsr);
             salvarUsuariosCustomizadosNaMemoria();
 
-            // Limpa o formulário
+            // Limpa o formulário sem recarregar a página
             document.getElementById('usrNome').value = "";
             document.getElementById('usrLogin').value = "";
             document.getElementById('usrSenha').value = "";
@@ -1171,7 +1187,7 @@
         }
 
         function salvarNovoFornecedorDinamico(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
             const nomeForn = document.getElementById('cadFornNome').value.trim().toUpperCase();
             let senhaForn = document.getElementById('cadFornSenha').value.trim();
 
@@ -1190,7 +1206,7 @@
 
             document.getElementById('cadFornNome').value = "";
             document.getElementById('cadFornSenha').value = "";
-            alert(`Fornecedor ${nomeForn} salvo com sucesso!`);
+            exibirToast("Fornecedor Salvo!", `Empresa ${nomeForn} atualizada.`, "🏢");
         }
 
         function excluirFornecedorDinamico(empresa) {
@@ -1665,7 +1681,7 @@
         }
 
         function criarJanelaManual(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
             const rawData = document.getElementById('inpData').value;
             
             if (dataEhPassada(rawData)) {
@@ -1969,7 +1985,7 @@
         }
 
         function salvarConfirmacaoFornecedor(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
             const ativa = ymsStore.agendamentos.find(i => i.ordem === ymsStore.ordemAtivaFornecedor);
             if (!ativa) { alert("Selecione uma ordem."); return; }
 
@@ -2330,7 +2346,7 @@
                         <td class="p-3 font-mono text-yellow-400">${m.celular}</td>
                         <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
                         <td class="p-3 text-center">
-                            <button onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
+                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
                                 ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
                             </button>
                         </td>
@@ -2341,7 +2357,7 @@
         }
 
         function salvarMotoristaManual(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
             const cpf = document.getElementById('cadMotCpf').value.replace(/\D/g, '').trim();
             const nome = document.getElementById('cadMotNome').value.trim();
             const celular = document.getElementById('cadMotCelular').value.trim();
