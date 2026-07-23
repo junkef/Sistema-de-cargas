@@ -143,7 +143,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR: NAVEGAÇÃO DE PERFIS DO YMS -->
+    <!-- BARRA SUPERIOR COM O RELÓGIO AMARELO RESTAURADO -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -156,34 +156,20 @@
         </div>
 
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button onclick="mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">
-                🗓️ PCP Programador
-            </button>
-            <button onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🏢 Portal Fornecedor
-            </button>
-            <button onclick="mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🏭 Totem Autoatendimento
-            </button>
-            <button onclick="mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                📑 Recebimento Fiscal
-            </button>
-            <button onclick="mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🚛 Operador de Doca
-            </button>
-            <button onclick="mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🚪 Check-out Portaria
-            </button>
-            <button onclick="mudarPerfil('motoristas')" id="btn-motoristas" data-modulo="motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🪪 Cad. Motoristas
-            </button>
-            <button onclick="mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                📡 Torre de Controle
-            </button>
+            <button onclick="mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
+            <button onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
+            <button onclick="mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
+            <button onclick="mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
+            <button onclick="mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
+            <button onclick="mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
+            <button onclick="mudarPerfil('motoristas')" id="btn-motoristas" data-modulo="motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
+            <button onclick="mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
 
         <div class="flex items-center gap-3">
-            <div id="relogioGlobal" class="text-sm font-mono font-bold text-yellow-400 hidden sm:block">00:00:00</div>
+            <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-1.5">
+                <span>🕒</span> <span>00:00:00</span>
+            </div>
             <button onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
                 <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
             </button>
@@ -262,7 +248,7 @@
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
                             <div class="text-4xl mb-3" id="iconDropZone">📂</div>
                             <p class="text-sm font-bold text-white mb-1" id="txtDropTitle">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv (Filtra datas antigas automaticamente)</p>
+                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv</p>
                         </div>
                     </div>
 
@@ -897,6 +883,13 @@
 
     <!-- SCRIPT CENTRAL INTERLIGADO -->
     <script>
+        function atualizarRelogioDigital() {
+            const relogio = document.getElementById('relogioGlobal');
+            if (relogio) {
+                relogio.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
+            }
+        }
+
         function dataEhPassada(dataStr) {
             if (!dataStr) return false;
             let ano, mes, dia;
@@ -1283,9 +1276,8 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            setInterval(() => {
-                document.getElementById('relogioGlobal').textContent = new Date().toLocaleTimeString('pt-BR');
-            }, 1000);
+            atualizarRelogioDigital();
+            setInterval(atualizarRelogioDigital, 1000);
 
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') fecharModalSms();
