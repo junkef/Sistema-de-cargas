@@ -86,7 +86,21 @@
                 </button>
             </div>
 
-            <!-- CAMPO DE SENHA / PIN -->
+            <!-- CAMPO DE SELEÇÃO DE EMPRESA / FORNECEDOR (APENAS PARA FORNECEDOR) -->
+            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-indigo-400 uppercase">SELECIONE A SUA EMPRESA / RAZÃO SOCIAL</span>
+                </div>
+                <div class="flex gap-2">
+                    <select id="selEmpresaFornecedorLogin" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none">
+                    </select>
+                    <button onclick="confirmarLoginFornecedorEmpresa()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2 rounded-xl text-xs uppercase shadow cursor-pointer">
+                        Acessar Portal
+                    </button>
+                </div>
+            </div>
+
+            <!-- CAMPO DE SENHA / PIN (PARA DEMAIS PERFIS INTERNOS) -->
             <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
                 <div class="flex justify-between items-center">
                     <span id="lblPerfilSelecionadoLogin" class="text-xs font-bold text-indigo-400 uppercase">PERFIL SELECIONADO</span>
@@ -167,7 +181,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR</label>
-                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(140 CADASTRADOS)</span>
+                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(0 CADASTRADOS)</span>
                             </div>
                             <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
                                 <div class="p-2 border-b border-slate-800 bg-slate-900 flex items-center gap-2">
@@ -254,12 +268,20 @@
             </div>
         </section>
 
-        <!-- MÓDULO 2: PORTAL DO FORNECEDOR -->
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR (PRIVACIDADE DE EMPRESA ISOLADA) -->
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
             <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">📅 Selecionar Data do Agendamento</label>
-                    <input type="date" id="filtroDataFornecedor" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none cursor-pointer">
+                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
+                    <div>
+                        <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block mb-0.5">🔒 Empresa Autenticada</span>
+                        <h3 id="txtEmpresaLogadaFornecedor" class="text-sm font-black text-white bg-slate-900 p-2 rounded-xl border border-slate-700/80">
+                            -
+                        </h3>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">📅 Selecionar Data do Agendamento</label>
+                        <input type="date" id="filtroDataFornecedor" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none cursor-pointer">
+                    </div>
                 </div>
 
                 <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex-1 flex flex-col">
@@ -770,26 +792,58 @@
             sequenciaDocasSelecao: [],
             baseMotoristas: carregarBaseMotoristasInicial(),
             usuarioLogado: null,
+            empresaFornecedorLogada: null,
             perfilPendenteLogin: null
         };
 
+        // MATRIZ OFICIAL DE FORNECEDORES LIMPOS (SEM NÚMEROS NEM TEXTO ADICIONAL)
+        const listaOficialFornecedoresBruta = [
+            "CSN", "Arcelomittal", "Multilog", "Usiminas", "Bundy Curitiba", "Linkplas",
+            "PLASTICOVILLE", "Ccl", "Marcegaglia", "Arotubi Joinville", "Uniplast",
+            "Caribor", "Ciser", "Tesa", "Vexilliom", "ALDELBRAS", "Bundy Pinda",
+            "Bollhoff/Molas Weber", "Sinergia/Conbras", "Brascabos", "Microjuntas",
+            "Cremer/Molas Brusque", "Isheng", "Bigfer + Macroplastic", "Adere/Brindec/Weloze",
+            "Grafica Nacional", "Rudolph", "5 Estrelas", "Refrex", "Paranapanema",
+            "NIDEC", "Aleplast", "Arotubi Curitiba", "Duferco", "Innara", "Vitrocolor",
+            "Unitaal", "Schott", "Viprado", "INJEQUALY", "FOCUS", "Asibras", "Brasken",
+            "Armacell", "SG/LEAS", "Metalma", "KLABIN", "Denk", "Innova", "COLORFIX",
+            "West Rock", "Weg Motores", "Formparts", "Termomecanica", "Weg Tintas", "Nidec Itaiópolis"
+        ];
+
+        // FUNÇÃO PARA TRATAR NOMES DE FORNECEDORES
+        function limparNomeFornecedor(nomeBruto) {
+            if (!nomeBruto) return "FORNECEDOR";
+            let s = String(nomeBruto).split('-')[0]; // Remove "- Confirme o agendamento"
+            s = s.replace(/\d+$/, ''); // Remove números no final do nome
+            return s.trim();
+        }
+
+        const listaTodosFornecedores = Array.from(new Set(listaOficialFornecedoresBruta.map(limparNomeFornecedor))).sort();
+
         // MATRIZ DE REGRAS E PERMISSÕES DE PERFIS (RBAC)
         const configPerfisAcesso = {
-            'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
-            'fornecedor': { nome: "Portal Fornecedor", precisaSenha: false, modulos: ['fornecedor'] },
-            'totem': { nome: "Totem Autoatendimento", precisaSenha: false, modulos: ['totem'] },
-            'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, modulos: ['fiscal'] },
-            'doca': { nome: "Operador de Doca", precisaSenha: true, modulos: ['doca'] },
-            'checkout': { nome: "Check-out Portaria", precisaSenha: true, modulos: ['checkout', 'totem'] },
-            'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, modulos: ['motoristas', 'fornecedor'] },
-            'admin': { nome: "Torre / Administrador", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
+            'pcp': { nome: "PCP Programador", precisaSenha: true, eFornecedor: false, modulos: ['pcp', 'torre'] },
+            'fornecedor': { nome: "Portal Fornecedor", precisaSenha: false, eFornecedor: true, modulos: ['fornecedor'] },
+            'totem': { nome: "Totem Autoatendimento", precisaSenha: false, eFornecedor: false, modulos: ['totem'] },
+            'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, eFornecedor: false, modulos: ['fiscal'] },
+            'doca': { nome: "Operador de Doca", precisaSenha: true, eFornecedor: false, modulos: ['doca'] },
+            'checkout': { nome: "Check-out Portaria", precisaSenha: true, eFornecedor: false, modulos: ['checkout', 'totem'] },
+            'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, eFornecedor: false, modulos: ['motoristas', 'fornecedor'] },
+            'admin': { nome: "Torre / Administrador", precisaSenha: true, eFornecedor: false, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
         };
 
         function solicitarAcessoPerfil(keyPerfil) {
             const cfg = configPerfisAcesso[keyPerfil];
             if (!cfg) return;
 
-            if (!cfg.precisaSenha) {
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+
+            if (cfg.eFornecedor) {
+                ymsStore.perfilPendenteLogin = keyPerfil;
+                popularSelectLoginEmpresas();
+                document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
+            } else if (!cfg.precisaSenha) {
                 concluirLoginPerfil(keyPerfil, cfg.nome);
             } else {
                 ymsStore.perfilPendenteLogin = keyPerfil;
@@ -798,6 +852,27 @@
                 document.getElementById('inputPinLogin').value = "";
                 document.getElementById('inputPinLogin').focus();
             }
+        }
+
+        function popularSelectLoginEmpresas() {
+            const sel = document.getElementById('selEmpresaFornecedorLogin');
+            sel.innerHTML = "";
+            listaTodosFornecedores.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f;
+                opt.textContent = f;
+                sel.appendChild(opt);
+            });
+        }
+
+        function confirmarLoginFornecedorEmpresa() {
+            const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
+            if (!empSel) {
+                alert("Selecione sua empresa para continuar.");
+                return;
+            }
+            ymsStore.empresaFornecedorLogada = empSel;
+            concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`);
         }
 
         function confirmarLoginComSenha() {
@@ -816,7 +891,12 @@
             ymsStore.usuarioLogado = { key: keyPerfil, nome: nomeExibicao };
             document.getElementById('modalLoginGlobal').classList.add('hidden');
             document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
             document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
+
+            if (keyPerfil === 'fornecedor') {
+                document.getElementById('txtEmpresaLogadaFornecedor').textContent = ymsStore.empresaFornecedorLogada || 'Fornecedor';
+            }
 
             aplicarPermissoesPerfilNaInterface();
             exibirToast("Acesso Concedido!", `Sessão iniciada como ${nomeExibicao}.`, "🔓");
@@ -840,7 +920,6 @@
                 'torre': 'btn-torre'
             };
 
-            // HABILITA / DESABILITA ABAS NO MENU SUPERIOR
             Object.keys(botoesPerfil).forEach(modKey => {
                 const btn = document.getElementById(botoesPerfil[modKey]);
                 if (btn) {
@@ -852,14 +931,15 @@
                 }
             });
 
-            // ATIVA O PRIMEIRA MÓDULO PERMITIDO
             mudarPerfil(modulosPermitidos[0]);
         }
 
         function fazerLogoutGlobal() {
             ymsStore.usuarioLogado = null;
+            ymsStore.empresaFornecedorLogada = null;
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
             document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
         }
 
         function obterDataHojeISO() {
@@ -876,19 +956,6 @@
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
             const ano = hoje.getFullYear();
             return `${dia}/${mes}/${ano}`;
-        }
-
-        const nomesBase = ['5 Estrelas', 'ALDELBRAS', 'Arcelomittal', 'CSN', 'FOCUS', 'KLABIN', 'Multilog', 'NIDEC', 'PLASTICOVILLE', 'Usiminas', 'Weg Motores', 'Ambev', 'Gerdau', 'Suzano', 'Klabin Papel', 'Bunge', 'Cargill', 'JBS', 'BRF', 'Natura', 'Nestlé', 'Unilever', 'Mondelez', 'Pepsico', 'Heineken', 'Siemens', 'Bosch', 'WEG Transformadores'];
-        const listaTodosFornecedores = [];
-        
-        let contadorForn = 1;
-        while (listaTodosFornecedores.length < 140) {
-            for (let base of nomesBase) {
-                if (listaTodosFornecedores.length < 140) {
-                    listaTodosFornecedores.push(`${base}${contadorForn}`);
-                }
-            }
-            contadorForn++;
         }
 
         const listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
@@ -1125,7 +1192,7 @@
                 selForn.appendChild(opt);
             });
 
-            document.getElementById('lblContadorForn').textContent = `(${lista.length} ENCONTRADOS)`;
+            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
         }
 
         function filtrarOpcoesFornecedor() {
@@ -1308,7 +1375,7 @@
             const item = {
                 ordem: novaOrdem,
                 data: `${rawData[2]}/${rawData[1]}/${rawData[0]}`,
-                fornecedor: fornSel,
+                fornecedor: limparNomeFornecedor(fornSel),
                 doca: document.getElementById('inpDoca').value,
                 horaIni: horaIni,
                 horaFim: horaFim,
@@ -1321,7 +1388,7 @@
             ymsStore.ordemAtivaFornecedor = novaOrdem;
 
             sincronizarTodosModulos();
-            exibirToast("Janela Criada!", `Ordem ${novaOrdem} disponibilizada para ${fornSel}.`, "➕");
+            exibirToast("Janela Criada!", `Ordem ${novaOrdem} disponibilizada para ${item.fornecedor}.`, "➕");
         }
 
         function tratarDragOver(e) {
@@ -1376,7 +1443,7 @@
                     
                     let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
                     let rawForn = kForn ? row[kForn] : 'Fornecedor';
-                    let fornLimpo = String(rawForn).replace(/\s*-\s*Confirme o agendamento.*/i, '').trim();
+                    let fornLimpo = limparNomeFornecedor(rawForn);
 
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
                     let docaLida = kDoca ? row[kDoca] : listaTodasDocas[0];
@@ -1422,7 +1489,7 @@
                 ymsStore.agendamentos.push({
                     ordem: novaOrdem,
                     data: match[1],
-                    fornecedor: match[2].replace(/\s*-\s*Confirme o agendamento.*/i, '').trim(),
+                    fornecedor: limparNomeFornecedor(match[2]),
                     doca: match[3].trim(),
                     horaIni: match[4],
                     horaFim: match[5],
@@ -1487,7 +1554,7 @@
             exibirToast("Lote Limpo", "Grade de janelas descartada.", "🗑️");
         }
 
-        // --- PORTAL DO FORNECEDOR ---
+        // --- PORTAL DO FORNECEDOR (PRIVACIDADE POR EMPRESA FILTRADA) ---
         function alternarAbaFornecedor(aba) {
             ymsStore.abaFornecedorAtual = aba;
             const btnPen = document.getElementById('btnAbaPendentes');
@@ -1538,7 +1605,15 @@
             const rawDataSel = document.getElementById('filtroDataFornecedor').value.split('-');
             const dataFiltroFormatted = `${rawDataSel[2]}/${rawDataSel[1]}/${rawDataSel[0]}`;
 
-            const filtradosData = ymsStore.agendamentos.filter(i => normalizarTexto(i.data) === normalizarTexto(dataFiltroFormatted));
+            // ISOLAMENTO DE SEGURANÇA: Se estiver logado como Fornecedor, filtra APENAS pela empresa dele
+            const empresaFiltro = ymsStore.empresaFornecedorLogada;
+            let baseAgendamentos = ymsStore.agendamentos;
+
+            if (empresaFiltro) {
+                baseAgendamentos = baseAgendamentos.filter(i => normalizarTexto(i.fornecedor) === normalizarTexto(empresaFiltro));
+            }
+
+            const filtradosData = baseAgendamentos.filter(i => normalizarTexto(i.data) === normalizarTexto(dataFiltroFormatted));
             let ordensExibicao = [];
 
             if (ymsStore.abaFornecedorAtual === 'pendentes') {
@@ -1548,7 +1623,7 @@
             }
 
             if (ordensExibicao.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem encontrada nesta aba para ${dataFiltroFormatted}.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem encontrada para ${empresaFiltro || 'sua empresa'} na data ${dataFiltroFormatted}.</p>`;
                 
                 document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
                 document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
