@@ -86,7 +86,7 @@
                 </button>
             </div>
 
-            <!-- CARD DE LOGIN DO FORNECEDOR (ACESSO DIRETO POR RAZÃO SOCIAL) -->
+            <!-- CARD DE LOGIN DO FORNECEDOR (RAZÃO SOCIAL) -->
             <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
                 <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
                     <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
@@ -108,7 +108,7 @@
                 </div>
             </div>
 
-            <!-- FORMULÁRIO DE LOGIN DE USUÁRIOS CUSTOMIZADOS (INTERNOS OU DE FORNECEDORES) -->
+            <!-- FORMULÁRIO DE LOGIN DE USUÁRIOS CUSTOMIZADOS -->
             <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
@@ -675,7 +675,7 @@
                                     <input type="checkbox" value="pcp" class="chk-modulo-usr rounded border-slate-700 accent-purple-600"> 🗓️ PCP
                                 </label>
                                 <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer">
-                                    <input type="checkbox" value="fornecedor" id="chkModuloFornecedor" onchange="alternarExibicaoEmpresaUsr()" class="chk-modulo-usr rounded border-slate-700 accent-purple-600"> 🏢 Fornecedor
+                                    <input type="checkbox" value="fornecedor" id="chkModuloFornecedor" class="chk-modulo-usr rounded border-slate-700 accent-purple-600"> 🏢 Fornecedor
                                 </label>
                                 <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer">
                                     <input type="checkbox" value="totem" class="chk-modulo-usr rounded border-slate-700 accent-purple-600"> 🏭 Totem
@@ -698,11 +698,13 @@
                             </div>
                         </div>
 
-                        <!-- SELETOR DINÂMICO DE EMPRESA PARA USUÁRIO FORNECEDOR -->
-                        <div id="usrEmpresaContainer" class="hidden bg-purple-950/40 p-3 rounded-xl border border-purple-500/30 space-y-1">
-                            <label class="block text-[10px] font-bold text-amber-400 uppercase">🏢 Empresa / Fornecedor Vinculado *</label>
-                            <select id="selUsrEmpresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white outline-none focus:border-purple-500">
+                        <!-- SELETOR FIXO E SEMPRE VISÍVEL DE EMPRESA FORNECEDORA -->
+                        <div id="usrEmpresaContainer" class="bg-purple-950/40 p-3 rounded-xl border border-purple-500/30 space-y-1">
+                            <label class="block text-[10px] font-bold text-amber-400 uppercase">🏢 Empresa do Fornecedor Vinculado (Se Aplicável)</label>
+                            <select id="selUsrEmpresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white outline-none focus:border-purple-500 cursor-pointer">
+                                <option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>
                             </select>
+                            <p class="text-[9px] text-slate-400 italic">Se marcar o módulo Fornecedor, selecione a Razão Social acima para restringir a visão das cargas.</p>
                         </div>
 
                         <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer transition">
@@ -1032,23 +1034,17 @@
 
         function popularSelectCadastroEmpresasUsr() {
             const sel = document.getElementById('selUsrEmpresa');
-            sel.innerHTML = "";
+            if (!sel) return;
+            
+            // Mantém a opção limpa padrão
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
+            
             listaTodosFornecedores.forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f;
                 opt.textContent = f;
                 sel.appendChild(opt);
             });
-        }
-
-        function alternarExibicaoEmpresaUsr() {
-            const chkFornecedor = document.getElementById('chkModuloFornecedor');
-            const container = document.getElementById('usrEmpresaContainer');
-            if (chkFornecedor.checked) {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
         }
 
         // CONFIRMAÇÃO E VALIDAÇÃO DA SENHA EXCLUSIVA DO FORNECEDOR
@@ -2475,10 +2471,7 @@
             const checkboxes = document.querySelectorAll('.chk-modulo-usr:checked');
             const modulosSelecionados = Array.from(checkboxes).map(cb => cb.value);
 
-            let empresaVinculada = null;
-            if (modulosSelecionados.includes('fornecedor')) {
-                empresaVinculada = document.getElementById('selUsrEmpresa').value;
-            }
+            let empresaVinculada = document.getElementById('selUsrEmpresa').value || null;
 
             if (!nome || !login || !senha) {
                 alert("Preencha Nome, Login e Senha do usuário.");
@@ -2505,8 +2498,8 @@
             document.getElementById('usrNome').value = "";
             document.getElementById('usrLogin').value = "";
             document.getElementById('usrSenha').value = "";
+            document.getElementById('selUsrEmpresa').value = "";
             document.querySelectorAll('.chk-modulo-usr').forEach(cb => cb.checked = false);
-            document.getElementById('usrEmpresaContainer').classList.add('hidden');
 
             renderizarTabelaUsuariosCustom();
             exibirToast("Usuário Criado!", `${nome} cadastrado com sucesso.`, "👤");
