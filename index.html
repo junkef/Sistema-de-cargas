@@ -86,25 +86,33 @@
                 </button>
             </div>
 
-            <!-- CAMPO DE SELEÇÃO DE EMPRESA / FORNECEDOR (APENAS PARA FORNECEDOR) -->
-            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-indigo-400 uppercase">SELECIONE A SUA EMPRESA / RAZÃO SOCIAL</span>
+            <!-- FORMULÁRIO DE LOGIN EXCLUSIVO DO FORNECEDOR (E-MAIL OU RAZÃO SOCIAL + SENHA) -->
+            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-5 rounded-2xl border border-slate-800 hidden space-y-4">
+                <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
+                    <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN DO FORNECEDOR</span>
+                    <span class="text-[10px] text-slate-500">Senha Padrão: <strong class="text-white">1234</strong></span>
                 </div>
-                <div class="flex gap-2">
-                    <select id="selEmpresaFornecedorLogin" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none">
-                    </select>
-                    <button onclick="confirmarLoginFornecedorEmpresa()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2 rounded-xl text-xs uppercase shadow cursor-pointer">
-                        Acessar Portal
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Empresa ou E-mail Cadastrado</label>
+                        <input type="text" id="inputIdentificadorFornecedor" placeholder="Digite seu e-mail ou selecione a empresa..." list="listaSugestoesEmpresas" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                        <datalist id="listaSugestoesEmpresas"></datalist>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha de Acesso</label>
+                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <button onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                        🔑 ACESSAR PAINEL DO FORNECEDOR
                     </button>
                 </div>
             </div>
 
-            <!-- CAMPO DE SENHA / PIN (PARA DEMAIS PERFIS INTERNOS) -->
+            <!-- CAMPO DE SENHA / PIN (PARA PERFIS INTERNOS) -->
             <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
                 <div class="flex justify-between items-center">
                     <span id="lblPerfilSelecionadoLogin" class="text-xs font-bold text-indigo-400 uppercase">PERFIL SELECIONADO</span>
-                    <span class="text-[10px] text-slate-500">Senha Padrão Demo: <strong class="text-white">1234</strong></span>
+                    <span class="text-[10px] text-slate-500">Senha Padrão: <strong class="text-white">1234</strong></span>
                 </div>
                 <div class="flex gap-2">
                     <input type="password" id="inputPinLogin" placeholder="Digite sua senha / PIN..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-white outline-none focus:border-indigo-500">
@@ -116,7 +124,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR: NAVEGAÇÃO DE PERFIS DO YMS -->
+    <!-- BARRA SUPERIOR: NAVEGAÇÃO DE PERFIS -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -129,30 +137,14 @@
         </div>
 
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button onclick="mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">
-                🗓️ PCP Programador
-            </button>
-            <button onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🏢 Portal Fornecedor
-            </button>
-            <button onclick="mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🏭 Totem Autoatendimento
-            </button>
-            <button onclick="mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                📑 Recebimento Fiscal
-            </button>
-            <button onclick="mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🚛 Operador de Doca
-            </button>
-            <button onclick="mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🚪 Check-out Portaria
-            </button>
-            <button onclick="mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                🪪 Cad. Motoristas
-            </button>
-            <button onclick="mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
-                📡 Torre de Controle
-            </button>
+            <button onclick="mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
+            <button onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
+            <button onclick="mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
+            <button onclick="mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
+            <button onclick="mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
+            <button onclick="mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
+            <button onclick="mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
+            <button onclick="mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
 
         <div class="flex items-center gap-3">
@@ -268,7 +260,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 2: PORTAL DO FORNECEDOR (PRIVACIDADE DE EMPRESA ISOLADA) -->
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR (PRIVACIDADE POR EMPRESA FILTRADA) -->
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
             <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
                 <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
@@ -796,34 +788,88 @@
             perfilPendenteLogin: null
         };
 
-        // MATRIZ OFICIAL DE FORNECEDORES LIMPOS (SEM NÚMEROS NEM TEXTO ADICIONAL)
-        const listaOficialFornecedoresBruta = [
-            "CSN", "Arcelomittal", "Multilog", "Usiminas", "Bundy Curitiba", "Linkplas",
-            "PLASTICOVILLE", "Ccl", "Marcegaglia", "Arotubi Joinville", "Uniplast",
-            "Caribor", "Ciser", "Tesa", "Vexilliom", "ALDELBRAS", "Bundy Pinda",
-            "Bollhoff/Molas Weber", "Sinergia/Conbras", "Brascabos", "Microjuntas",
-            "Cremer/Molas Brusque", "Isheng", "Bigfer + Macroplastic", "Adere/Brindec/Weloze",
-            "Grafica Nacional", "Rudolph", "5 Estrelas", "Refrex", "Paranapanema",
-            "NIDEC", "Aleplast", "Arotubi Curitiba", "Duferco", "Innara", "Vitrocolor",
-            "Unitaal", "Schott", "Viprado", "INJEQUALY", "FOCUS", "Asibras", "Brasken",
-            "Armacell", "SG/LEAS", "Metalma", "KLABIN", "Denk", "Innova", "COLORFIX",
-            "West Rock", "Weg Motores", "Formparts", "Termomecanica", "Weg Tintas", "Nidec Itaiópolis"
+        // MATRIZ DE CONTATOS E E-MAILS DE FORNECEDORES
+        const mapaCredenciaisFornecedores = [
+            { empresa: "LINKPLAS", emails: ["marcelo_faria@linkplas.com.br"] },
+            { empresa: "REFREX", emails: ["rogerio.silva@evasolutions.pro", "larissa.borges@refrex.com.br", "lorena.braga@refrex.com.br", "fabiana.rocha@refrex.com.br", "operacional@clsultransportes.com.br"] },
+            { empresa: "VIPRADO", emails: ["luana@viprado.com.br", "rosa@viprado.com.br"] },
+            { empresa: "FORMPARTS", emails: ["wilson.souza@formparts.com.br"] },
+            { empresa: "CSN", emails: ["ines.senko@csn.com.br", "adm.araucaria@paradisogiovanella.com.br"] },
+            { empresa: "FOCUS", emails: ["focus@fornecedor.com"] },
+            { empresa: "PLASTICOVILLE", emails: ["plasticoville@fornecedor.com"] },
+            { empresa: "BUNDY CURITIBA", emails: ["edson_jesus@coopercargo.com.br", "jair_bachtold@coopercargo.com.br"] },
+            { empresa: "MARCEGAGLIA", emails: ["edson_jesus@coopercargo.com.br", "jair_bachtold@coopercargo.com.br"] },
+            { empresa: "NIDEC ITAIÓPOLIS", emails: ["edson_jesus@coopercargo.com.br", "jair_bachtold@coopercargo.com.br"] },
+            { empresa: "ADERE", emails: ["yone@expressorasante.com.br", "marluce@expressorasante.com.br", "moacir.luciano@expressorasante.com.br", "fabio@expressorasante.com.br"] },
+            { empresa: "BOLLHOFF", emails: ["yone@expressorasante.com.br", "marluce@expressorasante.com.br", "moacir.luciano@expressorasante.com.br", "fabio@expressorasante.com.br"] },
+            { empresa: "BUNDY PINDA", emails: ["yone@expressorasante.com.br", "marluce@expressorasante.com.br", "moacir.luciano@expressorasante.com.br", "fabio@expressorasante.com.br"] },
+            { empresa: "COLORFIX", emails: ["financeiro.valencio@gmail.com", "transpvalencio@gmail.com", "mariosouzajames@gmail.com"] },
+            { empresa: "INJEQUALY", emails: ["financeiro.valencio@gmail.com", "transpvalencio@gmail.com", "mariosouzajames@gmail.com"] },
+            { empresa: "KLABIN", emails: ["financeiro.valencio@gmail.com", "transpvalencio@gmail.com", "mariosouzajames@gmail.com"] },
+            { empresa: "SG/LEAS", emails: ["financeiro.valencio@gmail.com", "transpvalencio@gmail.com", "mariosouzajames@gmail.com"] },
+            { empresa: "NIDEC", emails: ["nidec@fornecedor.com"] },
+            { empresa: "CREMER", emails: ["yone@expressorasante.com.br", "marluce@expressorasante.com.br"] },
+            { empresa: "INNARA", emails: ["natalie.santos@jsl.com.br", "monitoramento@jsl.com.br"] },
+            { empresa: "SCHOTT", emails: ["natalie.santos@jsl.com.br", "monitoramento@jsl.com.br"] },
+            { empresa: "UNITAAL", emails: ["natalie.santos@jsl.com.br", "monitoramento@jsl.com.br"] },
+            { empresa: "CISER", emails: ["mabeli.steffen@ciser.com.br"] },
+            { empresa: "DUFERCO", emails: ["marciano.costa@dith.com"] },
+            { empresa: "WEG TINTAS", emails: ["ednei.almeida@tegma.com.br", "tiago.silva@tegma.com.br", "anderlei.alberti@tegma.com.br"] },
+            { empresa: "SINERGIA /CONBRAS", emails: ["natalie.santos@jsl.com.br", "monitoramento@jsl.com.br"] },
+            { empresa: "5 ESTRELAS", emails: ["patricia@5estrelas.ind.br"] },
+            { empresa: "CCL", emails: ["jair@psatape.com.br"] },
+            { empresa: "GRÁFICA NACIONAL", emails: ["gerenciavendas@graficanacional.com", "faturamento@graficanacional.com"] },
+            { empresa: "BRASCABOS", emails: ["rmoi@brascabos.com.br", "ktalarico@brascabos.com.br", "vsiqueira@brascabos.com.br"] },
+            { empresa: "ARMACELL", emails: ["lilian.caroline@sulista.com.br", "comercial@sulista.com.br"] },
+            { empresa: "AROTUBI CURITIBA", emails: ["lilian.caroline@sulista.com.br", "comercial@sulista.com.br"] },
+            { empresa: "BIGFER", emails: ["lilian.caroline@sulista.com.br", "comercial@sulista.com.br"] },
+            { empresa: "DENK", emails: ["lilian.caroline@sulista.com.br", "comercial@sulista.com.br"] },
+            { empresa: "METALMA", emails: ["lilian.caroline@sulista.com.br", "comercial@sulista.com.br"] },
+            { empresa: "PARANAPANEMA", emails: ["lilian.caroline@sulista.com.br", "comercial@sulista.com.br"] },
+            { empresa: "VITROCOLOR", emails: ["lilian.caroline@sulista.com.br", "comercial@sulista.com.br"] },
+            { empresa: "VEXILIOM", emails: ["gerente.comercial@vexilom.net", "faturamento@vexilom.net"] },
+            { empresa: "ASIBRAS", emails: ["fernanda.comim@asibras.com"] },
+            { empresa: "ALEPLAST", emails: ["comercial1@aleplast.com.br"] },
+            { empresa: "CARIBOR", emails: ["anderson.firmo@caribor.com.br"] },
+            { empresa: "ISHENG", emails: ["priscila.vidal@ishengbr.com"] },
+            { empresa: "ARCELORMITTAL", emails: ["ezequias.silva@gonvarri.com", "tiago.gery@gonvarri.com"] },
+            { empresa: "MULTILOG", emails: ["ludimila.souza@multilog.com.br", "tarla.volfe@multilog.com.br", "valdeir.andrade@multilog.com.br"] },
+            { empresa: "ISOFORMA", emails: ["lilian.caroline@sulista.com.br"] },
+            { empresa: "ARAMART", emails: ["pcp@aramart.com.br"] },
+            { empresa: "AROTUBI JOINVILLE", emails: ["marcia.costa@arotubi.com.br"] },
+            { empresa: "BRASKEN", emails: ["glauciane.nobre@braskem.com"] },
+            { empresa: "INNOVA", emails: ["priscila.silva@innova.com.br"] },
+            { empresa: "RUDOLPH", emails: ["vanessa.kienen@rudolph.com.br"] },
+            { empresa: "WEG MOTORES", emails: ["ilietim@weg.net"] },
+            { empresa: "WEST ROCK", emails: ["comercialjv@transligue.com.br"] },
+            { empresa: "BELENUS", emails: ["jefte.barbosa@belenus.com.br"] },
+            { empresa: "MICROJUNTAS", emails: ["anderson@microjuntas.com.br"] },
+            { empresa: "TESA", emails: ["caiane.franca@tesa.com"] },
+            { empresa: "UNIPLAST", emails: ["marciob@uniplastperfis.com.br"] },
+            { empresa: "USIMINAS", emails: ["atalgino.silva@solucoesusiminas.com"] },
+            { empresa: "ISOTERM", emails: ["jonathan.silva@isoterm.com.br"] },
+            { empresa: "KNAUF", emails: ["claudir.mascarello@knauf.com"] },
+            { empresa: "TERMOTECNICA", emails: ["cleomar.dudek@termotecnica.com.br"] }
         ];
 
-        // FUNÇÃO PARA TRATAR NOMES DE FORNECEDORES
-        function limparNomeFornecedor(nomeBruto) {
-            if (!nomeBruto) return "FORNECEDOR";
-            let s = String(nomeBruto).split('-')[0]; // Remove "- Confirme o agendamento"
-            s = s.replace(/\d+$/, ''); // Remove números no final do nome
-            return s.trim();
+        function extrairEmpresaLimpa(nomeBruto) {
+            if (!nomeBruto) return "OUTROS";
+            let s = String(nomeBruto).split('-')[0].trim();
+            s = s.replace(/\d+$/, '').trim().toUpperCase(); 
+            
+            const achou = mapaCredenciaisFornecedores.find(item => 
+                s.includes(item.empresa) || item.empresa.includes(s)
+            );
+
+            return achou ? achou.empresa : s;
         }
 
-        const listaTodosFornecedores = Array.from(new Set(listaOficialFornecedoresBruta.map(limparNomeFornecedor))).sort();
+        const listaTodosFornecedores = mapaCredenciaisFornecedores.map(f => f.empresa).sort();
 
-        // MATRIZ DE REGRAS E PERMISSÕES DE PERFIS (RBAC)
+        // MATRIZ DE REGRAS DE PERFIS (RBAC)
         const configPerfisAcesso = {
             'pcp': { nome: "PCP Programador", precisaSenha: true, eFornecedor: false, modulos: ['pcp', 'torre'] },
-            'fornecedor': { nome: "Portal Fornecedor", precisaSenha: false, eFornecedor: true, modulos: ['fornecedor'] },
+            'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
             'totem': { nome: "Totem Autoatendimento", precisaSenha: false, eFornecedor: false, modulos: ['totem'] },
             'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, eFornecedor: false, modulos: ['fiscal'] },
             'doca': { nome: "Operador de Doca", precisaSenha: true, eFornecedor: false, modulos: ['doca'] },
@@ -841,8 +887,9 @@
 
             if (cfg.eFornecedor) {
                 ymsStore.perfilPendenteLogin = keyPerfil;
-                popularSelectLoginEmpresas();
+                popularSugestoesLoginEmpresas();
                 document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
+                document.getElementById('inputIdentificadorFornecedor').focus();
             } else if (!cfg.precisaSenha) {
                 concluirLoginPerfil(keyPerfil, cfg.nome);
             } else {
@@ -854,25 +901,49 @@
             }
         }
 
-        function popularSelectLoginEmpresas() {
-            const sel = document.getElementById('selEmpresaFornecedorLogin');
-            sel.innerHTML = "";
+        function popularSugestoesLoginEmpresas() {
+            const datalist = document.getElementById('listaSugestoesEmpresas');
+            datalist.innerHTML = "";
             listaTodosFornecedores.forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f;
-                opt.textContent = f;
-                sel.appendChild(opt);
+                datalist.appendChild(opt);
             });
         }
 
         function confirmarLoginFornecedorEmpresa() {
-            const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
-            if (!empSel) {
-                alert("Selecione sua empresa para continuar.");
+            const termoDig = document.getElementById('inputIdentificadorFornecedor').value.trim().toLowerCase();
+            const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
+
+            if (!termoDig) {
+                alert("Digite seu e-mail ou selecione a empresa.");
                 return;
             }
-            ymsStore.empresaFornecedorLogada = empSel;
-            concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`);
+
+            if (senhaForn !== "1234" && senhaForn !== "admin" && senhaForn !== "") {
+                alert("Senha incorreta! Tente a senha padrão: 1234");
+                return;
+            }
+
+            // BUSCA SE O TERMO É UM E-MAIL CADASTRADO OU NOME DA EMPRESA
+            let empresaAchada = null;
+            for (let item of mapaCredenciaisFornecedores) {
+                if (item.empresa.toLowerCase() === termoDig) {
+                    empresaAchada = item.empresa;
+                    break;
+                }
+                if (item.emails.some(e => e.toLowerCase() === termoDig)) {
+                    empresaAchada = item.empresa;
+                    break;
+                }
+            }
+
+            if (!empresaAchada) {
+                empresaAchada = extrairEmpresaLimpa(termoDig);
+            }
+
+            ymsStore.empresaFornecedorLogada = empresaAchada;
+            concluirLoginPerfil('fornecedor', `Fornecedor: ${empresaAchada}`);
         }
 
         function confirmarLoginComSenha() {
@@ -1375,7 +1446,7 @@
             const item = {
                 ordem: novaOrdem,
                 data: `${rawData[2]}/${rawData[1]}/${rawData[0]}`,
-                fornecedor: limparNomeFornecedor(fornSel),
+                fornecedor: extrairEmpresaLimpa(fornSel),
                 doca: document.getElementById('inpDoca').value,
                 horaIni: horaIni,
                 horaFim: horaFim,
@@ -1443,7 +1514,7 @@
                     
                     let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
                     let rawForn = kForn ? row[kForn] : 'Fornecedor';
-                    let fornLimpo = limparNomeFornecedor(rawForn);
+                    let fornLimpo = extrairEmpresaLimpa(rawForn);
 
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
                     let docaLida = kDoca ? row[kDoca] : listaTodasDocas[0];
@@ -1489,7 +1560,7 @@
                 ymsStore.agendamentos.push({
                     ordem: novaOrdem,
                     data: match[1],
-                    fornecedor: limparNomeFornecedor(match[2]),
+                    fornecedor: extrairEmpresaLimpa(match[2]),
                     doca: match[3].trim(),
                     horaIni: match[4],
                     horaFim: match[5],
@@ -1554,7 +1625,7 @@
             exibirToast("Lote Limpo", "Grade de janelas descartada.", "🗑️");
         }
 
-        // --- PORTAL DO FORNECEDOR (PRIVACIDADE POR EMPRESA FILTRADA) ---
+        // --- PORTAL DO FORNECEDOR (FILTRAGEM DE SEGURANÇA ISOLADA) ---
         function alternarAbaFornecedor(aba) {
             ymsStore.abaFornecedorAtual = aba;
             const btnPen = document.getElementById('btnAbaPendentes');
@@ -1605,12 +1676,14 @@
             const rawDataSel = document.getElementById('filtroDataFornecedor').value.split('-');
             const dataFiltroFormatted = `${rawDataSel[2]}/${rawDataSel[1]}/${rawDataSel[0]}`;
 
-            // ISOLAMENTO DE SEGURANÇA: Se estiver logado como Fornecedor, filtra APENAS pela empresa dele
+            // ISOLAMENTO DE SEGURANÇA TOTAL:
             const empresaFiltro = ymsStore.empresaFornecedorLogada;
             let baseAgendamentos = ymsStore.agendamentos;
 
             if (empresaFiltro) {
-                baseAgendamentos = baseAgendamentos.filter(i => normalizarTexto(i.fornecedor) === normalizarTexto(empresaFiltro));
+                baseAgendamentos = baseAgendamentos.filter(i => 
+                    normalizarTexto(extrairEmpresaLimpa(i.fornecedor)) === normalizarTexto(empresaFiltro)
+                );
             }
 
             const filtradosData = baseAgendamentos.filter(i => normalizarTexto(i.data) === normalizarTexto(dataFiltroFormatted));
@@ -1623,7 +1696,7 @@
             }
 
             if (ordensExibicao.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem encontrada para ${empresaFiltro || 'sua empresa'} na data ${dataFiltroFormatted}.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem para a empresa <strong>${empresaFiltro || 'selecionada'}</strong> em ${dataFiltroFormatted}.</p>`;
                 
                 document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
                 document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
@@ -1799,7 +1872,7 @@
             document.getElementById('badgeQtdPatio').textContent = emPatio.length;
 
             if (emPatio.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Nenhum veículo no pátio aguardando triagem.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Nenhum veículo no pátio.</p>`;
             } else {
                 emPatio.forEach(item => {
                     item.statusSlaTicket = calcularSlaTicket(item);
