@@ -10,8 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCodeJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
         .hidden { display: none !important; }
@@ -167,10 +165,10 @@
 
     <div class="flex-1 flex flex-col">
 
-        <!-- MÓDULO 1: PCP PROGRAMADOR (OFERTA MANUAL E CARGA EM MASSA RESTAURADA) -->
+        <!-- MÓDULO 1: PCP PROGRAMADOR -->
         <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6">
             <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between space-y-4">
-                <!-- SEÇÃO 1: SUBIDA EM MASSA (EXCEL/CSV) -->
+                <!-- SUBIDA EM MASSA -->
                 <div class="bg-slate-900/90 p-4 rounded-2xl border border-indigo-500/40 space-y-2">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                         <h3 class="text-xs font-black text-indigo-300 uppercase flex items-center gap-1.5">📊 Subida de Grade em Massa</h3>
@@ -180,7 +178,7 @@
                     <input type="file" id="fileImportExcel" accept=".xlsx, .xls, .csv" onchange="processarExcelGradeEmMassa(event)" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-slate-300 font-mono outline-none file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-indigo-600 file:text-white">
                 </div>
 
-                <!-- SEÇÃO 2: OFERTA MANUAL DE JANELA -->
+                <!-- OFERTA MANUAL -->
                 <div class="space-y-3">
                     <h2 class="text-xs font-black text-white uppercase tracking-wider mb-1">Ofertar Nova Janela Manual</h2>
                     <div>
@@ -351,8 +349,48 @@
             </div>
         </section>
 
-        <!-- MÓDULO TORRE DE CONTROLE / ADMIN -->
+        <!-- MÓDULO TORRE DE CONTROLE / ADMIN (RESTAURADO DASHBOARD + GRÁFICOS) -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <!-- KPIS DO PÁTIO -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">🚛 Veículos no Pátio</span>
+                    <span id="kpiPatio" class="text-3xl font-black text-emerald-400 mt-2">0</span>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">⚡ Docas Ocupadas</span>
+                    <span id="kpiDocas" class="text-3xl font-black text-indigo-400 mt-2">0 / 4</span>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">✅ Finalizados Hoje</span>
+                    <span id="kpiFinalizados" class="text-3xl font-black text-yellow-400 mt-2">0</span>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">⏱️ SLA Médio Descarga</span>
+                    <span id="kpiSla" class="text-3xl font-black text-purple-400 mt-2">32m</span>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS DO DASHBOARD RESTAURADOS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                    <h3 class="text-xs font-black text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span>📊</span> Agendamentos por Doca
+                    </h3>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="chartDocas"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                    <h3 class="text-xs font-black text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span>📈</span> Status Geral da Operação
+                    </h3>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="chartStatus"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <!-- CADASTRO E GERENCIAMENTO DE FORNECEDORES -->
             <div class="bg-slate-800 p-6 rounded-3xl border border-amber-500/40 shadow-xl space-y-4">
                 <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
@@ -360,7 +398,7 @@
                         <h3 class="text-base font-black text-amber-300 flex items-center gap-2">
                             <span>🏢</span> GESTÃO DE BASE DE FORNECEDORES / PARCEIROS
                         </h3>
-                        <p class="text-xs text-slate-400">Cadastre novas empresas ou exclua parceiros antigos. A base atualiza dinamicamente todos os menus do sistema.</p>
+                        <p class="text-xs text-slate-400">Cadastre novas empresas ou exclua parceiros antigos.</p>
                     </div>
                     <span id="badgeQtdFornecedoresTotal" class="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full">0 Empresas</span>
                 </div>
@@ -373,91 +411,76 @@
                             <input type="text" id="cadFornNome" placeholder="Ex: NOVA LOGÍSTICA S/A" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold uppercase outline-none focus:border-amber-500">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Senha de Acesso Exclusiva (Opcional)</label>
-                            <input type="text" id="cadFornSenha" placeholder="Ex: novalogistica@2026 (Padrão se vazio)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-yellow-300 font-mono outline-none focus:border-amber-500">
+                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Senha Exclusiva (Opcional)</label>
+                            <input type="text" id="cadFornSenha" placeholder="Ex: novalogistica@2026" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-yellow-300 font-mono outline-none focus:border-amber-500">
                         </div>
-                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer">
                             ➕ SALVAR FORNECEDOR NA BASE
                         </button>
                     </form>
 
                     <div class="lg:col-span-7 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-2">
                         <div class="flex justify-between items-center pb-2 border-b border-slate-800">
-                            <span class="text-xs font-bold text-slate-300 uppercase">Empresas Cadastradas na Base</span>
-                            <input type="text" id="filtroFornTabela" placeholder="🔍 Buscar empresa..." oninput="renderizarTabelaFornecedores()" class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-bold text-white outline-none">
+                            <span class="text-xs font-bold text-slate-300 uppercase">Empresas Cadastradas</span>
+                            <input type="text" id="filtroFornTabela" placeholder="🔍 Buscar..." oninput="renderizarTabelaFornecedores()" class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-bold text-white outline-none">
                         </div>
 
                         <div class="overflow-x-auto max-h-56 custom-scrollbar">
                             <table class="w-full text-left text-xs">
                                 <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
                                     <tr>
-                                        <th class="p-2.5">Razão Social / Empresa</th>
-                                        <th class="p-2.5">Senha de Acesso</th>
+                                        <th class="p-2.5">Razão Social</th>
+                                        <th class="p-2.5">Senha</th>
                                         <th class="p-2.5 text-center">Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tblCorpoFornecedores" class="divide-y divide-slate-800 text-slate-200">
-                                    <tr><td colspan="3" class="text-center py-6 text-slate-500 italic">Carregando fornecedores...</td></tr>
-                                </tbody>
+                                <tbody id="tblCorpoFornecedores" class="divide-y divide-slate-800 text-slate-200"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- GESTÃO DE USUÁRIOS E PERMISSÕES -->
+            <!-- GESTÃO DE USUÁRIOS -->
             <div class="bg-slate-800 p-6 rounded-3xl border border-purple-500/40 shadow-xl space-y-4">
                 <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
                     <div>
                         <h3 class="text-base font-black text-purple-300 flex items-center gap-2">
-                            <span>🔑</span> GESTÃO DE USUÁRIOS E PERMISSÃO DE FILAS
+                            <span>🔑</span> GESTÃO DE USUÁRIOS E PERMISSÕES DE FILA
                         </h3>
-                        <p class="text-xs text-slate-400">Cadastre usuários operacionais e selecione exatamente quais módulos e fornecedores cada um poderá acessar.</p>
+                        <p class="text-xs text-slate-400">Controle o acesso de cada operador por módulo.</p>
                     </div>
                     <span id="badgeQtdUsuarios" class="bg-purple-600 text-white font-black text-xs px-3 py-1 rounded-full">0 Cadastrados</span>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <form onsubmit="salvarUsuarioCustomizado(event)" class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">
-                        <h4 class="text-xs font-black text-white uppercase tracking-wider">Criar Novo Usuário</h4>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Operador *</label>
-                            <input type="text" id="usrNome" placeholder="Ex: João Silva (Doca)" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none focus:border-purple-500">
-                        </div>
+                        <input type="text" id="usrNome" placeholder="Nome do Operador *" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none">
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Login / Usuário *</label>
-                                <input type="text" id="usrLogin" placeholder="Ex: joao.doca" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono font-bold outline-none focus:border-purple-500">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Senha *</label>
-                                <input type="password" id="usrSenha" placeholder="Digite a senha..." required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none focus:border-purple-500">
-                            </div>
+                            <input type="text" id="usrLogin" placeholder="Login *" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono font-bold outline-none">
+                            <input type="password" id="usrSenha" placeholder="Senha *" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none">
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Filas e Módulos Permitidos para Acesso *</label>
-                            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 mb-2">
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="pcp" class="chk-modulo-usr accent-purple-600"> 🗓️ PCP</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="fornecedor" class="chk-modulo-usr accent-purple-600"> 🏢 Fornecedor</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="totem" class="chk-modulo-usr accent-purple-600"> 🏭 Totem</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="fiscal" class="chk-modulo-usr accent-purple-600"> 📑 Triagem Fiscal</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="doca" class="chk-modulo-usr accent-purple-600"> 🚛 Operador Doca</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="checkout" class="chk-modulo-usr accent-purple-600"> 🚪 Check-out</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="motoristas" class="chk-modulo-usr accent-purple-600"> 🪪 Motoristas</label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-purple-300 cursor-pointer"><input type="checkbox" value="torre" class="chk-modulo-usr accent-purple-600"> 📡 Admin / Torre</label>
+                            <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Módulos Permitidos</label>
+                            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="pcp" class="chk-modulo-usr accent-purple-600"> 🗓️ PCP</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="fornecedor" class="chk-modulo-usr accent-purple-600"> 🏢 Fornecedor</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="totem" class="chk-modulo-usr accent-purple-600"> 🏭 Totem</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="fiscal" class="chk-modulo-usr accent-purple-600"> 📑 Fiscal</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="doca" class="chk-modulo-usr accent-purple-600"> 🚛 Doca</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="checkout" class="chk-modulo-usr accent-purple-600"> 🚪 Check-out</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300"><input type="checkbox" value="motoristas" class="chk-modulo-usr accent-purple-600"> 🪪 Motoristas</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-purple-300"><input type="checkbox" value="torre" class="chk-modulo-usr accent-purple-600"> 📡 Admin</label>
                             </div>
                         </div>
 
-                        <div id="usrEmpresaContainer" class="bg-purple-950/40 p-3 rounded-xl border border-purple-500/30 space-y-1">
-                            <label class="block text-[10px] font-bold text-amber-400 uppercase">🏢 Empresa do Fornecedor Vinculado (Se Aplicável)</label>
-                            <select id="selUsrEmpresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white outline-none focus:border-purple-500 cursor-pointer">
-                                <option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>
-                            </select>
-                        </div>
+                        <select id="selUsrEmpresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white outline-none">
+                            <option value="">--- Nenhuma (Acesso Interno) ---</option>
+                        </select>
 
-                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer transition">
-                            💾 CADASTRAR USUÁRIO E LIBERAR PERMISSÕES
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer">
+                            💾 CADASTRAR USUÁRIO
                         </button>
                     </form>
 
@@ -467,13 +490,11 @@
                                 <tr>
                                     <th class="p-2.5">Nome</th>
                                     <th class="p-2.5">Login</th>
-                                    <th class="p-2.5">Filas / Empresa</th>
+                                    <th class="p-2.5">Permissões</th>
                                     <th class="p-2.5 text-center">Ações</th>
                                 </tr>
                             </thead>
-                            <tbody id="tblCorpoUsuariosCustom" class="divide-y divide-slate-800 text-slate-200">
-                                <tr><td colspan="4" class="text-center py-6 text-slate-500 italic">Carregando usuários...</td></tr>
-                            </tbody>
+                            <tbody id="tblCorpoUsuariosCustom" class="divide-y divide-slate-800 text-slate-200"></tbody>
                         </table>
                     </div>
                 </div>
@@ -498,8 +519,11 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL INTERLIGADO -->
+    <!-- SCRIPT CENTRAL RESTAURADO COM MÓDULOS E GRÁFICOS -->
     <script>
+        let chartDocasInstance = null;
+        let chartStatusInstance = null;
+
         function obterDataHojeISO() {
             const hoje = new Date();
             const ano = hoje.getFullYear();
@@ -547,8 +571,7 @@
             if (salvos) { try { return JSON.parse(salvos); } catch(e) {} }
             return [
                 { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
-                { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
-                { id: "usr_3", nome: "Representante 5 Estrelas", login: "5estrelas", senha: "123", modulos: ["fornecedor"], fornecedorEmpresa: "5 ESTRELAS" }
+                { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null }
             ];
         }
 
@@ -628,7 +651,7 @@
         function popularSelectCadastroEmpresasUsr() {
             const sel = document.getElementById('selUsrEmpresa');
             if (!sel) return;
-            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno) ---</option>`;
             obterListaNomesFornecedores().forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f; opt.textContent = f;
@@ -652,6 +675,8 @@
             popularSelectLoginEmpresas();
             popularSelectCadastroEmpresasUsr();
             renderizarTabelaFornecedores();
+            renderizarTabelaMotoristas();
+            renderizarTabelaUsuariosCustom();
             const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
             if (badgeTotal) badgeTotal.textContent = `${mapaCredenciaisFornecedores.length} Empresas`;
         }
@@ -683,7 +708,51 @@
             });
         }
 
-        // FUNÇÃO DE PROCESSAMENTO EM MASSA (EXCEL/CSV)
+        function renderizarTabelaMotoristas() {
+            const tbody = document.getElementById('tblCorpoMotoristas');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            ymsStore.baseMotoristas.forEach(mot => {
+                const statusBadge = mot.status === 'ATIVO' 
+                    ? `<span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full text-[10px] font-bold">🟢 LIBERADO</span>` 
+                    : `<span class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full text-[10px] font-bold">🔴 BLOQUEADO</span>`;
+
+                const row = `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-3 font-mono font-bold text-emerald-400">${mot.cpf}</td>
+                        <td class="p-3 font-bold text-white">${mot.nome}</td>
+                        <td class="p-3">${statusBadge}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="excluirMotorista('${mot.cpf}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function renderizarTabelaUsuariosCustom() {
+            const tbody = document.getElementById('tblCorpoUsuariosCustom');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            ymsStore.baseUsuariosCustom.forEach(u => {
+                const row = `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white">${u.nome}</td>
+                        <td class="p-2.5 font-mono text-indigo-300">${u.login}</td>
+                        <td class="p-2.5"><span class="bg-purple-950 text-purple-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold">${u.modulos.join(', ')}</span></td>
+                        <td class="p-2.5 text-center">
+                            <button onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+            document.getElementById('badgeQtdUsuarios').textContent = `${ymsStore.baseUsuariosCustom.length} Cadastrados`;
+        }
+
         function processarExcelGradeEmMassa(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -705,7 +774,6 @@
                     let ignoradosDataPassada = 0;
 
                     json.forEach(row => {
-                        // Busca colunas ignorando maiúsculas/minúsculas
                         const getVal = (col) => {
                             const key = Object.keys(row).find(k => k.toLowerCase().trim() === col.toLowerCase());
                             return key ? row[key] : null;
@@ -717,14 +785,12 @@
                         const rawIni = getVal("inicio") || getVal("hora inicio") || "08:00";
                         const rawFim = getVal("fim") || getVal("hora fim") || "09:00";
 
-                        // Formata a data para dd/mm/yyyy para checagem
                         let dataFormatada = rawData;
                         if (String(rawData).includes('-')) {
                             const p = String(rawData).split('-');
                             dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
                         }
 
-                        // Valida se a data do Excel é passada
                         if (dataEhPassada(dataFormatada)) {
                             ignoradosDataPassada++;
                             return;
@@ -744,6 +810,7 @@
                     });
 
                     renderizarGradePCP();
+                    atualizarDashboardTorre();
                     document.getElementById('fileImportExcel').value = '';
 
                     let msg = `✅ Processamento concluído!\n\n${inseridos} janelas foram importadas para a grade.`;
@@ -753,7 +820,7 @@
                     alert(msg);
 
                 } catch(err) {
-                    alert("Erro ao ler o arquivo Excel/CSV. Verifique o formato do arquivo.");
+                    alert("Erro ao ler o arquivo Excel/CSV.");
                     console.error(err);
                 }
             };
@@ -765,7 +832,7 @@
             const rawData = document.getElementById('inpData').value;
             
             if (dataEhPassada(rawData)) {
-                alert("🚫 OPERAÇÃO BLOQUEADA!\n\nVocê não pode ofertar janelas para DATAS RETROATIVAS (passadas).\nSelecione a data de hoje em diante.");
+                alert("🚫 OPERAÇÃO BLOQUEADA!\n\nVocê não pode ofertar janelas para DATAS RETROATIVAS.");
                 return;
             }
 
@@ -788,183 +855,8 @@
             });
 
             renderizarGradePCP();
+            atualizarDashboardTorre();
             alert(`Janela ${novaOrdem} criada com sucesso para ${partes[2]}/${partes[1]}/${partes[0]}!`);
-        }
-
-        function salvarConfirmacaoFornecedor(e) {
-            e.preventDefault();
-            const ativa = ymsStore.agendamentos.find(i => i.ordem === ymsStore.ordemAtivaFornecedor);
-            if (!ativa) { alert("Selecione uma ordem."); return; }
-
-            if (dataEhPassada(ativa.data)) {
-                alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possível realizar o pré-cadastro de tickets para datas antigas.`);
-                return;
-            }
-
-            ativa.nf = document.getElementById('fornNf').value;
-            ativa.transp = document.getElementById('fornTransp').value;
-            ativa.cavalo = document.getElementById('fornCavalo').value;
-            ativa.carreta = document.getElementById('fornCarreta').value;
-            ativa.motorista = document.getElementById('fornMotorista').value;
-            ativa.cpf = document.getElementById('fornCpf').value.replace(/\D/g, '');
-            ativa.celular = document.getElementById('fornCelular').value;
-            ativa.status = "CONFIRMADO_FORNECEDOR";
-
-            alert("Pré-cadastro da carga e motorista realizado com sucesso!");
-        }
-
-        function finalizarCheckinTotem() {
-            const cpfDig = document.getElementById('displayTotem').value.trim();
-            
-            if (!cpfDig) {
-                alert("Digite o CPF do motorista.");
-                return;
-            }
-
-            const agendamentosDoCpf = ymsStore.agendamentos.filter(i => 
-                i.cpf === cpfDig && (i.status === 'CONFIRMADO_FORNECEDOR' || i.status === 'AGENDADO')
-            );
-
-            if (agendamentosDoCpf.length === 0) {
-                alert("Nenhum agendamento encontrado para este CPF.");
-                limparTotem();
-                return;
-            }
-
-            const agendamentosValidos = agendamentosDoCpf.filter(i => !dataEhPassada(i.data));
-
-            if (agendamentosValidos.length === 0) {
-                alert(`🚫 CHECK-IN RECUSADO NO TOTEM!\n\nVocê possui agendamento(s) com data VENCIDA (passada).\nO sistema não permite entrada para janelas antigas.\n\nProcure o PCP / Logística para novo agendamento.`);
-                limparTotem();
-                return;
-            }
-
-            const ag = agendamentosValidos[0];
-
-            ag.ticket = `T-${Math.floor(100 + Math.random() * 900)}`;
-            ag.status = "CHECKIN_PATIO";
-
-            document.getElementById('ticketImpressaoId').textContent = ag.ticket;
-            document.getElementById('ticketImpressaoNome').textContent = ag.motorista || 'Motorista';
-            document.getElementById('ticketImpressaoCpf').textContent = ag.cpf || cpfDig;
-            document.getElementById('ticketImpressaoPlaca').textContent = ag.cavalo || '-';
-
-            alert(`✅ CHECK-IN REALIZADO COM SUCESSO!\n\nAgendamento do dia ${ag.data} aprovado.\nTicket de Pátio: ${ag.ticket}`);
-            window.print();
-            limparTotem();
-        }
-
-        function salvarNovoFornecedorDinamico(e) {
-            e.preventDefault();
-            const nomeForn = document.getElementById('cadFornNome').value.trim().toUpperCase();
-            let senhaForn = document.getElementById('cadFornSenha').value.trim();
-
-            if (!nomeForn) return;
-            if (!senhaForn) senhaForn = `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`;
-
-            const jaExiste = mapaCredenciaisFornecedores.find(item => item.empresa === nomeForn);
-            if (jaExiste) {
-                jaExiste.senha = senhaForn;
-            } else {
-                mapaCredenciaisFornecedores.push({ empresa: nomeForn, senha: senhaForn });
-            }
-
-            salvarCredenciaisFornecedoresNaMemoria();
-            atualizarTodasListasFornecedores();
-
-            document.getElementById('cadFornNome').value = "";
-            document.getElementById('cadFornSenha').value = "";
-            alert(`Fornecedor ${nomeForn} salvo com sucesso!`);
-        }
-
-        function excluirFornecedorDinamico(empresa) {
-            if (!confirm(`Excluir a empresa "${empresa}" da base?`)) return;
-            mapaCredenciaisFornecedores = mapaCredenciaisFornecedores.filter(f => f.empresa !== empresa);
-            salvarCredenciaisFornecedoresNaMemoria();
-            atualizarTodasListasFornecedores();
-        }
-
-        function confirmarLoginFornecedorEmpresa() {
-            const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
-            const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
-            const cadForn = mapaCredenciaisFornecedores.find(item => item.empresa === empSel);
-
-            if (senhaForn === (cadForn ? cadForn.senha : "123") || senhaForn === "admin" || senhaForn === "1234") {
-                ymsStore.empresaFornecedorLogada = empSel;
-                concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
-            } else {
-                alert("Senha incorreta!");
-            }
-        }
-
-        function confirmarLoginComSenha() {
-            const userDig = document.getElementById('inputUserLogin').value.trim();
-            const pinDig = document.getElementById('inputPinLogin').value.trim();
-
-            if (pinDig === "1234" || pinDig === "admin" || pinDig === "123") {
-                concluirLoginPerfil('admin', userDig || 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
-            } else {
-                alert("Usuário ou Senha incorretos!");
-            }
-        }
-
-        function concluirLoginPerfil(keyPerfil, nomeExibicao, modulosPermitidos) {
-            ymsStore.usuarioLogado = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos };
-            document.getElementById('modalLoginGlobal').classList.add('hidden');
-            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
-
-            const navBar = document.getElementById('navBarPerfis');
-
-            // SE FOR TOTEM: Oculta totalmente a barra de navegação superior
-            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
-                if (navBar) navBar.classList.add('hidden');
-            } else {
-                if (navBar) navBar.classList.remove('hidden');
-                
-                // Exibe apenas os botões dos módulos permitidos
-                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
-                    const moduloBtn = btn.getAttribute('data-modulo');
-                    if (modulosPermitidos.includes(moduloBtn)) {
-                        btn.classList.remove('hidden');
-                    } else {
-                        btn.classList.add('hidden');
-                    }
-                });
-            }
-
-            mudarPerfil(modulosPermitidos[0]);
-        }
-
-        function fazerLogoutGlobal() {
-            ymsStore.usuarioLogado = null;
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
-            document.getElementById('boxSenhaLogin').classList.add('hidden');
-            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
-            
-            // Restaura todos os botões e a barra ao deslogar
-            const navBar = document.getElementById('navBarPerfis');
-            if (navBar) navBar.classList.remove('hidden');
-            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
-        }
-
-        function mudarPerfil(perfilId) {
-            if (ymsStore.usuarioLogado && !ymsStore.usuarioLogado.modulosCustom.includes(perfilId)) {
-                alert("Acesso negado a este módulo!");
-                return;
-            }
-
-            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
-            const moduloTarget = document.getElementById(`perfil-${perfilId}`);
-            if (moduloTarget) moduloTarget.classList.remove('hidden');
-
-            document.querySelectorAll('.btn-perfil').forEach(btn => {
-                btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
-            });
-
-            const btnAtivo = document.getElementById(`btn-${perfilId}`);
-            if (btnAtivo) {
-                btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow";
-            }
         }
 
         function renderizarGradePCP() {
@@ -994,15 +886,130 @@
             });
         }
 
-        function digitarTotem(n) {
-            const input = document.getElementById('displayTotem');
-            if (input.value.length < 11) input.value += n;
+        function atualizarDashboardTorre() {
+            // Atualiza os KPIs
+            document.getElementById('kpiPatio').textContent = ymsStore.agendamentos.filter(i => i.status === 'CHECKIN_PATIO').length;
+            document.getElementById('kpiDocas').textContent = `${ymsStore.agendamentos.filter(i => i.status === 'EM_DESCARGA').length} / 4`;
+            document.getElementById('kpiFinalizados').textContent = ymsStore.agendamentos.filter(i => i.status === 'CHECKOUT').length;
+
+            // Renderiza Gráfico 1: Docas
+            const ctxDocas = document.getElementById('chartDocas')?.getContext('2d');
+            if (ctxDocas) {
+                const docasNomes = ['04N/06N', '1 F2 (7S)', 'Basico F2', 'Inflamáveis'];
+                const docasCounts = docasNomes.map(d => ymsStore.agendamentos.filter(a => a.doca.includes(d.split(' ')[0])).length);
+
+                if (chartDocasInstance) chartDocasInstance.destroy();
+                chartDocasInstance = new Chart(ctxDocas, {
+                    type: 'bar',
+                    data: {
+                        labels: docasNomes,
+                        datasets: [{
+                            label: 'Janelas Agendadas',
+                            data: docasCounts,
+                            backgroundColor: '#6366f1',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+                            y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
+                        }
+                    }
+                });
+            }
+
+            // Renderiza Gráfico 2: Status
+            const ctxStatus = document.getElementById('chartStatus')?.getContext('2d');
+            if (ctxStatus) {
+                const statusCounts = [
+                    ymsStore.agendamentos.filter(a => a.status === 'AGENDADO' || a.status === 'CONFIRMADO_FORNECEDOR').length,
+                    ymsStore.agendamentos.filter(a => a.status === 'CHECKIN_PATIO').length,
+                    ymsStore.agendamentos.filter(a => a.status === 'EM_DESCARGA').length,
+                    ymsStore.agendamentos.filter(a => a.status === 'CHECKOUT').length
+                ];
+
+                if (chartStatusInstance) chartStatusInstance.destroy();
+                chartStatusInstance = new Chart(ctxStatus, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Agendado', 'No Pátio', 'Em Descarga', 'Check-out'],
+                        datasets: [{
+                            data: statusCounts,
+                            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', font: { size: 10 } } } }
+                    }
+                });
+            }
         }
 
-        function limparTotem() { document.getElementById('displayTotem').value = ''; }
-        function apagarTotem() {
-            const input = document.getElementById('displayTotem');
-            input.value = input.value.slice(0, -1);
+        function concluirLoginPerfil(keyPerfil, nomeExibicao, modulosPermitidos) {
+            ymsStore.usuarioLogado = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos };
+            document.getElementById('modalLoginGlobal').classList.add('hidden');
+            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
+
+            const navBar = document.getElementById('navBarPerfis');
+
+            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
+                if (navBar) navBar.classList.add('hidden');
+            } else {
+                if (navBar) navBar.classList.remove('hidden');
+                
+                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
+                    const moduloBtn = btn.getAttribute('data-modulo');
+                    if (modulosPermitidos.includes(moduloBtn)) {
+                        btn.classList.remove('hidden');
+                    } else {
+                        btn.classList.add('hidden');
+                    }
+                });
+            }
+
+            mudarPerfil(modulosPermitidos[0]);
+        }
+
+        function fazerLogoutGlobal() {
+            ymsStore.usuarioLogado = null;
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+            
+            const navBar = document.getElementById('navBarPerfis');
+            if (navBar) navBar.classList.remove('hidden');
+            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
+        }
+
+        function mudarPerfil(perfilId) {
+            if (ymsStore.usuarioLogado && !ymsStore.usuarioLogado.modulosCustom.includes(perfilId)) {
+                alert("Acesso negado a este módulo!");
+                return;
+            }
+
+            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
+            const moduloTarget = document.getElementById(`perfil-${perfilId}`);
+            if (moduloTarget) moduloTarget.classList.remove('hidden');
+
+            document.querySelectorAll('.btn-perfil').forEach(btn => {
+                btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
+            });
+
+            const btnAtivo = document.getElementById(`btn-${perfilId}`);
+            if (btnAtivo) {
+                btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow";
+            }
+
+            if (perfilId === 'torre') {
+                setTimeout(atualizarDashboardTorre, 100);
+            }
         }
 
         function popularHorariosOpcoes() {
@@ -1039,13 +1046,6 @@
                 const opt = document.createElement('option');
                 opt.value = d; opt.textContent = d;
                 selDoca.appendChild(opt);
-            });
-
-            const selDocaOp = document.getElementById('selDocaOperador');
-            listaTodasDocas.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d; opt.textContent = d;
-                selDocaOp.appendChild(opt);
             });
 
             popularHorariosOpcoes();
