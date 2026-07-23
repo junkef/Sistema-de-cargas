@@ -624,7 +624,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 7: TORRE DE CONTROLE DASHBOARD, GESTÃO DE USUÁRIOS E RELATÓRIOS -->
+        <!-- MÓDULO 7: TORRE DE CONTROLE DASHBOARD, GESTÃO DE USUÁRIOS, NOVO FORNECEDOR E RELATÓRIOS -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
@@ -635,6 +635,35 @@
                     <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase text-center tracking-wider">Ocupação Atual por Doca</h3>
                     <div class="h-52"><canvas id="chartDocas"></canvas></div>
                 </div>
+            </div>
+
+            <!-- PAINEL DE CADASTRAR NOVO FORNECEDOR DINÂMICO -->
+            <div class="bg-slate-800 p-6 rounded-3xl border border-amber-500/40 shadow-xl space-y-4">
+                <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-black text-amber-300 flex items-center gap-2">
+                            <span>🏢</span> CADASTRAR NOVO FORNECEDOR / PARCEIRO
+                        </h3>
+                        <p class="text-xs text-slate-400">Adicione uma nova Razão Social na base. O sistema atualizará automaticamente os menus do PCP, de Usuários e do Portal.</p>
+                    </div>
+                    <span id="badgeQtdFornecedoresTotal" class="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full">0 Empresas</span>
+                </div>
+
+                <form onsubmit="salvarNovoFornecedorDinamico(event)" class="grid grid-cols-1 md:grid-cols-12 gap-3 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/80">
+                    <div class="md:col-span-6">
+                        <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Razão Social / Nome da Empresa *</label>
+                        <input type="text" id="cadFornNome" placeholder="Ex: NOVA LOGÍSTICA S/A" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold uppercase outline-none focus:border-amber-500">
+                    </div>
+                    <div class="md:col-span-4">
+                        <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Senha de Acesso Exclusiva (Opcional)</label>
+                        <input type="text" id="cadFornSenha" placeholder="Ex: novalogistica@2026 (Padrão se vazio)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-yellow-300 font-mono outline-none focus:border-amber-500">
+                    </div>
+                    <div class="md:col-span-2 flex items-end">
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                            ➕ Cadastrar
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <!-- PAINEL DE CRIAR USUÁRIOS E DEFINIR ACESSO ÀS FILAS E FORNECEDORES -->
@@ -650,7 +679,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <!-- FORMULÁRIO DE CADASTRO -->
+                    <!-- FORMULÁRIO DE CADASTRO DE USUÁRIO -->
                     <form onsubmit="salvarUsuarioCustomizado(event)" class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">
                         <h4 class="text-xs font-black text-white uppercase tracking-wider">Criar Novo Usuário</h4>
                         <div>
@@ -885,12 +914,91 @@
             ];
         }
 
+        function carregarCredenciaisFornecedoresIniciais() {
+            const salvos = localStorage.getItem('yms_credenciais_fornecedores');
+            if (salvos) {
+                try { return JSON.parse(salvos); } catch(e) {}
+            }
+            return [
+                { empresa: "LINKPLAS", senha: "linkplas@2026" },
+                { empresa: "REFREX", senha: "refrex@2026" },
+                { empresa: "VIPRADO", senha: "viprado@2026" },
+                { empresa: "FORMPARTS", senha: "formparts@2026" },
+                { empresa: "CSN", senha: "csn@2026" },
+                { empresa: "FOCUS", senha: "focus@2026" },
+                { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
+                { empresa: "BUNDY CURITIBA", senha: "bundycuritiba@2026" },
+                { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" },
+                { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
+                { empresa: "ADERE", senha: "adere@2026" },
+                { empresa: "BOLLHOFF", senha: "bollhoff@2026" },
+                { empresa: "BUNDY PINDA", senha: "bundypinda@2026" },
+                { empresa: "COLORFIX", senha: "colorfix@2026" },
+                { empresa: "INJEQUALY", senha: "injequaly@2026" },
+                { empresa: "KLABIN", senha: "klabin@2026" },
+                { empresa: "SG/LEAS", senha: "sgleas@2026" },
+                { empresa: "NIDEC", senha: "nidec@2026" },
+                { empresa: "CREMER", senha: "cremer@2026" },
+                { empresa: "INNARA", senha: "innara@2026" },
+                { empresa: "SCHOTT", senha: "schott@2026" },
+                { empresa: "UNITAAL", senha: "unitaal@2026" },
+                { empresa: "CISER", senha: "ciser@2026" },
+                { empresa: "DUFERCO", senha: "duferco@2026" },
+                { empresa: "WEG TINTAS", senha: "wegtintas@2026" },
+                { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" },
+                { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
+                { empresa: "CCL", senha: "ccl@2026" },
+                { empresa: "GRÁFICA NACIONAL", senha: "graficanacional@2026" },
+                { empresa: "BRASCABOS", senha: "brascabos@2026" },
+                { empresa: "ARMACELL", senha: "armacell@2026" },
+                { empresa: "AROTUBI CURITIBA", senha: "arotubicuritiba@2026" },
+                { empresa: "BIGFER", senha: "bigfer@2026" },
+                { empresa: "DENK", senha: "denk@2026" },
+                { empresa: "METALMA", senha: "metalma@2026" },
+                { empresa: "PARANAPANEMA", senha: "paranapanema@2026" },
+                { empresa: "VITROCOLOR", senha: "vitrocolor@2026" },
+                { empresa: "VEXILIOM", senha: "vexiliom@2026" },
+                { empresa: "ASIBRAS", senha: "asibras@2026" },
+                { empresa: "ALEPLAST", senha: "aleplast@2026" },
+                { empresa: "CARIBOR", senha: "caribor@2026" },
+                { empresa: "ISHENG", senha: "isheng@2026" },
+                { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" },
+                { empresa: "MULTILOG", senha: "multilog@2026" },
+                { empresa: "ISOFORMA", senha: "isoforma@2026" },
+                { empresa: "ARAMART", senha: "aramart@2026" },
+                { empresa: "AROTUBI JOINVILLE", senha: "arotubijoinville@2026" },
+                { empresa: "BRASKEN", senha: "brasken@2026" },
+                { empresa: "INNOVA", senha: "innova@2026" },
+                { empresa: "RUDOLPH", senha: "rudolph@2026" },
+                { empresa: "WEG MOTORES", senha: "weg@2026" },
+                { empresa: "WEST ROCK", senha: "westrock@2026" },
+                { empresa: "BELENUS", senha: "belenus@2026" },
+                { empresa: "MICROJUNTAS", senha: "microjuntas@2026" },
+                { empresa: "TESA", senha: "tesa@2026" },
+                { empresa: "UNIPLAST", senha: "uniplast@2026" },
+                { empresa: "USIMINAS", senha: "usiminas@2026" },
+                { empresa: "ISOTERM", senha: "isoterm@2026" },
+                { empresa: "KNAUF", senha: "knauf@2026" },
+                { empresa: "TERMOTECNICA", senha: "termotecnica@2026" }
+            ];
+        }
+
         function salvarBaseMotoristasNaMemoria() {
             localStorage.setItem('yms_base_motoristas', JSON.stringify(ymsStore.baseMotoristas));
         }
 
         function salvarUsuariosNaMemoria() {
             localStorage.setItem('yms_usuarios_customizados', JSON.stringify(ymsStore.baseUsuariosCustom));
+        }
+
+        function salvarCredenciaisFornecedoresNaMemoria() {
+            localStorage.setItem('yms_credenciais_fornecedores', JSON.stringify(mapaCredenciaisFornecedores));
+        }
+
+        const mapaCredenciaisFornecedores = carregarCredenciaisFornecedoresIniciais();
+
+        function obterListaNomesFornecedores() {
+            return mapaCredenciaisFornecedores.map(f => f.empresa).sort();
         }
 
         const ymsStore = {
@@ -907,70 +1015,6 @@
             perfilPendenteLogin: null
         };
 
-        // BASE DE SENHAS INDIVIDUAIS E PERSONALIZADAS POR FORNECEDOR
-        const mapaCredenciaisFornecedores = [
-            { empresa: "LINKPLAS", senha: "linkplas@2026" },
-            { empresa: "REFREX", senha: "refrex@2026" },
-            { empresa: "VIPRADO", senha: "viprado@2026" },
-            { empresa: "FORMPARTS", senha: "formparts@2026" },
-            { empresa: "CSN", senha: "csn@2026" },
-            { empresa: "FOCUS", senha: "focus@2026" },
-            { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
-            { empresa: "BUNDY CURITIBA", senha: "bundycuritiba@2026" },
-            { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" },
-            { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
-            { empresa: "ADERE", senha: "adere@2026" },
-            { empresa: "BOLLHOFF", senha: "bollhoff@2026" },
-            { empresa: "BUNDY PINDA", senha: "bundypinda@2026" },
-            { empresa: "COLORFIX", senha: "colorfix@2026" },
-            { empresa: "INJEQUALY", senha: "injequaly@2026" },
-            { empresa: "KLABIN", senha: "klabin@2026" },
-            { empresa: "SG/LEAS", senha: "sgleas@2026" },
-            { empresa: "NIDEC", senha: "nidec@2026" },
-            { empresa: "CREMER", senha: "cremer@2026" },
-            { empresa: "INNARA", senha: "innara@2026" },
-            { empresa: "SCHOTT", senha: "schott@2026" },
-            { empresa: "UNITAAL", senha: "unitaal@2026" },
-            { empresa: "CISER", senha: "ciser@2026" },
-            { empresa: "DUFERCO", senha: "duferco@2026" },
-            { empresa: "WEG TINTAS", senha: "wegtintas@2026" },
-            { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" },
-            { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
-            { empresa: "CCL", senha: "ccl@2026" },
-            { empresa: "GRÁFICA NACIONAL", senha: "graficanacional@2026" },
-            { empresa: "BRASCABOS", senha: "brascabos@2026" },
-            { empresa: "ARMACELL", senha: "armacell@2026" },
-            { empresa: "AROTUBI CURITIBA", senha: "arotubicuritiba@2026" },
-            { empresa: "BIGFER", senha: "bigfer@2026" },
-            { empresa: "DENK", senha: "denk@2026" },
-            { empresa: "METALMA", senha: "metalma@2026" },
-            { empresa: "PARANAPANEMA", senha: "paranapanema@2026" },
-            { empresa: "VITROCOLOR", senha: "vitrocolor@2026" },
-            { empresa: "VEXILIOM", senha: "vexiliom@2026" },
-            { empresa: "ASIBRAS", senha: "asibras@2026" },
-            { empresa: "ALEPLAST", senha: "aleplast@2026" },
-            { empresa: "CARIBOR", senha: "caribor@2026" },
-            { empresa: "ISHENG", senha: "isheng@2026" },
-            { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" },
-            { empresa: "MULTILOG", senha: "multilog@2026" },
-            { empresa: "ISOFORMA", senha: "isoforma@2026" },
-            { empresa: "ARAMART", senha: "aramart@2026" },
-            { empresa: "AROTUBI JOINVILLE", senha: "arotubijoinville@2026" },
-            { empresa: "BRASKEN", senha: "brasken@2026" },
-            { empresa: "INNOVA", senha: "innova@2026" },
-            { empresa: "RUDOLPH", senha: "rudolph@2026" },
-            { empresa: "WEG MOTORES", senha: "weg@2026" },
-            { empresa: "WEST ROCK", senha: "westrock@2026" },
-            { empresa: "BELENUS", senha: "belenus@2026" },
-            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" },
-            { empresa: "TESA", senha: "tesa@2026" },
-            { empresa: "UNIPLAST", senha: "uniplast@2026" },
-            { empresa: "USIMINAS", senha: "usiminas@2026" },
-            { empresa: "ISOTERM", senha: "isoterm@2026" },
-            { empresa: "KNAUF", senha: "knauf@2026" },
-            { empresa: "TERMOTECNICA", senha: "termotecnica@2026" }
-        ];
-
         function extrairEmpresaLimpa(nomeBruto) {
             if (!nomeBruto) return "OUTROS";
             let s = String(nomeBruto).split('-')[0].trim();
@@ -982,8 +1026,6 @@
 
             return achou ? achou.empresa : s;
         }
-
-        const listaTodosFornecedores = mapaCredenciaisFornecedores.map(f => f.empresa).sort();
 
         // MATRIZ DE REGRAS DE PERFIS (RBAC)
         const configPerfisAcesso = {
@@ -1023,8 +1065,9 @@
 
         function popularSelectLoginEmpresas() {
             const sel = document.getElementById('selEmpresaFornecedorLogin');
+            if (!sel) return;
             sel.innerHTML = "";
-            listaTodosFornecedores.forEach(f => {
+            obterListaNomesFornecedores().forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f;
                 opt.textContent = f;
@@ -1036,15 +1079,53 @@
             const sel = document.getElementById('selUsrEmpresa');
             if (!sel) return;
             
-            // Mantém a opção limpa padrão
             sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
             
-            listaTodosFornecedores.forEach(f => {
+            obterListaNomesFornecedores().forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f;
                 opt.textContent = f;
                 sel.appendChild(opt);
             });
+        }
+
+        function atualizarTodasListasFornecedores() {
+            popularSelectFornecedores(obterListaNomesFornecedores());
+            popularSelectLoginEmpresas();
+            popularSelectCadastroEmpresasUsr();
+            const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
+            if (badgeTotal) badgeTotal.textContent = `${mapaCredenciaisFornecedores.length} Empresas`;
+        }
+
+        function salvarNovoFornecedorDinamico(e) {
+            e.preventDefault();
+            const nomeForn = document.getElementById('cadFornNome').value.trim().toUpperCase();
+            let senhaForn = document.getElementById('cadFornSenha').value.trim();
+
+            if (!nomeForn) {
+                alert("Digite o nome da Razão Social do fornecedor.");
+                return;
+            }
+
+            if (!senhaForn) {
+                senhaForn = `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`;
+            }
+
+            const jaExiste = mapaCredenciaisFornecedores.find(item => item.empresa === nomeForn);
+
+            if (jaExiste) {
+                jaExiste.senha = senhaForn;
+                exibirToast("Fornecedor Atualizado!", `Senha da empresa ${nomeForn} foi redefinida.`, "🏢");
+            } else {
+                mapaCredenciaisFornecedores.push({ empresa: nomeForn, senha: senhaForn });
+                exibirToast("Fornecedor Cadastrado!", `${nomeForn} foi adicionado à base com sucesso.`, "➕");
+            }
+
+            salvarCredenciaisFornecedoresNaMemoria();
+            atualizarTodasListasFornecedores();
+
+            document.getElementById('cadFornNome').value = "";
+            document.getElementById('cadFornSenha').value = "";
         }
 
         // CONFIRMAÇÃO E VALIDAÇÃO DA SENHA EXCLUSIVA DO FORNECEDOR
@@ -1264,8 +1345,7 @@
             document.getElementById('repDataInicio').value = hojeIso;
             document.getElementById('repDataFim').value = hojeIso;
 
-            popularSelectFornecedores(listaTodosFornecedores);
-            popularSelectCadastroEmpresasUsr();
+            atualizarTodasListasFornecedores();
             
             const selDoca = document.getElementById('inpDoca');
             selDoca.innerHTML = "";
@@ -1405,6 +1485,7 @@
         // --- PCP PROGRAMADOR ---
         function popularSelectFornecedores(lista) {
             const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
             selForn.innerHTML = "";
             
             lista.forEach((f, idx) => {
@@ -1421,7 +1502,7 @@
 
         function filtrarOpcoesFornecedor() {
             const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = listaTodosFornecedores.filter(f => f.toLowerCase().includes(termo));
+            const filtrados = obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
             popularSelectFornecedores(filtrados);
         }
 
