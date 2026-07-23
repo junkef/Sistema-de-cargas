@@ -143,7 +143,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR COM O RELÓGIO AMARELO RESTAURADO -->
+    <!-- BARRA SUPERIOR COM O RELÓGIO CORRIGIDO -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -167,7 +167,8 @@
         </nav>
 
         <div class="flex items-center gap-3">
-            <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-1.5">
+            <!-- RELÓGIO AMARELO SEM CONFLITO DE CONDIÇÕES HIDDEN -->
+            <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-2">
                 <span>🕒</span> <span>00:00:00</span>
             </div>
             <button onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
@@ -248,7 +249,7 @@
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
                             <div class="text-4xl mb-3" id="iconDropZone">📂</div>
                             <p class="text-sm font-bold text-white mb-1" id="txtDropTitle">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv</p>
+                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv (Filtra datas antigas automaticamente)</p>
                         </div>
                     </div>
 
