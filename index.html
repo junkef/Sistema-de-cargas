@@ -108,16 +108,25 @@
                 </div>
             </div>
 
-            <!-- CAMPO DE SENHA / PIN (PARA PERFIS INTERNOS OU USUÁRIOS PERSONALIZADOS) -->
-            <div id="boxSenhaLogin" class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 hidden space-y-2.5">
-                <div class="flex justify-between items-center">
-                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-bold text-indigo-400 uppercase">PERFIL SELECIONADO</span>
-                    <span class="text-[10px] text-slate-500">Senha Padrão Interna: <strong class="text-white">1234</strong></span>
+            <!-- CAMPO DE USUÁRIO + SENHA (PARA ACESSOS INDIVIDUAIS SIMULTÂNEOS) -->
+            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-bold text-indigo-400 uppercase">AUTENTICAÇÃO DE OPERADOR</span>
+                    <span class="text-[10px] text-slate-500">Demo padrão: <strong class="text-white">1234</strong></span>
                 </div>
-                <div class="flex gap-2">
-                    <input type="password" id="inputPinLogin" placeholder="Digite sua senha / PIN..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-white outline-none focus:border-indigo-500">
-                    <button onclick="confirmarLoginComSenha()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2 rounded-xl text-xs uppercase shadow cursor-pointer">
-                        Entrar
+                <div class="space-y-2.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Usuário / Login *</label>
+                            <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." onkeydown="if(event.key==='Enter') document.getElementById('inputPinLogin').focus();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Senha *</label>
+                            <input type="password" id="inputPinLogin" placeholder="Digite sua senha..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+                    <button onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                        🔑 ENTRAR NO SISTEMA
                     </button>
                 </div>
             </div>
@@ -651,7 +660,7 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Login / PIN *</label>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Login / Usuário *</label>
                                 <input type="text" id="usrLogin" placeholder="Ex: joao.doca" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono font-bold outline-none focus:border-purple-500">
                             </div>
                             <div>
@@ -995,10 +1004,11 @@
                 concluirLoginPerfil(keyPerfil, cfg.nome, cfg.modulos);
             } else {
                 ymsStore.perfilPendenteLogin = keyPerfil;
-                document.getElementById('lblPerfilSelecionadoLogin').textContent = `Digite a senha para: ${cfg.nome}`;
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = `AUTENTICAÇÃO: ${cfg.nome.toUpperCase()}`;
                 document.getElementById('boxSenhaLogin').classList.remove('hidden');
+                document.getElementById('inputUserLogin').value = "";
                 document.getElementById('inputPinLogin').value = "";
-                document.getElementById('inputPinLogin').focus();
+                document.getElementById('inputUserLogin').focus();
             }
         }
 
@@ -1037,28 +1047,31 @@
             concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
         }
 
-        // CONFIRMAÇÃO COM SUPORTE A USUÁRIOS CUSTOMIZADOS CRIADOS NA TORRE
+        // CONFIRMAÇÃO COM LOGIN DE USUÁRIO + SENHA INDIVIDUAL
         function confirmarLoginComSenha() {
+            const userDig = document.getElementById('inputUserLogin').value.trim();
             const pinDig = document.getElementById('inputPinLogin').value.trim();
             const keyPendente = ymsStore.perfilPendenteLogin;
 
-            // 1. Checa se o PIN bate com a senha do perfil padrão (1234 ou admin)
+            // 1. Permite acesso de demonstração genérico (se digitar 1234 ou admin na senha)
             if (pinDig === "1234" || pinDig === "admin") {
                 const cfg = configPerfisAcesso[keyPendente];
-                concluirLoginPerfil(keyPendente, cfg.nome, cfg.modulos);
+                const nomeExib = userDig ? `${userDig} (${cfg.nome})` : cfg.nome;
+                concluirLoginPerfil(keyPendente, nomeExib, cfg.modulos);
                 return;
             }
 
-            // 2. Checa se bate com algum Usuário Customizado cadastrado pelo Administrador na Torre
+            // 2. Procura pelo USUÁRIO ESPECÍFICO cadastrado pelo Admin na Torre de Controle
             const usuarioCustom = ymsStore.baseUsuariosCustom.find(u => 
-                (u.login.toLowerCase() === pinDig.toLowerCase() || u.senha === pinDig)
+                u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig
             );
 
             if (usuarioCustom) {
                 concluirLoginPerfil(keyPendente, usuarioCustom.nome, usuarioCustom.modulos);
             } else {
-                alert("Senha/PIN incorreto! Verifique suas credenciais.");
+                alert("🚫 Usuário ou Senha incorretos!\n\nVerifique suas credenciais com o administrador.");
                 document.getElementById('inputPinLogin').value = "";
+                document.getElementById('inputPinLogin').focus();
             }
         }
 
@@ -1088,7 +1101,7 @@
             const keyLogado = ymsStore.usuarioLogado.key;
             const cfgPadrao = configPerfisAcesso[keyLogado];
             
-            // Usa as permissões customizadas se existirem, senão usa as permissões padrão do perfil
+            // Usa as permissões customizadas do usuário cadastrado se existirem
             const modulosPermitidos = ymsStore.usuarioLogado.modulosCustom || cfgPadrao.modulos;
 
             const botoesPerfil = {
