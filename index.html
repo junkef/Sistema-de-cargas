@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS (Excel) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Chart.js -->
@@ -12,108 +14,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
-        /* ESTILOS NATIVOS AUTÔNOMOS (INDEPENDENTES DE CDN EXTERNA) */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            user-select: none;
-        }
-
+        /* REGRA NATIVA PARA GARANTIR QUE .hidden FUNCIONE SEMPRE */
         .hidden { display: none !important; }
         input[type="date"] { color-scheme: dark; }
-
-        header {
-            background-color: #020617;
-            border-bottom: 1px solid #1e293b;
-            padding: 12px 24px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
-            z-index: 40;
-        }
-
-        .card {
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-
-        .grid-main {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 1.5rem;
-            max-width: 80rem;
-            width: 100%;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
-
-        input, select, textarea, button {
-            font-family: inherit;
-            font-size: 0.75rem;
-        }
-
-        input[type="text"], input[type="password"], input[type="date"], select, textarea {
-            background-color: #020617;
-            border: 1px solid #334155;
-            border-radius: 0.75rem;
-            padding: 0.6rem 0.8rem;
-            color: #ffffff;
-            width: 100%;
-            outline: none;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: #6366f1;
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-            border-radius: 0.75rem;
-            font-weight: 800;
-            padding: 0.6rem 1rem;
-            transition: all 0.2s;
-        }
-
-        .btn-primary { background-color: #4f46e5; color: white; }
-        .btn-primary:hover { background-color: #4338ca; }
-        .btn-amber { background-color: #f59e0b; color: #020617; }
-        .btn-amber:hover { background-color: #d97706; }
-        .btn-purple { background-color: #9333ea; color: white; }
-        .btn-purple:hover { background-color: #7e22ce; }
-        .btn-danger { background-color: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
-        .btn-danger:hover { background-color: #991b1b; }
-
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.75rem; }
-        th { background-color: #020617; color: #94a3b8; text-transform: uppercase; font-size: 0.65rem; padding: 0.6rem; position: sticky; top: 0; }
-        td { padding: 0.6rem; border-bottom: 1px solid #1e293b; }
-        tr:hover { background-color: rgba(15, 23, 42, 0.6); }
 
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
-
-        .badge {
-            display: inline-block;
-            padding: 0.2rem 0.6rem;
-            border-radius: 9999px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
 
         @media print {
             body > *:not(#ticketImpressao) { display: none !important; }
@@ -124,316 +32,427 @@
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
 
     <!-- MODAL INICIAL DE LOGIN / SELEÇÃO DE PERFIL -->
-    <div id="modalLoginGlobal" style="position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; padding: 1.5rem; z-index: 50;">
-        <div class="card" style="max-width: 40rem; width: 100%; border-color: rgba(99, 102, 241, 0.5);">
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-                <span style="font-size: 2rem; background: rgba(99, 102, 241, 0.2); padding: 0.5rem; border-radius: 1rem; border: 1px solid rgba(99, 102, 241, 0.3); display: inline-block;">🏭</span>
-                <h1 style="font-size: 1.25rem; font-weight: 900; margin-top: 0.5rem; letter-spacing: 0.05em;">YMS ECOSYSTEM - CONTROLE DE ACESSO</h1>
-                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Selecione seu perfil operacional para acessar os módulos permitidos</p>
+    <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center">
+        <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-4 my-auto">
+            <div class="text-center space-y-1">
+                <span class="bg-indigo-600/20 text-indigo-400 p-2 rounded-2xl text-2xl inline-block border border-indigo-500/30">🏭</span>
+                <h1 class="text-xl font-black text-white tracking-wider">YMS ECOSYSTEM - CONTROLE DE ACESSO</h1>
+                <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
             </div>
 
             <!-- GRID DE PERFIS -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; margin-bottom: 1rem;">
-                <button onclick="solicitarAcessoPerfil('pcp')" class="card" style="padding: 0.75rem; text-align: center; background: #0f172a;">🗓️<br><span style="font-size: 0.7rem;">PCP Programador</span></button>
-                <button onclick="solicitarAcessoPerfil('fornecedor')" class="card" style="padding: 0.75rem; text-align: center; background: #0f172a;">🏢<br><span style="font-size: 0.7rem;">Portal Fornecedor</span></button>
-                <button onclick="solicitarAcessoPerfil('totem')" class="card" style="padding: 0.75rem; text-align: center; background: #0f172a;">🏭<br><span style="font-size: 0.7rem;">Totem Portaria</span></button>
-                <button onclick="solicitarAcessoPerfil('fiscal')" class="card" style="padding: 0.75rem; text-align: center; background: #0f172a;">📑<br><span style="font-size: 0.7rem;">Triagem Fiscal</span></button>
-                <button onclick="solicitarAcessoPerfil('doca')" class="card" style="padding: 0.75rem; text-align: center; background: #0f172a;">🚛<br><span style="font-size: 0.7rem;">Operador Doca</span></button>
-                <button onclick="solicitarAcessoPerfil('checkout')" class="card" style="padding: 0.75rem; text-align: center; background: #0f172a;">🚪<br><span style="font-size: 0.7rem;">Check-out Portaria</span></button>
-                <button onclick="solicitarAcessoPerfil('motoristas')" class="card" style="padding: 0.75rem; text-align: center; background: #0f172a;">🪪<br><span style="font-size: 0.7rem;">Cad. Motoristas</span></button>
-                <button onclick="solicitarAcessoPerfil('admin')" class="card" style="padding: 0.75rem; text-align: center; background: #0f172a; border-color: #a855f7;"><span style="color: #d8b4fe;">📡<br><span style="font-size: 0.7rem;">Torre / Admin</span></span></button>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <button onclick="solicitarAcessoPerfil('pcp')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
+                    <span class="text-xs font-bold text-white">PCP Programador</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('fornecedor')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform">🏢</span>
+                    <span class="text-xs font-bold text-white">Portal Fornecedor</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('totem')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform">🏭</span>
+                    <span class="text-xs font-bold text-white">Totem Portaria</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('fiscal')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform">📑</span>
+                    <span class="text-xs font-bold text-white">Triagem Fiscal</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('doca')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform">🚛</span>
+                    <span class="text-xs font-bold text-white">Operador Doca</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('checkout')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform">🚪</span>
+                    <span class="text-xs font-bold text-white">Check-out Portaria</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('motoristas')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform">🪪</span>
+                    <span class="text-xs font-bold text-white">Cad. Motoristas</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('admin')" class="bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform">📡</span>
+                    <span class="text-xs font-bold text-purple-300">Torre / Admin</span>
+                </button>
             </div>
 
             <!-- LOGIN FORNECEDOR -->
-            <div id="boxEmpresaFornecedorLogin" class="hidden" style="background: #020617; padding: 1rem; border-radius: 1rem; margin-top: 1rem;">
-                <label style="font-size: 0.7rem; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 0.4rem;">SELECIONE A SUA EMPRESA / RAZÃO SOCIAL</label>
-                <select id="selEmpresaFornecedorLogin" style="margin-bottom: 0.75rem;"></select>
-                <label style="font-size: 0.7rem; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 0.4rem;">SENHA EXCLUSIVA DA EMPRESA *</label>
-                <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha individual..." style="margin-bottom: 0.75rem;" onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();">
-                <button onclick="confirmarLoginFornecedorEmpresa()" class="btn-primary" style="width: 100%;">🔑 AUTENTICAR E ACESSAR PORTAL</button>
+            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
+                <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
+                    <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
+                    <span class="text-[10px] text-amber-400 font-mono font-bold">🔒 Senhas Exclusivas</span>
+                </div>
+                <div class="space-y-2.5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa / Razão Social</label>
+                        <select id="selEmpresaFornecedorLogin" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
+                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <button onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                        🔑 AUTENTICAR E ACESSAR PORTAL
+                    </button>
+                </div>
             </div>
 
             <!-- LOGIN OPERADOR -->
-            <div id="boxSenhaLogin" class="hidden" style="background: #020617; padding: 1rem; border-radius: 1rem; margin-top: 1rem;">
-                <span id="lblPerfilSelecionadoLogin" style="font-size: 0.75rem; font-weight: 900; color: #818cf8; display: block; margin-bottom: 0.75rem;">AUTENTICAÇÃO DE OPERADOR</span>
-                <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." style="margin-bottom: 0.75rem;">
-                <input type="password" id="inputPinLogin" placeholder="Digite sua senha..." style="margin-bottom: 0.75rem;" onkeydown="if(event.key==='Enter') confirmarLoginComSenha();">
-                <button onclick="confirmarLoginComSenha()" class="btn-primary" style="width: 100%;">🔓 ENTRAR NO SISTEMA</button>
+            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
+                </div>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
+                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
+                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <button onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
+                        🔓 ENTRAR NO SISTEMA
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- CABEÇALHO -->
-    <header>
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <span style="font-size: 1.5rem; background: #4f46e5; padding: 0.4rem; border-radius: 0.75rem;">🏭</span>
+    <!-- BARRA SUPERIOR -->
+    <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
+        <div class="flex items-center gap-3">
+            <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
             <div>
-                <h1 style="font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em;">YMS ECOSYSTEM <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">BANCO INTEGRADO</span></h1>
-                <p style="font-size: 0.65rem; color: #94a3b8;">Gestão de Janelas, Pátio, Portaria e Roteirização de Docas</p>
+                <h1 class="font-black text-sm text-white tracking-wider flex items-center gap-2">
+                    YMS ECOSYSTEM <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">BANCO INTEGRADO</span>
+                </h1>
+                <p class="text-[10px] text-slate-400">Gestão de Janelas, Pátio, Portaria e Roteirização de Docas</p>
             </div>
         </div>
 
-        <nav style="display: flex; gap: 0.3rem; background: #0f172a; padding: 0.3rem; border-radius: 1rem; border: 1px solid #1e293b;">
-            <button onclick="mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil btn-primary">🗓️ PCP Programador</button>
-            <button onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil" style="background: transparent; color: #94a3b8;">🏢 Portal Fornecedor</button>
-            <button onclick="mudarPerfil('totem')" id="btn-totem" class="btn-perfil" style="background: transparent; color: #94a3b8;">🏭 Totem Autoatendimento</button>
-            <button onclick="mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil" style="background: transparent; color: #94a3b8;">📑 Recebimento Fiscal</button>
-            <button onclick="mudarPerfil('doca')" id="btn-doca" class="btn-perfil" style="background: transparent; color: #94a3b8;">🚛 Operador Doca</button>
-            <button onclick="mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil" style="background: transparent; color: #94a3b8;">🚪 Check-out Portaria</button>
-            <button onclick="mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil" style="background: transparent; color: #94a3b8;">🪪 Cad. Motoristas</button>
-            <button onclick="mudarPerfil('torre')" id="btn-torre" class="btn-perfil" style="background: transparent; color: #94a3b8;">📡 Torre de Controle</button>
+        <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
+            <button onclick="mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
+            <button onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
+            <button onclick="mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
+            <button onclick="mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
+            <button onclick="mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
+            <button onclick="mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
+            <button onclick="mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
+            <button onclick="mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div id="relogioGlobal" style="font-family: monospace; font-weight: bold; color: #facc15; font-size: 0.85rem;">00:00:00</div>
-            <button onclick="fazerLogoutGlobal()" class="btn-danger" style="font-size: 0.7rem;">🔴 <span id="lblNomeUsuarioLogado">Sair</span></button>
+        <div class="flex items-center gap-3">
+            <div id="relogioGlobal" class="text-sm font-mono font-bold text-yellow-400 hidden sm:block">00:00:00</div>
+            <button onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
+                <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
+            </button>
         </div>
     </header>
 
-    <div style="flex: 1; display: flex; flex-direction: column;">
+    <div class="flex-1 flex flex-col">
 
-        <!-- MÓDULO PCP PROGRAMADOR -->
-        <section id="perfil-pcp" class="perfil-modulo grid-main">
-            <div class="card" style="grid-column: span 5;">
-                <h2 style="font-size: 1rem; font-weight: 900; margin-bottom: 1rem;">Ofertar Nova Janela Manual</h2>
-                <div style="margin-bottom: 0.75rem;">
-                    <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">FORNECEDOR CADASTRADO</label>
-                    <select id="inpFornecedor" size="4" style="margin-top: 0.25rem;"></select>
+        <!-- MÓDULO 1: PCP PROGRAMADOR -->
+        <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6">
+            <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
+                <div class="space-y-3">
+                    <h2 class="text-base font-black text-white mb-1">Ofertar Nova Janela Manual</h2>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">FORNECEDOR CADASTRADO</label>
+                        <select id="inpFornecedor" size="4" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1 border border-slate-700 rounded-xl"></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Doca</label>
+                            <select id="inpDoca" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-bold outline-none cursor-pointer"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Data (Apenas Hoje/Futura)</label>
+                            <input type="date" id="inpData" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Início</label>
+                            <select id="inpHora" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-yellow-400 outline-none"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Fim</label>
+                            <select id="inpHoraFim" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 outline-none"></select>
+                        </div>
+                    </div>
+                    <button onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer">🚀 DISPONIBILIZAR PARA FORNECEDOR</button>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
-                    <div>
-                        <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">DOCA</label>
-                        <select id="inpDoca" onchange="atualizarHorariosDisponiveis()"></select>
-                    </div>
-                    <div>
-                        <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">DATA (Hoje ou Futura)</label>
-                        <input type="date" id="inpData" onchange="atualizarHorariosDisponiveis()">
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
-                    <div>
-                        <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">INÍCIO</label>
-                        <select id="inpHora" onchange="atualizarHorarioFimMinimo()"></select>
-                    </div>
-                    <div>
-                        <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">FIM</label>
-                        <select id="inpHoraFim"></select>
-                    </div>
-                </div>
-                <button onclick="criarJanelaManual(event)" class="btn-primary" style="width: 100%;">🚀 DISPONIBILIZAR PARA FORNECEDOR</button>
             </div>
 
-            <div class="card" style="grid-column: span 7;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                    <h2 style="font-size: 1.1rem; font-weight: 900;">Grade de Janelas Processadas</h2>
-                    <span id="contadorJanelas" class="badge" style="background: #4f46e5; color: white;">0</span>
+            <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700/60">
+                    <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
+                    <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">0</span>
                 </div>
-                <div id="containerJanelas" class="custom-scrollbar" style="max-height: 24rem; overflow-y: auto;">
-                    <p style="text-align: center; color: #64748b; padding: 2rem;">Nenhuma janela carregada.</p>
+                <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1 custom-scrollbar">
+                    <p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada.</p>
                 </div>
             </div>
         </section>
 
-        <!-- MÓDULO PORTAL FORNECEDOR -->
-        <section id="perfil-fornecedor" class="perfil-modulo grid-main hidden">
-            <div class="card" style="grid-column: span 4;">
-                <span style="font-size: 0.65rem; font-weight: bold; color: #34d399;">🔒 Empresa Autenticada</span>
-                <h3 id="txtEmpresaLogadaFornecedor" style="font-size: 0.9rem; font-weight: 900; margin-top: 0.2rem; margin-bottom: 1rem;">-</h3>
-                <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">SELECIONAR DATA</label>
-                <input type="date" id="filtroDataFornecedor" onchange="renderizarModuloFornecedor()" style="margin-bottom: 1rem;">
-                <div id="listaOrdensFornecedor" class="custom-scrollbar" style="max-height: 18rem; overflow-y: auto;"></div>
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR -->
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-12 md:col-span-4 bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
+                <span class="text-[10px] font-bold text-emerald-400 uppercase">🔒 Empresa Autenticada</span>
+                <h3 id="txtEmpresaLogadaFornecedor" class="text-sm font-black text-white bg-slate-900 p-2 rounded-xl border border-slate-700/80">-</h3>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">📅 Selecionar Data</label>
+                <input type="date" id="filtroDataFornecedor" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none">
+                <div id="listaOrdensFornecedor" class="space-y-2 overflow-y-auto max-h-[18rem] custom-scrollbar"></div>
             </div>
 
-            <div class="card" style="grid-column: span 8;">
-                <h2 style="font-size: 1.1rem; font-weight: 900; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1rem;">Pré-Cadastro de Carga & Motorista</h2>
-                <form onsubmit="salvarConfirmacaoFornecedor(event)" style="display: grid; gap: 0.75rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                        <input type="text" id="fornNf" placeholder="Nota Fiscal (NF-e) *" required>
-                        <input type="text" id="fornTransp" placeholder="Transportadora *" required>
+            <div class="col-span-12 md:col-span-8 bg-slate-800 rounded-2xl border border-slate-700 p-6">
+                <h2 class="text-xl font-black text-white border-b border-slate-700 pb-3 mb-4">Pré-Cadastro de Carga & Motorista</h2>
+                <form onsubmit="salvarConfirmacaoFornecedor(event)" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="fornNf" placeholder="Nota Fiscal (NF-e) *" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono">
+                        <input type="text" id="fornTransp" placeholder="Transportadora *" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold">
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                        <input type="text" id="fornCavalo" placeholder="Placa Cavalo *" required>
-                        <input type="text" id="fornCarreta" placeholder="Placa Carreta">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="fornCavalo" placeholder="Placa Cavalo *" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase">
+                        <input type="text" id="fornCarreta" placeholder="Placa Carreta" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase">
                     </div>
-                    <div style="background: rgba(2, 6, 23, 0.5); padding: 1rem; border-radius: 1rem; border: 1px solid rgba(99, 102, 241, 0.3);">
-                        <label style="font-size: 0.7rem; font-weight: bold; color: #818cf8; display: block; margin-bottom: 0.5rem;">👤 MOTORISTA</label>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="text" id="fornCpf" placeholder="CPF (11 Dígitos) *" required>
-                            <input type="text" id="fornMotorista" placeholder="Nome Completo *" required>
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-indigo-500/30 space-y-3">
+                        <h3 class="text-xs font-bold text-indigo-300 uppercase">👤 Cadastro do Motorista</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="text" id="fornCpf" placeholder="CPF (11 Dígitos) *" required class="bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-emerald-400 font-mono font-bold">
+                            <input type="text" id="fornMotorista" placeholder="Nome Completo *" required class="bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold">
                         </div>
-                        <input type="text" id="fornCelular" placeholder="Celular (Com DDD) *" required>
+                        <input type="text" id="fornCelular" placeholder="Celular (Com DDD) *" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold">
                     </div>
-                    <button type="submit" class="btn-amber" style="padding: 0.8rem;">💬 CONFIRMAR DADOS E LIBERAR CHECK-IN</button>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider cursor-pointer">
+                        💬 CONFIRMAR DADOS E LIBERAR CHECK-IN
+                    </button>
                 </form>
             </div>
         </section>
 
-        <!-- MÓDULO TOTEM -->
-        <section id="perfil-totem" class="perfil-modulo grid-main hidden" style="max-w: 30rem;">
-            <div class="card" style="grid-column: span 12; text-align: center;">
-                <h2 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 1rem;">Totem de Check-in</h2>
-                <input type="text" id="displayTotem" placeholder="Digite seu CPF..." style="font-size: 1.5rem; text-align: center; font-family: monospace; font-weight: 900; color: #facc15; margin-bottom: 1rem;">
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-width: 16rem; margin: 0 auto 1rem auto;">
-                    <button type="button" onclick="digitarTotem('1')" class="card" style="padding: 0.8rem; text-align: center;">1</button>
-                    <button type="button" onclick="digitarTotem('2')" class="card" style="padding: 0.8rem; text-align: center;">2</button>
-                    <button type="button" onclick="digitarTotem('3')" class="card" style="padding: 0.8rem; text-align: center;">3</button>
-                    <button type="button" onclick="digitarTotem('4')" class="card" style="padding: 0.8rem; text-align: center;">4</button>
-                    <button type="button" onclick="digitarTotem('5')" class="card" style="padding: 0.8rem; text-align: center;">5</button>
-                    <button type="button" onclick="digitarTotem('6')" class="card" style="padding: 0.8rem; text-align: center;">6</button>
-                    <button type="button" onclick="digitarTotem('7')" class="card" style="padding: 0.8rem; text-align: center;">7</button>
-                    <button type="button" onclick="digitarTotem('8')" class="card" style="padding: 0.8rem; text-align: center;">8</button>
-                    <button type="button" onclick="digitarTotem('9')" class="card" style="padding: 0.8rem; text-align: center;">9</button>
-                    <button type="button" onclick="limparTotem()" class="btn-danger">C</button>
-                    <button type="button" onclick="digitarTotem('0')" class="card" style="padding: 0.8rem; text-align: center;">0</button>
-                    <button type="button" onclick="apagarTotem()" class="card" style="padding: 0.8rem; text-align: center;">⌫</button>
+        <!-- MÓDULO 3: TOTEM -->
+        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 flex flex-col justify-center hidden">
+            <div class="bg-slate-800 rounded-3xl p-8 border border-slate-700 text-center shadow-2xl">
+                <h2 class="text-2xl font-black text-white mb-2">Totem de Check-in</h2>
+                <input type="text" id="displayTotem" placeholder="Digite seu CPF..." class="w-full bg-slate-950 border-2 border-indigo-500 rounded-2xl p-3 text-center text-3xl font-mono font-black text-yellow-400 outline-none mb-4">
+                
+                <div class="grid grid-cols-3 gap-2.5 max-w-xs mx-auto mb-6">
+                    <button type="button" onclick="digitarTotem('1')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">1</button>
+                    <button type="button" onclick="digitarTotem('2')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">2</button>
+                    <button type="button" onclick="digitarTotem('3')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">3</button>
+                    <button type="button" onclick="digitarTotem('4')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">4</button>
+                    <button type="button" onclick="digitarTotem('5')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">5</button>
+                    <button type="button" onclick="digitarTotem('6')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">6</button>
+                    <button type="button" onclick="digitarTotem('7')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">7</button>
+                    <button type="button" onclick="digitarTotem('8')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">8</button>
+                    <button type="button" onclick="digitarTotem('9')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">9</button>
+                    <button type="button" onclick="limparTotem()" class="bg-red-600/30 text-red-300 font-black py-3 rounded-xl">C</button>
+                    <button type="button" onclick="digitarTotem('0')" class="bg-slate-700 hover:bg-slate-600 text-white font-black py-3 rounded-xl">0</button>
+                    <button type="button" onclick="apagarTotem()" class="bg-slate-600 text-slate-200 font-bold py-3 rounded-xl">⌫</button>
                 </div>
-                <button onclick="finalizarCheckinTotem()" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1rem;">🖨️ FAZER CHECK-IN E GERAR TICKET</button>
+                <button onclick="finalizarCheckinTotem()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-base font-black py-4 rounded-xl shadow-xl transition cursor-pointer">🖨️ FAZER CHECK-IN E GERAR TICKET</button>
             </div>
         </section>
 
-        <!-- MÓDULO FISCAL -->
-        <section id="perfil-fiscal" class="perfil-modulo grid-main hidden">
-            <div class="card" style="grid-column: span 4;">
-                <h2 style="font-size: 0.9rem; font-weight: 900; margin-bottom: 1rem;">Fila do Pátio (Check-in Feito)</h2>
-                <div id="listaPatioFiscal" class="custom-scrollbar" style="max-height: 20rem; overflow-y: auto;"></div>
+        <!-- MÓDULO 4: FISCAL -->
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-4 bg-slate-800 rounded-2xl p-4 border border-slate-700">
+                <h2 class="font-bold text-sm text-white mb-3">Fila do Pátio (Check-in Feito)</h2>
+                <div id="listaPatioFiscal" class="space-y-2 overflow-y-auto max-h-80 custom-scrollbar"></div>
             </div>
-            <div class="card" style="grid-column: span 8;">
-                <h2 style="font-size: 1.1rem; font-weight: 900; margin-bottom: 1rem;">Triagem Fiscal & Roteirizador DE Docas</h2>
-                <div id="gridDocasFiscal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;"></div>
-                <button onclick="liberarParaDocaFiscal()" class="btn-purple" style="width: 100%; padding: 0.8rem;">🚀 ENVIAR PARA A DOCA</button>
-            </div>
-        </section>
-
-        <!-- MÓDULO OPERADOR DOCA -->
-        <section id="perfil-doca" class="perfil-modulo grid-main hidden">
-            <div class="card" style="grid-column: span 7; text-align: center;">
-                <select id="selDocaOperador" onchange="atualizarPainelDoca()" style="font-size: 1rem; font-weight: 900; color: #facc15; margin-bottom: 1rem;"></select>
-                <h1 id="txtTicketDocaGrande" style="font-size: 4rem; font-weight: 900; font-family: monospace;">---</h1>
-                <p id="txtPlacaEDetalhesDoca" style="color: #facc15; font-weight: bold; margin-bottom: 1.5rem;">Nenhum Veículo em Descarga</p>
-                <button onclick="finalizarDescargaDoca()" class="btn-primary" style="width: 100%; padding: 0.8rem;">✅ FINALIZAR DESCARGA</button>
-            </div>
-            <div class="card" style="grid-column: span 5;">
-                <h2 style="font-size: 0.9rem; font-weight: 900; margin-bottom: 1rem;">Fila FIFO nesta Doca</h2>
-                <div id="listaFilaDoca" class="custom-scrollbar" style="max-height: 15rem; overflow-y: auto;"></div>
+            <div class="col-span-8 bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-xl font-black text-white mb-4">Triagem Fiscal & Roteirizador de Docas</h2>
+                    <div id="gridDocasFiscal" class="grid grid-cols-2 gap-2.5 mb-4"></div>
+                </div>
+                <button onclick="liberarParaDocaFiscal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl text-xs uppercase cursor-pointer">🚀 ENVIAR PARA A DOCA</button>
             </div>
         </section>
 
-        <!-- MÓDULO CHECKOUT -->
-        <section id="perfil-checkout" class="perfil-modulo grid-main hidden">
-            <div class="card" style="grid-column: span 5;">
-                <h2 style="font-size: 0.9rem; font-weight: 900; margin-bottom: 1rem;">🚪 Fila de Check-out</h2>
-                <div id="listaAguardandoCheckout" class="custom-scrollbar" style="max-height: 20rem; overflow-y: auto;"></div>
+        <!-- MÓDULO 5: OPERADOR DOCA -->
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-7 bg-slate-800 rounded-2xl p-6 border border-slate-700 text-center flex flex-col justify-between">
+                <select id="selDocaOperador" onchange="atualizarPainelDoca()" class="bg-yellow-500 text-slate-900 font-black text-sm px-4 py-1.5 rounded-lg outline-none cursor-pointer self-center mb-4"></select>
+                <h1 id="txtTicketDocaGrande" class="text-7xl font-black font-mono text-white py-2">---</h1>
+                <p id="txtPlacaEDetalhesDoca" class="text-base text-yellow-400 font-mono font-bold mb-4">Nenhum Veículo em Descarga</p>
+                <button onclick="finalizarDescargaDoca()" class="w-full max-w-sm bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl text-base shadow-lg transition cursor-pointer self-center">✅ FINALIZAR DESCARGA</button>
             </div>
-            <div class="card" style="grid-column: span 7;">
-                <h2 style="font-size: 1.1rem; font-weight: 900; margin-bottom: 1rem;">Registro de Saída da Planta</h2>
-                <button onclick="confirmarSaidaPortaria()" class="btn-primary" style="width: 100%; padding: 1rem; background: #059669;">🚪 CONFIRMAR SAÍDA E CHECK-OUT</button>
+            <div class="col-span-5 bg-slate-800 rounded-2xl p-6 border border-slate-700">
+                <h2 class="text-base font-black text-white mb-4">Fila FIFO nesta Doca</h2>
+                <div id="listaFilaDoca" class="space-y-2 overflow-y-auto max-h-60 custom-scrollbar"></div>
+            </div>
+        </section>
+
+        <!-- MÓDULO 6: CHECKOUT -->
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-5 bg-slate-800 rounded-3xl p-6 border border-slate-700">
+                <h2 class="text-lg font-black text-white mb-4">🚪 Fila de Check-out</h2>
+                <div id="listaAguardandoCheckout" class="space-y-2.5 overflow-y-auto max-h-[26rem] custom-scrollbar"></div>
+            </div>
+            <div class="col-span-7 bg-slate-800 rounded-3xl p-6 border border-slate-700 flex flex-col justify-between">
+                <h2 class="text-xl font-black text-white mb-4">Registro de Saída da Planta</h2>
+                <button onclick="confirmarSaidaPortaria()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-xs uppercase cursor-pointer">🚪 CONFIRMAR SAÍDA DA PLANTA & REALIZAR CHECK-OUT</button>
             </div>
         </section>
 
         <!-- MÓDULO MOTORISTAS -->
-        <section id="perfil-motoristas" class="perfil-modulo grid-main hidden">
-            <div class="card" style="grid-column: span 5;">
-                <h2 style="font-size: 1rem; font-weight: 900; margin-bottom: 1rem;">🪪 Cadastro de Motorista</h2>
-                <form onsubmit="salvarMotoristaManual(event)" style="display: grid; gap: 0.5rem;">
-                    <input type="text" id="cadMotCpf" placeholder="CPF *" required>
-                    <input type="text" id="cadMotNome" placeholder="Nome Completo *" required>
-                    <input type="text" id="cadMotCelular" placeholder="Celular *" required>
-                    <select id="cadMotStatus">
-                        <option value="ATIVO">🟢 LIBERADO</option>
+        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-12 lg:col-span-4 bg-slate-800 rounded-3xl p-6 border border-slate-700">
+                <h2 class="text-lg font-black text-white mb-4">🪪 Cadastro de Motorista</h2>
+                <form onsubmit="salvarMotoristaManual(event)" class="space-y-3.5">
+                    <input type="text" id="cadMotCpf" placeholder="CPF (11 Dígitos) *" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-mono font-bold">
+                    <input type="text" id="cadMotNome" placeholder="Nome Completo *" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-bold">
+                    <input type="text" id="cadMotCelular" placeholder="Celular *" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-yellow-400 font-mono font-bold">
+                    <select id="cadMotStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs font-bold text-white">
+                        <option value="ATIVO">🟢 ATIVO / LIBERADO</option>
                         <option value="BLOQUEADO">🔴 BLOQUEADO</option>
                     </select>
-                    <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">💾 SALVAR MOTORISTA</button>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase cursor-pointer">💾 SALVAR MOTORISTA</button>
                 </form>
             </div>
-            <div class="card" style="grid-column: span 7;">
-                <h2 style="font-size: 1rem; font-weight: 900; margin-bottom: 1rem;">Base de Motoristas</h2>
-                <div class="custom-scrollbar" style="max-height: 20rem; overflow-y: auto;">
-                    <table>
-                        <thead>
-                            <tr><th>CPF</th><th>Nome</th><th>Situação</th><th>Ação</th></tr>
+            <div class="col-span-12 lg:col-span-8 bg-slate-800 rounded-3xl p-6 border border-slate-700">
+                <h2 class="text-lg font-black text-white mb-4">Base de Motoristas</h2>
+                <div class="overflow-x-auto max-h-[26rem] custom-scrollbar">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
+                            <tr><th class="p-3">CPF</th><th class="p-3">Nome</th><th class="p-3">Situação</th><th class="p-3 text-center">Ações</th></tr>
                         </thead>
-                        <tbody id="tblCorpoMotoristas"></tbody>
+                        <tbody id="tblCorpoMotoristas" class="divide-y divide-slate-800 text-slate-200"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
         <!-- MÓDULO TORRE DE CONTROLE / ADMIN -->
-        <section id="perfil-torre" class="perfil-modulo grid-main hidden">
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
             <!-- CADASTRO E GERENCIAMENTO DE FORNECEDORES -->
-            <div class="card" style="grid-column: span 12; border-color: rgba(245, 158, 11, 0.4);">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 900; color: #fcd34d;">🏢 GESTÃO DE BASE DE FORNECEDORES</h3>
-                    <span id="badgeQtdFornecedoresTotal" class="badge" style="background: #f59e0b; color: #020617;">0 Empresas</span>
+            <div class="bg-slate-800 p-6 rounded-3xl border border-amber-500/40 shadow-xl space-y-4">
+                <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-black text-amber-300 flex items-center gap-2">
+                            <span>🏢</span> GESTÃO DE BASE DE FORNECEDORES / PARCEIROS
+                        </h3>
+                        <p class="text-xs text-slate-400">Cadastre novas empresas ou exclua parceiros antigos. A base atualiza dinamicamente todos os menus do sistema.</p>
+                    </div>
+                    <span id="badgeQtdFornecedoresTotal" class="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full">0 Empresas</span>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <form onsubmit="salvarNovoFornecedorDinamico(event)" style="display: grid; gap: 0.5rem;">
-                        <h4 style="font-size: 0.75rem; font-weight: 900;">Cadastrar / Editar Fornecedor</h4>
-                        <input type="text" id="cadFornNome" placeholder="Razão Social / Empresa *" required style="text-transform: uppercase;">
-                        <input type="text" id="cadFornSenha" placeholder="Senha Exclusiva (Opcional)">
-                        <button type="submit" class="btn-amber">➕ SALVAR FORNECEDOR</button>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <form onsubmit="salvarNovoFornecedorDinamico(event)" class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700/80 space-y-3">
+                        <h4 class="text-xs font-black text-white uppercase tracking-wider">Cadastrar / Editar Fornecedor</h4>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Razão Social / Nome da Empresa *</label>
+                            <input type="text" id="cadFornNome" placeholder="Ex: NOVA LOGÍSTICA S/A" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold uppercase outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Senha de Acesso Exclusiva (Opcional)</label>
+                            <input type="text" id="cadFornSenha" placeholder="Ex: novalogistica@2026 (Padrão se vazio)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-yellow-300 font-mono outline-none focus:border-amber-500">
+                        </div>
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                            ➕ SALVAR FORNECEDOR NA BASE
+                        </button>
                     </form>
 
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <span style="font-size: 0.7rem; font-weight: bold; color: #94a3b8;">Empresas Cadastradas</span>
-                            <input type="text" id="filtroFornTabela" placeholder="🔍 Buscar..." oninput="renderizarTabelaFornecedores()" style="width: 10rem; padding: 0.3rem 0.5rem;">
+                    <div class="lg:col-span-7 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                            <span class="text-xs font-bold text-slate-300 uppercase">Empresas Cadastradas na Base</span>
+                            <input type="text" id="filtroFornTabela" placeholder="🔍 Buscar empresa..." oninput="renderizarTabelaFornecedores()" class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-bold text-white outline-none">
                         </div>
-                        <div class="custom-scrollbar" style="max-height: 12rem; overflow-y: auto;">
-                            <table>
-                                <thead>
-                                    <tr><th>Empresa</th><th>Senha</th><th style="text-align: center;">Ações</th></tr>
+
+                        <div class="overflow-x-auto max-h-56 custom-scrollbar">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
+                                    <tr>
+                                        <th class="p-2.5">Razão Social / Empresa</th>
+                                        <th class="p-2.5">Senha de Acesso</th>
+                                        <th class="p-2.5 text-center">Ações</th>
+                                    </tr>
                                 </thead>
-                                <tbody id="tblCorpoFornecedores"></tbody>
+                                <tbody id="tblCorpoFornecedores" class="divide-y divide-slate-800 text-slate-200">
+                                    <tr><td colspan="3" class="text-center py-6 text-slate-500 italic">Carregando fornecedores...</td></tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- GESTÃO DE USUÁRIOS DA PLANTA -->
-            <div class="card" style="grid-column: span 12; border-color: rgba(168, 85, 247, 0.4);">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 900; color: #e9d5ff;">🔑 GESTÃO DE USUÁRIOS E PERMISSÕES</h3>
-                    <span id="badgeQtdUsuarios" class="badge" style="background: #9333ea; color: white;">0 Cadastrados</span>
+            <!-- GESTÃO DE USUÁRIOS E PERMISSÕES -->
+            <div class="bg-slate-800 p-6 rounded-3xl border border-purple-500/40 shadow-xl space-y-4">
+                <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-black text-purple-300 flex items-center gap-2">
+                            <span>🔑</span> GESTÃO DE USUÁRIOS E PERMISSÃO DE FILAS
+                        </h3>
+                        <p class="text-xs text-slate-400">Cadastre usuários operacionais e selecione exatamente quais módulos e fornecedores cada um poderá acessar.</p>
+                    </div>
+                    <span id="badgeQtdUsuarios" class="bg-purple-600 text-white font-black text-xs px-3 py-1 rounded-full">0 Cadastrados</span>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <form onsubmit="salvarUsuarioCustomizado(event)" style="display: grid; gap: 0.5rem;">
-                        <input type="text" id="usrNome" placeholder="Nome do Operador *" required>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                            <input type="text" id="usrLogin" placeholder="Login *" required>
-                            <input type="password" id="usrSenha" placeholder="Senha *" required>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <form onsubmit="salvarUsuarioCustomizado(event)" class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">
+                        <h4 class="text-xs font-black text-white uppercase tracking-wider">Criar Novo Usuário</h4>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Operador *</label>
+                            <input type="text" id="usrNome" placeholder="Ex: João Silva (Doca)" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none focus:border-purple-500">
                         </div>
-                        
-                        <label style="font-size: 0.65rem; font-weight: bold; color: #c084fc;">MÓDULOS PERMITIDOS</label>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; background: #020617; padding: 0.5rem; border-radius: 0.75rem;">
-                            <label style="font-size: 0.7rem;"><input type="checkbox" value="pcp" class="chk-modulo-usr"> PCP</label>
-                            <label style="font-size: 0.7rem;"><input type="checkbox" value="fornecedor" class="chk-modulo-usr"> Fornecedor</label>
-                            <label style="font-size: 0.7rem;"><input type="checkbox" value="totem" class="chk-modulo-usr"> Totem</label>
-                            <label style="font-size: 0.7rem;"><input type="checkbox" value="fiscal" class="chk-modulo-usr"> Fiscal</label>
-                            <label style="font-size: 0.7rem;"><input type="checkbox" value="doca" class="chk-modulo-usr"> Doca</label>
-                            <label style="font-size: 0.7rem;"><input type="checkbox" value="checkout" class="chk-modulo-usr"> Check-out</label>
-                            <label style="font-size: 0.7rem;"><input type="checkbox" value="motoristas" class="chk-modulo-usr"> Motoristas</label>
-                            <label style="font-size: 0.7rem;"><input type="checkbox" value="torre" class="chk-modulo-usr"> Admin/Torre</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Login / Usuário *</label>
+                                <input type="text" id="usrLogin" placeholder="Ex: joao.doca" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono font-bold outline-none focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Senha *</label>
+                                <input type="password" id="usrSenha" placeholder="Digite a senha..." required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none focus:border-purple-500">
+                            </div>
                         </div>
 
-                        <label style="font-size: 0.65rem; font-weight: bold; color: #fcd34d;">VINCULAR A UM FORNECEDOR (OPCIONAL)</label>
-                        <select id="selUsrEmpresa"></select>
+                        <div>
+                            <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Filas e Módulos Permitidos para Acesso *</label>
+                            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 mb-2">
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="pcp" class="chk-modulo-usr accent-purple-600"> 🗓️ PCP</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="fornecedor" class="chk-modulo-usr accent-purple-600"> 🏢 Fornecedor</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="totem" class="chk-modulo-usr accent-purple-600"> 🏭 Totem</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="fiscal" class="chk-modulo-usr accent-purple-600"> 📑 Triagem Fiscal</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="doca" class="chk-modulo-usr accent-purple-600"> 🚛 Operador Doca</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="checkout" class="chk-modulo-usr accent-purple-600"> 🚪 Check-out</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="motoristas" class="chk-modulo-usr accent-purple-600"> 🪪 Motoristas</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-purple-300 cursor-pointer"><input type="checkbox" value="torre" class="chk-modulo-usr accent-purple-600"> 📡 Admin / Torre</label>
+                            </div>
+                        </div>
 
-                        <button type="submit" class="btn-purple" style="margin-top: 0.5rem;">💾 CADASTRAR USUÁRIO</button>
+                        <div id="usrEmpresaContainer" class="bg-purple-950/40 p-3 rounded-xl border border-purple-500/30 space-y-1">
+                            <label class="block text-[10px] font-bold text-amber-400 uppercase">🏢 Empresa do Fornecedor Vinculado (Se Aplicável)</label>
+                            <select id="selUsrEmpresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white outline-none focus:border-purple-500 cursor-pointer">
+                                <option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer transition">
+                            💾 CADASTRAR USUÁRIO E LIBERAR PERMISSÕES
+                        </button>
                     </form>
 
-                    <div class="custom-scrollbar" style="max-height: 18rem; overflow-y: auto;">
-                        <table>
-                            <thead>
-                                <tr><th>Nome</th><th>Login</th><th>Permissões</th><th style="text-align: center;">Ações</th></tr>
+                    <div class="lg:col-span-7 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 overflow-x-auto max-h-80 custom-scrollbar">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
+                                <tr>
+                                    <th class="p-2.5">Nome</th>
+                                    <th class="p-2.5">Login</th>
+                                    <th class="p-2.5">Filas / Empresa</th>
+                                    <th class="p-2.5 text-center">Ações</th>
+                                </tr>
                             </thead>
-                            <tbody id="tblCorpoUsuariosCustom"></tbody>
+                            <tbody id="tblCorpoUsuariosCustom" class="divide-y divide-slate-800 text-slate-200">
+                                <tr><td colspan="4" class="text-center py-6 text-slate-500 italic">Carregando usuários...</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -497,8 +516,8 @@
             const salvos = localStorage.getItem('yms_base_motoristas');
             if (salvos) { try { return JSON.parse(salvos); } catch(e) {} }
             return [
-                { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado" },
-                { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "EPI" }
+                { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
+                { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
             ];
         }
 
@@ -506,8 +525,9 @@
             const salvos = localStorage.getItem('yms_usuarios_customizados');
             if (salvos) { try { return JSON.parse(salvos); } catch(e) {} }
             return [
-                { id: "usr_1", nome: "Operador Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
-                { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null }
+                { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
+                { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+                { id: "usr_3", nome: "Representante 5 Estrelas", login: "5estrelas", senha: "123", modulos: ["fornecedor"], fornecedorEmpresa: "5 ESTRELAS" }
             ];
         }
 
@@ -525,6 +545,14 @@
 
         let mapaCredenciaisFornecedores = carregarCredenciaisFornecedoresIniciais();
 
+        function obterListaNomesFornecedores() {
+            return mapaCredenciaisFornecedores.map(f => f.empresa).sort();
+        }
+
+        function salvarCredenciaisFornecedoresNaMemoria() {
+            localStorage.setItem('yms_credenciais_fornecedores', JSON.stringify(mapaCredenciaisFornecedores));
+        }
+
         const ymsStore = {
             agendamentos: [],
             ordemAtivaFornecedor: null,
@@ -535,23 +563,15 @@
             empresaFornecedorLogada: null
         };
 
-        function salvarCredenciaisFornecedoresNaMemoria() {
-            localStorage.setItem('yms_credenciais_fornecedores', JSON.stringify(mapaCredenciaisFornecedores));
-        }
-
-        function obterListaNomesFornecedores() {
-            return mapaCredenciaisFornecedores.map(f => f.empresa).sort();
-        }
-
         const configPerfisAcesso = {
             'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
             'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
             'totem': { nome: "Totem Autoatendimento", precisaSenha: false, modulos: ['totem'] },
             'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, modulos: ['fiscal'] },
-            'doca': { nome: "Operador Doca", precisaSenha: true, modulos: ['doca'] },
+            'doca': { nome: "Operador de Doca", precisaSenha: true, modulos: ['doca'] },
             'checkout': { nome: "Check-out Portaria", precisaSenha: true, modulos: ['checkout'] },
-            'motoristas': { nome: "Gestão Motoristas", precisaSenha: true, modulos: ['motoristas'] },
-            'admin': { nome: "Torre / Admin", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
+            'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, modulos: ['motoristas'] },
+            'admin': { nome: "Torre / Administrador", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
         };
 
         function solicitarAcessoPerfil(keyPerfil) {
@@ -624,17 +644,17 @@
             const filtrados = mapaCredenciaisFornecedores.filter(item => item.empresa.toLowerCase().includes(termo));
 
             if (filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#64748b;">Nenhum fornecedor encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-500 italic">Nenhum fornecedor encontrado.</td></tr>`;
                 return;
             }
 
             filtrados.forEach(item => {
                 const row = `
-                    <tr>
-                        <td style="font-weight:bold; color:white;">${item.empresa}</td>
-                        <td style="font-family:monospace; color:#facc15;">${item.senha}</td>
-                        <td style="text-align:center;">
-                            <button onclick="excluirFornecedorDinamico('${item.empresa}')" class="btn-danger" style="padding: 0.2rem 0.4rem;">🗑️</button>
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white uppercase">${item.empresa}</td>
+                        <td class="p-2.5 font-mono text-yellow-300">${item.senha}</td>
+                        <td class="p-2.5 text-center">
+                            <button onclick="excluirFornecedorDinamico('${item.empresa}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -646,7 +666,6 @@
             e.preventDefault();
             const rawData = document.getElementById('inpData').value;
             
-            // 1. VALIDAÇÃO DO PCP: IMPEDE DATA RETROATIVA
             if (dataEhPassada(rawData)) {
                 alert("🚫 OPERAÇÃO BLOQUEADA!\n\nVocê não pode ofertar janelas para DATAS RETROATIVAS (passadas).\nSelecione a data de hoje em diante.");
                 return;
@@ -679,7 +698,6 @@
             const ativa = ymsStore.agendamentos.find(i => i.ordem === ymsStore.ordemAtivaFornecedor);
             if (!ativa) { alert("Selecione uma ordem."); return; }
 
-            // 2. VALIDAÇÃO DO FORNECEDOR: IMPEDE PREENCHER DATA RETROATIVA
             if (dataEhPassada(ativa.data)) {
                 alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possível realizar o pré-cadastro de tickets para datas antigas.`);
                 return;
@@ -705,7 +723,6 @@
                 return;
             }
 
-            // 1. Busca todos os agendamentos confirmados para este CPF
             const agendamentosDoCpf = ymsStore.agendamentos.filter(i => 
                 i.cpf === cpfDig && (i.status === 'CONFIRMADO_FORNECEDOR' || i.status === 'AGENDADO')
             );
@@ -716,20 +733,16 @@
                 return;
             }
 
-            // 2. Filtra APENAS os agendamentos VÁLIDOS (de hoje em diante)
             const agendamentosValidos = agendamentosDoCpf.filter(i => !dataEhPassada(i.data));
 
-            // Se só existirem agendamentos antigos (vencidos):
             if (agendamentosValidos.length === 0) {
                 alert(`🚫 CHECK-IN RECUSADO NO TOTEM!\n\nVocê possui agendamento(s) com data VENCIDA (passada).\nO sistema não permite entrada para janelas antigas.\n\nProcure o PCP / Logística para novo agendamento.`);
                 limparTotem();
                 return;
             }
 
-            // 3. Pega o agendamento válido mais próximo (ex: o de HOJE)
             const ag = agendamentosValidos[0];
 
-            // Realiza o Check-in com sucesso
             ag.ticket = `T-${Math.floor(100 + Math.random() * 900)}`;
             ag.status = "CHECKIN_PATIO";
 
@@ -817,14 +830,12 @@
             if (moduloTarget) moduloTarget.classList.remove('hidden');
 
             document.querySelectorAll('.btn-perfil').forEach(btn => {
-                btn.style.background = "transparent";
-                btn.style.color = "#94a3b8";
+                btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
             });
 
             const btnAtivo = document.getElementById(`btn-${perfilId}`);
             if (btnAtivo) {
-                btnAtivo.style.background = "#4f46e5";
-                btnAtivo.style.color = "#ffffff";
+                btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow";
             }
         }
 
@@ -834,20 +845,20 @@
             document.getElementById('contadorJanelas').textContent = ymsStore.agendamentos.length;
 
             if (ymsStore.agendamentos.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: #64748b; padding: 2rem;">Nenhuma janela carregada.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada.</p>`;
                 return;
             }
 
             ymsStore.agendamentos.forEach(item => {
                 const card = `
-                    <div style="background: #020617; border: 1px solid #334155; padding: 0.75rem; border-radius: 0.75rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="bg-slate-900 border border-slate-700 p-3 rounded-2xl flex justify-between items-center">
                         <div>
-                            <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">🏢 ${item.fornecedor}</span>
-                            <p style="font-weight: 900; color: white; margin-top: 0.25rem;">📍 ${item.doca}</p>
+                            <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
+                            <p class="text-sm font-black text-white mt-1">📍 ${item.doca}</p>
                         </div>
-                        <div style="text-align: right;">
-                            <span style="color: #facc15; font-weight: bold; font-size: 0.7rem; display: block;">📅 ${item.data}</span>
-                            <span style="color: #34d399; font-family: monospace; font-size: 0.75rem;">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
+                            <span class="text-emerald-400 font-mono text-xs">🕒 ${item.horaIni} às ${item.horaFim}</span>
                         </div>
                     </div>
                 `;
@@ -873,7 +884,6 @@
 
             const hojeIso = obterDataHojeISO();
             
-            // TRAVA OS INPUTS DE DATA PARA NÃO SELECIONAR DATAS ANTERIORES A HOJE
             document.getElementById('inpData').min = hojeIso;
             document.getElementById('inpData').value = hojeIso;
             document.getElementById('filtroDataFornecedor').min = hojeIso;
