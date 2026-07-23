@@ -41,6 +41,67 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
 
+    <!-- MODAL INICIAL DE LOGIN / SELEÇÃO DE PERFIL -->
+    <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-8 shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <span class="bg-indigo-600/20 text-indigo-400 p-3 rounded-2xl text-3xl inline-block border border-indigo-500/30">🏭</span>
+                <h1 class="text-2xl font-black text-white tracking-wider">YMS ECOSYSTEM - CONTROLE DE ACESSO</h1>
+                <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
+            </div>
+
+            <!-- GRID DE SELEÇÃO DE PERFIS -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button onclick="solicitarAcessoPerfil('pcp')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-4 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-2 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🗓️</span>
+                    <span class="text-xs font-bold text-white">PCP Programador</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('fornecedor')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-4 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-2 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🏢</span>
+                    <span class="text-xs font-bold text-white">Portal Fornecedor</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('totem')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-4 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-2 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🏭</span>
+                    <span class="text-xs font-bold text-white">Totem Portaria</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('fiscal')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-4 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-2 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">📑</span>
+                    <span class="text-xs font-bold text-white">Triagem Fiscal</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('doca')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-4 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-2 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🚛</span>
+                    <span class="text-xs font-bold text-white">Operador Doca</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('checkout')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-4 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-2 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🚪</span>
+                    <span class="text-xs font-bold text-white">Check-out Portaria</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('motoristas')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-4 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-2 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🪪</span>
+                    <span class="text-xs font-bold text-white">Cad. Motoristas</span>
+                </button>
+                <button onclick="solicitarAcessoPerfil('admin')" class="bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-4 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-2 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">📡</span>
+                    <span class="text-xs font-bold text-purple-300">Torre / Admin</span>
+                </button>
+            </div>
+
+            <!-- CAMPO DE SENHA / PIN -->
+            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
+                <div class="flex justify-between items-center">
+                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-bold text-indigo-400 uppercase">PERFIL SELECIONADO</span>
+                    <span class="text-[10px] text-slate-500">Senha Padrão Demo: <strong class="text-white">1234</strong></span>
+                </div>
+                <div class="flex gap-2">
+                    <input type="password" id="inputPinLogin" placeholder="Digite sua senha / PIN..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-white outline-none focus:border-indigo-500">
+                    <button onclick="confirmarLoginComSenha()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2 rounded-xl text-xs uppercase shadow cursor-pointer">
+                        Entrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- BARRA SUPERIOR: NAVEGAÇÃO DE PERFIS DO YMS -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
@@ -53,7 +114,7 @@
             </div>
         </div>
 
-        <nav class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
+        <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
             <button onclick="mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">
                 🗓️ PCP Programador
             </button>
@@ -80,7 +141,12 @@
             </button>
         </nav>
 
-        <div id="relogioGlobal" class="text-sm font-mono font-bold text-yellow-400 hidden sm:block">00:00:00</div>
+        <div class="flex items-center gap-3">
+            <div id="relogioGlobal" class="text-sm font-mono font-bold text-yellow-400 hidden sm:block">00:00:00</div>
+            <button onclick="fazerLogoutGlobal()" id="btnLogoutUser" title="Sair do perfil e trocar de usuário" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
+                <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
+            </button>
+        </div>
     </header>
 
     <div class="flex-1 flex flex-col">
@@ -461,9 +527,8 @@
             </div>
         </section>
 
-        <!-- MÓDULO GESTÃO DE MOTORISTAS & BANCO DE DADOS (NOVA ABA) -->
+        <!-- MÓDULO GESTÃO DE MOTORISTAS & BANCO DE DADOS -->
         <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
             <div class="col-span-12 lg:col-span-4 bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="border-b border-slate-700 pb-3 mb-4">
@@ -505,7 +570,6 @@
                 </div>
             </div>
 
-            <!-- TABELA DE BANCO DE DADOS DE MOTORISTAS -->
             <div class="col-span-12 lg:col-span-8 bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-700 mb-4 gap-2">
@@ -682,7 +746,6 @@
 
     <!-- SCRIPT CENTRAL INTERLIGADO -->
     <script>
-        // CARREGA BASE DE MOTORISTAS COM PERSISTÊNCIA LOCALSTORAGE
         function carregarBaseMotoristasInicial() {
             const salvos = localStorage.getItem('yms_base_motoristas');
             if (salvos) {
@@ -705,8 +768,99 @@
             ticketAtivoFiscal: null,
             ticketAtivoCheckout: null,
             sequenciaDocasSelecao: [],
-            baseMotoristas: carregarBaseMotoristasInicial()
+            baseMotoristas: carregarBaseMotoristasInicial(),
+            usuarioLogado: null,
+            perfilPendenteLogin: null
         };
+
+        // MATRIZ DE REGRAS E PERMISSÕES DE PERFIS (RBAC)
+        const configPerfisAcesso = {
+            'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
+            'fornecedor': { nome: "Portal Fornecedor", precisaSenha: false, modulos: ['fornecedor'] },
+            'totem': { nome: "Totem Autoatendimento", precisaSenha: false, modulos: ['totem'] },
+            'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, modulos: ['fiscal'] },
+            'doca': { nome: "Operador de Doca", precisaSenha: true, modulos: ['doca'] },
+            'checkout': { nome: "Check-out Portaria", precisaSenha: true, modulos: ['checkout', 'totem'] },
+            'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, modulos: ['motoristas', 'fornecedor'] },
+            'admin': { nome: "Torre / Administrador", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
+        };
+
+        function solicitarAcessoPerfil(keyPerfil) {
+            const cfg = configPerfisAcesso[keyPerfil];
+            if (!cfg) return;
+
+            if (!cfg.precisaSenha) {
+                concluirLoginPerfil(keyPerfil, cfg.nome);
+            } else {
+                ymsStore.perfilPendenteLogin = keyPerfil;
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = `Digite a senha para: ${cfg.nome}`;
+                document.getElementById('boxSenhaLogin').classList.remove('hidden');
+                document.getElementById('inputPinLogin').value = "";
+                document.getElementById('inputPinLogin').focus();
+            }
+        }
+
+        function confirmarLoginComSenha() {
+            const pinDig = document.getElementById('inputPinLogin').value.trim();
+            if (pinDig === "1234" || pinDig === "admin") {
+                const key = ymsStore.perfilPendenteLogin;
+                const cfg = configPerfisAcesso[key];
+                concluirLoginPerfil(key, cfg.nome);
+            } else {
+                alert("Senha/PIN incorreto! Tente a senha padrão: 1234");
+                document.getElementById('inputPinLogin').value = "";
+            }
+        }
+
+        function concluirLoginPerfil(keyPerfil, nomeExibicao) {
+            ymsStore.usuarioLogado = { key: keyPerfil, nome: nomeExibicao };
+            document.getElementById('modalLoginGlobal').classList.add('hidden');
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
+
+            aplicarPermissoesPerfilNaInterface();
+            exibirToast("Acesso Concedido!", `Sessão iniciada como ${nomeExibicao}.`, "🔓");
+        }
+
+        function aplicarPermissoesPerfilNaInterface() {
+            if (!ymsStore.usuarioLogado) return;
+
+            const keyLogado = ymsStore.usuarioLogado.key;
+            const cfg = configPerfisAcesso[keyLogado];
+            const modulosPermitidos = cfg.modulos;
+
+            const botoesPerfil = {
+                'pcp': 'btn-pcp',
+                'fornecedor': 'btn-fornecedor',
+                'totem': 'btn-totem',
+                'fiscal': 'btn-fiscal',
+                'doca': 'btn-doca',
+                'checkout': 'btn-checkout',
+                'motoristas': 'btn-motoristas',
+                'torre': 'btn-torre'
+            };
+
+            // HABILITA / DESABILITA ABAS NO MENU SUPERIOR
+            Object.keys(botoesPerfil).forEach(modKey => {
+                const btn = document.getElementById(botoesPerfil[modKey]);
+                if (btn) {
+                    if (modulosPermitidos.includes(modKey)) {
+                        btn.style.display = "inline-block";
+                    } else {
+                        btn.style.display = "none";
+                    }
+                }
+            });
+
+            // ATIVA O PRIMEIRA MÓDULO PERMITIDO
+            mudarPerfil(modulosPermitidos[0]);
+        }
+
+        function fazerLogoutGlobal() {
+            ymsStore.usuarioLogado = null;
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+        }
 
         function obterDataHojeISO() {
             const hoje = new Date();
@@ -936,9 +1090,11 @@
                 btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
             });
 
-            document.getElementById(`perfil-${perfilId}`).classList.remove('hidden');
+            const moduloTarget = document.getElementById(`perfil-${perfilId}`);
+            if (moduloTarget) moduloTarget.classList.remove('hidden');
+
             const btnAtivo = document.getElementById(`btn-${perfilId}`);
-            btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white shadow";
+            if (btnAtivo) btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white shadow";
 
             sincronizarTodosModulos();
             if (perfilId === 'torre') carregarGraficosTorre();
@@ -1331,7 +1487,7 @@
             exibirToast("Lote Limpo", "Grade de janelas descartada.", "🗑️");
         }
 
-        // --- PORTAL DO FORNECEDOR (COM VERIFICAÇÃO DE BLOQUEIO DE MOTORISTA) ---
+        // --- PORTAL DO FORNECEDOR ---
         function alternarAbaFornecedor(aba) {
             ymsStore.abaFornecedorAtual = aba;
             const btnPen = document.getElementById('btnAbaPendentes');
@@ -1467,7 +1623,6 @@
             const nomeMot = document.getElementById('fornMotorista').value.trim();
             const celMot = document.getElementById('fornCelular').value.trim();
 
-            // TRAVA DE SEGURANÇA: MOTORISTA BLOQUEADO
             const motExiste = ymsStore.baseMotoristas.find(m => m.cpf === cpfLimpo);
             if (motExiste && motExiste.status === 'BLOQUEADO') {
                 alert(`🚫 MOTORISTA BLOQUEADO!\n\nO motorista ${motExiste.nome} (CPF: ${motExiste.cpf}) está bloqueado no sistema e NÃO pode ser vinculado a esta carga.`);
@@ -1499,7 +1654,7 @@
             dispararSmsEtapa(ativa, 'CONFIRMADO_FORNECEDOR');
         }
 
-        // --- TOTEM AUTOATENDIMENTO (TRAVA DE SEGURANÇA PARA BLOQUEADOS) ---
+        // --- TOTEM AUTOATENDIMENTO ---
         function digitarTotem(n) {
             const input = document.getElementById('displayTotem');
             if (input.value.length < 11) input.value += n;
@@ -1517,7 +1672,6 @@
         function finalizarCheckinTotem() {
             const cpfDig = document.getElementById('displayTotem').value.trim();
             
-            // VERIFICA SE O MOTORISTA ESTÁ BLOQUEADO NA BASE
             const motExiste = ymsStore.baseMotoristas.find(m => m.cpf === cpfDig);
             if (motExiste && motExiste.status === 'BLOQUEADO') {
                 alert(`🚫 ATENÇÃO MOTORISTA BLOQUEADO!\n\nSeu cadastro possui restrições de acesso à planta.\nDirija-se à Portaria Principal para esclarecimentos.`);
@@ -1907,8 +2061,8 @@
                         <td class="p-3 font-mono text-yellow-400">${m.celular}</td>
                         <td class="p-3">${badgeStatus}</td>
                         <td class="p-3 text-center space-x-1">
-                            <button onclick="carregarMotoristaParaEdicao('${m.cpf}')" title="Editar dados" class="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded-lg transition text-xs">✏️</button>
-                            <button onclick="alternarStatusMotorista('${m.cpf}')" title="${isBloqueado ? 'Liberar Acesso' : 'Bloquear Acesso'}" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'} text-white p-1.5 rounded-lg transition text-xs">
+                            <button onclick="carregarMotoristaParaEdicao('${m.cpf}')" title="Editar dados" class="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded-lg transition text-xs cursor-pointer">✏️</button>
+                            <button onclick="alternarStatusMotorista('${m.cpf}')" title="${isBloqueado ? 'Liberar Acesso' : 'Bloquear Acesso'}" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'} text-white p-1.5 rounded-lg transition text-xs cursor-pointer">
                                 ${isBloqueado ? '🔓' : '🔒'}
                             </button>
                         </td>
@@ -1987,6 +2141,23 @@
             if (!isoStr) return "--:--";
             const dt = new Date(isoStr);
             return dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function calcularTempoDescargaMinutos(isoIni, isoFim) {
+            if (!isoIni || !isoFim) return "0:00";
+            const dtIni = new Date(isoIni);
+            const dtFim = new Date(isoFim);
+
+            if (isNaN(dtIni.getTime()) || isNaN(dtFim.getTime())) return "0:00";
+
+            let diffMs = dtFim - dtIni;
+            if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
+
+            const totalMinutos = Math.floor(diffMs / (1000 * 60));
+            const h = Math.floor(totalMinutos / 60);
+            const m = totalMinutos % 60;
+
+            return `${h}:${String(m).padStart(2, '0')}`;
         }
 
         function calcularDiferencaHorasFormatada(horaIni, horaFim) {
@@ -2147,7 +2318,8 @@
                     const hHrsNf = formatarHoraIso(ag.timeFiscal);
                     const hRealEnt = formatarHoraIso(ag.timeInicioDescarga);
                     const hRealSaida = formatarHoraIso(ag.timeCheckout || ag.timeFimDescarga);
-                    const tDescarga = calcularDiferencaHorasFormatada(hRealEnt, formatarHoraIso(ag.timeFimDescarga));
+                    
+                    const tDescarga = calcularTempoDescargaMinutos(ag.timeInicioDescarga, ag.timeFimDescarga);
                     const docasStr = (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" / ") : ag.doca;
 
                     const row = `
@@ -2215,7 +2387,7 @@
                 const hRealSaidaDescarga = formatarHoraIso(ag.timeFimDescarga);
                 const hSaidaPlantaCheckout = formatarHoraIso(ag.timeCheckout || ag.timeFimDescarga);
                 
-                const tDescarga = calcularDiferencaHorasFormatada(hRealEnt, hRealSaidaDescarga);
+                const tDescarga = calcularTempoDescargaMinutos(ag.timeInicioDescarga, ag.timeFimDescarga);
                 const tPlan = calcularDiferencaHorasFormatada(ag.horaIni, ag.horaFim);
                 const docasStr = (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" / ") : ag.doca;
 
