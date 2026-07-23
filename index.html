@@ -209,7 +209,7 @@
                         <select id="inpDoca" onchange="atualizarHorariosDisponiveis()"></select>
                     </div>
                     <div>
-                        <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">DATA</label>
+                        <label style="font-size: 0.65rem; font-weight: bold; color: #94a3b8;">DATA (Apenas Hoje ou Futura)</label>
                         <input type="date" id="inpData" onchange="atualizarHorariosDisponiveis()">
                     </div>
                 </div>
@@ -458,8 +458,41 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL -->
+    <!-- SCRIPT CENTRAL INTERLIGADO COM VALIDAÇÃO DE DATAS -->
     <script>
+        function obterDataHojeISO() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        function dataEhPassada(dataStr) {
+            if (!dataStr) return false;
+            let ano, mes, dia;
+
+            if (dataStr.includes('/')) {
+                const partes = dataStr.split('/');
+                dia = parseInt(partes[0], 10);
+                mes = parseInt(partes[1], 10) - 1;
+                ano = parseInt(partes[2], 10);
+            } else if (dataStr.includes('-')) {
+                const partes = dataStr.split('-');
+                ano = parseInt(partes[0], 10);
+                mes = parseInt(partes[1], 10) - 1;
+                dia = parseInt(partes[2], 10);
+            } else {
+                return false;
+            }
+
+            const dataAgendada = new Date(ano, mes, dia);
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            return dataAgendada < hoje;
+        }
+
         function carregarBaseMotoristasInicial() {
             const salvos = localStorage.getItem('yms_base_motoristas');
             if (salvos) { try { return JSON.parse(salvos); } catch(e) {} }
@@ -609,6 +642,90 @@
             });
         }
 
+        function criarJanelaManual(e) {
+            e.preventDefault();
+            const rawData = document.getElementById('inpData').value;
+            
+            // 1. VALIDAÇÃO DO PCP: IMPEDE DATA RETROATIVA
+            if (dataEhPassada(rawData)) {
+                alert("🚫 OPERAÇÃO BLOQUEADA!\n\nVocê não pode ofertar janelas para DATAS RETROATIVAS (passadas).\nSelecione a data de hoje em diante.");
+                return;
+            }
+
+            const partes = rawData.split('-');
+            const novaOrdem = `ORD-${ymsStore.agendamentos.length + 1000}`;
+            const horaIni = document.getElementById('inpHora').value;
+            const horaFim = document.getElementById('inpHoraFim').value;
+            const fornSel = document.getElementById('inpFornecedor').value;
+
+            if (!fornSel) { alert("Selecione um fornecedor."); return; }
+
+            ymsStore.agendamentos.push({
+                ordem: novaOrdem,
+                data: `${partes[2]}/${partes[1]}/${partes[0]}`,
+                fornecedor: fornSel,
+                doca: document.getElementById('inpDoca').value,
+                horaIni: horaIni,
+                horaFim: horaFim,
+                status: "AGENDADO"
+            });
+
+            renderizarGradePCP();
+            alert(`Janela ${novaOrdem} criada com sucesso para ${partes[2]}/${partes[1]}/${partes[0]}!`);
+        }
+
+        function salvarConfirmacaoFornecedor(e) {
+            e.preventDefault();
+            const ativa = ymsStore.agendamentos.find(i => i.ordem === ymsStore.ordemAtivaFornecedor);
+            if (!ativa) { alert("Selecione uma ordem."); return; }
+
+            // 2. VALIDAÇÃO DO FORNECEDOR: IMPEDE PREENCHER DATA RETROATIVA
+            if (dataEhPassada(ativa.data)) {
+                alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possível realizar o pré-cadastro de tickets para datas antigas.`);
+                return;
+            }
+
+            ativa.nf = document.getElementById('fornNf').value;
+            ativa.transp = document.getElementById('fornTransp').value;
+            ativa.cavalo = document.getElementById('fornCavalo').value;
+            ativa.carreta = document.getElementById('fornCarreta').value;
+            ativa.motorista = document.getElementById('fornMotorista').value;
+            ativa.cpf = document.getElementById('fornCpf').value.replace(/\D/g, '');
+            ativa.celular = document.getElementById('fornCelular').value;
+            ativa.status = "CONFIRMADO_FORNECEDOR";
+
+            alert("Pré-cadastro da carga e motorista realizado com sucesso!");
+        }
+
+        function finalizarCheckinTotem() {
+            const cpfDig = document.getElementById('displayTotem').value.trim();
+            const ag = ymsStore.agendamentos.find(i => i.cpf === cpfDig && (i.status === 'CONFIRMADO_FORNECEDOR' || i.status === 'AGENDADO'));
+
+            if (!ag) {
+                alert("Nenhum agendamento confirmado encontrado para este CPF.");
+                return;
+            }
+
+            // 3. VALIDAÇÃO DO TOTEM: MOTORISTA SÓ ENTRA DA DATA DO EVENTO PARA FRENTE
+            if (dataEhPassada(ag.data)) {
+                alert(`🚫 CHECK-IN RECUSADO NO TOTEM!\n\nSua janela agendada era para o dia ${ag.data} (DATA PASSADA).\nO sistema não permite entrada de caminhões com janelas vencidas.\n\nPor favor, dirija-se ao setor de logística/PCP para novo agendamento.`);
+                limparTotem();
+                return;
+            }
+
+            ag.ticket = `T-${Math.floor(100 + Math.random() * 900)}`;
+            ag.status = "CHECKIN_PATIO";
+
+            document.getElementById('ticketImpressaoId').textContent = ag.ticket;
+            document.getElementById('ticketImpressaoNome').textContent = ag.motorista || 'Motorista';
+            document.getElementById('ticketImpressaoCpf').textContent = ag.cpf || cpfDig;
+            document.getElementById('ticketImpressaoPlaca').textContent = ag.cavalo || '-';
+
+            alert(`CHECK-IN APROVADO! Ticket de pátio: ${ag.ticket}`);
+            window.print();
+            limparTotem();
+        }
+
         function salvarNovoFornecedorDinamico(e) {
             e.preventDefault();
             const nomeForn = document.getElementById('cadFornNome').value.trim().toUpperCase();
@@ -694,10 +811,56 @@
             }
         }
 
+        function renderizarGradePCP() {
+            const container = document.getElementById('containerJanelas');
+            container.innerHTML = "";
+            document.getElementById('contadorJanelas').textContent = ymsStore.agendamentos.length;
+
+            if (ymsStore.agendamentos.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: #64748b; padding: 2rem;">Nenhuma janela carregada.</p>`;
+                return;
+            }
+
+            ymsStore.agendamentos.forEach(item => {
+                const card = `
+                    <div style="background: #020617; border: 1px solid #334155; padding: 0.75rem; border-radius: 0.75rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">🏢 ${item.fornecedor}</span>
+                            <p style="font-weight: 900; color: white; margin-top: 0.25rem;">📍 ${item.doca}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: #facc15; font-weight: bold; font-size: 0.7rem; display: block;">📅 ${item.data}</span>
+                            <span style="color: #34d399; font-family: monospace; font-size: 0.75rem;">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        function digitarTotem(n) {
+            const input = document.getElementById('displayTotem');
+            if (input.value.length < 11) input.value += n;
+        }
+
+        function limparTotem() { document.getElementById('displayTotem').value = ''; }
+        function apagarTotem() {
+            const input = document.getElementById('displayTotem');
+            input.value = input.value.slice(0, -1);
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             setInterval(() => {
                 document.getElementById('relogioGlobal').textContent = new Date().toLocaleTimeString('pt-BR');
             }, 1000);
+
+            const hojeIso = obterDataHojeISO();
+            
+            // TRAVA OS INPUTS DE DATA PARA NÃO SELECIONAR DATAS ANTERIORES A HOJE
+            document.getElementById('inpData').min = hojeIso;
+            document.getElementById('inpData').value = hojeIso;
+            document.getElementById('filtroDataFornecedor').min = hojeIso;
+            document.getElementById('filtroDataFornecedor').value = hojeIso;
 
             const listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Inflamáveis'];
             const selDoca = document.getElementById('inpDoca');
