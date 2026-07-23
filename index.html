@@ -14,9 +14,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
-        /* REGRA NATIVA PARA GARANTIR QUE .hidden FUNCIONE SEMPRE */
+        /* REGRA NATIVA PARA GARANTIR OCULTAÇÃO E BRILHO DAS FONTES */
         .hidden { display: none !important; }
         input[type="date"] { color-scheme: dark; }
+
+        /* FORÇAR BRANCO BRILHANTE NOS BOTÕES PARA NÃO FICAR APAGADO */
+        .btn-perfil-card, 
+        .btn-perfil-card span,
+        #modalLoginGlobal button span {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }
+
+        #modalLoginGlobal button span.txt-purple {
+            color: #d8b4fe !important;
+        }
 
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
@@ -45,37 +57,37 @@
 
             <!-- GRID DE PERFIS -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <button onclick="solicitarAcessoPerfil('pcp')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
-                    <span class="text-xs font-bold text-white">PCP Programador</span>
+                    <span class="text-xs">PCP Programador</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('fornecedor')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button onclick="solicitarAcessoPerfil('fornecedor')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🏢</span>
-                    <span class="text-xs font-bold text-white">Portal Fornecedor</span>
+                    <span class="text-xs">Portal Fornecedor</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('totem')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button onclick="solicitarAcessoPerfil('totem')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🏭</span>
-                    <span class="text-xs font-bold text-white">Totem Portaria</span>
+                    <span class="text-xs">Totem Portaria</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('fiscal')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button onclick="solicitarAcessoPerfil('fiscal')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">📑</span>
-                    <span class="text-xs font-bold text-white">Triagem Fiscal</span>
+                    <span class="text-xs">Triagem Fiscal</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('doca')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button onclick="solicitarAcessoPerfil('doca')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🚛</span>
-                    <span class="text-xs font-bold text-white">Operador Doca</span>
+                    <span class="text-xs">Operador Doca</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('checkout')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button onclick="solicitarAcessoPerfil('checkout')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🚪</span>
-                    <span class="text-xs font-bold text-white">Check-out Portaria</span>
+                    <span class="text-xs">Check-out Portaria</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('motoristas')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button onclick="solicitarAcessoPerfil('motoristas')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🪪</span>
-                    <span class="text-xs font-bold text-white">Cad. Motoristas</span>
+                    <span class="text-xs">Cad. Motoristas</span>
                 </button>
-                <button onclick="solicitarAcessoPerfil('admin')" class="bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button onclick="solicitarAcessoPerfil('admin')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">📡</span>
-                    <span class="text-xs font-bold text-purple-300">Torre / Admin</span>
+                    <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
             </div>
 
