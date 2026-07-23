@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (Leitura e Geração de Excel) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js (Gráficos Torre de Controle) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- QRCodeJS (Ticket Impresso do Totem) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        input[type="date"] { color-scheme: dark; }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5;
+        }
+
+        @media print {
+            body > *:not(#ticketImpressao) { display: none !important; }
+            #ticketImpressao {
+                display: block !important; position: absolute; left: 0; top: 0; width: 80mm;
+                padding: 5px; color: black !important; background: white !important; font-family: monospace;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
+
+    <!-- BARRA SUPERIOR: NAVEGAÇÃO DE PERFIS DO YMS -->
+    <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
+        <div class="flex items-center gap-3">
+            <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
+            <div>
+                <h1 class="font-black text-sm text-white tracking-wider flex items-center gap-2">
+                    YMS ECOSYSTEM <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">BANCO INTEGRADO</span>
+                </h1>
+                <p class="text-[10px] text-slate-400">Gestão de Janelas, Pátio, Portaria e Roteirização de Docas</p>
+            </div>
+        </div>
+
+        <nav class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
+            <button onclick="mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">
+                🗓️ PCP Programador
+            </button>
+            <button onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
+                🏢 Portal Fornecedor
+            </button>
+            <button onclick="mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
+                🏭 Totem Autoatendimento
+            </button>
+            <button onclick="mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
+                📑 Recebimento Fiscal
+            </button>
+            <button onclick="mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
+                🚛 Operador de Doca
+            </button>
+            <button onclick="mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
+                🚪 Check-out Portaria
+            </button>
+            <button onclick="mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
+                🪪 Cad. Motoristas
+            </button>
+            <button onclick="mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">
+                📡 Torre de Controle
+            </button>
+        </nav>
+
+        <div id="relogioGlobal" class="text-sm font-mono font-bold text-yellow-400 hidden sm:block">00:00:00</div>
+    </header>
+
+    <div class="flex-1 flex flex-col">
+
+        <!-- MÓDULO 1: PCP PROGRAMADOR -->
+        <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6">
+            <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-700/80 mb-4">
+                        <button id="tabIndividualBtn" onclick="alternarAbaPCP('individual')" class="flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow">✍️ Manual</button>
+                        <button id="tabMassaBtn" onclick="alternarAbaPCP('massa')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📊 Subida de Planilha</button>
+                        <button id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
+                    </div>
+
+                    <div id="conteudoIndividual" class="space-y-3">
+                        <h2 class="text-base font-black text-white mb-1">Ofertar Nova Janela Manual</h2>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR</label>
+                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(140 CADASTRADOS)</span>
+                            </div>
+                            <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
+                                <div class="p-2 border-b border-slate-800 bg-slate-900 flex items-center gap-2">
+                                    <span class="text-xs">🔍</span>
+                                    <input type="text" id="filtroForn" placeholder="Filtrar fornecedor..." oninput="filtrarOpcoesFornecedor()" class="w-full bg-transparent text-xs text-slate-200 outline-none font-bold">
+                                </div>
+                                <select id="inpFornecedor" size="4" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Doca de Recebimento</label>
+                                <select id="inpDoca" onchange="atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-bold outline-none cursor-pointer"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Data da Janela</label>
+                                <input type="date" id="inpData" onchange="atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white outline-none">
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+                            <div class="flex justify-between items-center text-[10px] font-bold">
+                                <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
+                                <span class="text-slate-400"><span class="text-emerald-400">■</span> Livre <span class="text-red-400 ml-1">■</span> Ocupado</span>
+                            </div>
+                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-28 overflow-y-auto pr-1"></div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Início (Horários Livres)</label>
+                                <select id="inpHora" onchange="atualizarHorarioFimMinimo()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-yellow-400 outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Fim (Horários Livres)</label>
+                                <select id="inpHoraFim" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 outline-none"></select>
+                            </div>
+                        </div>
+                        <button onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer">🚀 DISPONIBILIZAR PARA FORNECEDOR</button>
+                    </div>
+
+                    <div id="conteudoMassa" class="space-y-4 hidden">
+                        <div id="dropZonePlanilha" 
+                             onclick="document.getElementById('fileInput').click()"
+                             ondragover="tratarDragOver(event)" 
+                             ondragleave="tratarDragLeave(event)" 
+                             ondrop="tratarDrop(event)"
+                             class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all duration-200">
+                            <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
+                            <div class="text-4xl mb-3" id="iconDropZone">📂</div>
+                            <p class="text-sm font-bold text-white mb-1" id="txtDropTitle">Arraste e solte a planilha aqui ou clique para selecionar</p>
+                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv (Identificação dinâmica das colunas)</p>
+                        </div>
+                    </div>
+
+                    <div id="conteudoTexto" class="space-y-3 hidden">
+                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
+                        <button onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO BRUTO</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700/60">
+                        <div>
+                            <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
+                            <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos Sincronizados com o YMS</p>
+                        </div>
+                        <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">0</span>
+                    </div>
+                    <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
+                    </div>
+                </div>
+
+                <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 space-y-3">
+                    <button onclick="confirmarESubirJanelas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer">
+                        🚀 CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR -->
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
+                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">📅 Selecionar Data do Agendamento</label>
+                    <input type="date" id="filtroDataFornecedor" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none cursor-pointer">
+                </div>
+
+                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex-1 flex flex-col">
+                    <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700 mb-3">
+                        <button id="btnAbaPendentes" onclick="alternarAbaFornecedor('pendentes')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white cursor-pointer">
+                            ⏳ Pendentes
+                        </button>
+                        <button id="btnAbaConfirmadas" onclick="alternarAbaFornecedor('confirmadas')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer">
+                            ✅ Confirmadas
+                        </button>
+                    </div>
+
+                    <div id="listaOrdensFornecedor" class="space-y-2 overflow-y-auto flex-1 max-h-[22rem]">
+                        <p class="text-xs text-slate-500 text-center py-6">Carregando ordens...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 md:col-span-8 bg-slate-800 rounded-2xl border border-slate-700 p-6 flex flex-col justify-between">
+                <div>
+                    <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
+                        <div>
+                            <span id="txtOrdemSelecionada" class="text-xs font-bold uppercase text-indigo-400">SELECIONE UMA ORDEM</span>
+                            <h2 class="text-xl font-black text-white mt-0.5">Pré-Cadastro de Carga & Motorista</h2>
+                        </div>
+                        <span id="txtStatusOrdem" class="bg-slate-700 text-slate-300 font-bold text-xs px-3 py-1 rounded-full">Aguardando Escolha</span>
+                    </div>
+
+                    <form onsubmit="salvarConfirmacaoFornecedor(event)" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Nota Fiscal (NF-e) *</label>
+                                <input type="text" id="fornNf" placeholder="Digite o número da NF-e..." required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono focus:border-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Transportadora *</label>
+                                <input type="text" id="fornTransp" placeholder="Digite a transportadora..." required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold focus:border-indigo-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Cavalo (Trator) *</label>
+                                <input type="text" id="fornCavalo" placeholder="ABC1D23 / ABC1234" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase focus:border-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Carreta / Reboque</label>
+                                <input type="text" id="fornCarreta" placeholder="XYZ9876 (opcional)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase focus:border-indigo-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-indigo-500/30 space-y-3">
+                            <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">👤 Cadastro Obrigatório do Motorista</h3>
+                            <div class="grid grid-cols-12 gap-3">
+                                <div class="col-span-6">
+                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">CPF (11 Dígitos) *</label>
+                                    <div class="flex gap-1.5">
+                                        <input type="text" id="fornCpf" placeholder="00000000000" required onkeydown="if(event.key==='Enter'){event.preventDefault();buscarMotoristaPorCpf();}" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-indigo-500">
+                                        <button type="button" onclick="buscarMotoristaPorCpf()" title="Clique para puxar dados pré-cadastrados do CPF" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition cursor-pointer flex items-center justify-center shadow">
+                                            🔍
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-span-6">
+                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">Nome Completo *</label>
+                                    <input type="text" id="fornMotorista" placeholder="Nome completo do motorista..." required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold outline-none">
+                                </div>
+                                <div class="col-span-12">
+                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">Celular / Notificações (Com DDD) *</label>
+                                    <input type="text" id="fornCelular" placeholder="00900000000" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                            <span>💬</span> CONFIRMAR DADOS, DISPARAR SMS/ALERTA E LIBERAR CHECK-IN
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- MÓDULO 3: TOTEM AUTOATENDIMENTO -->
+        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 flex flex-col justify-center hidden">
+            <div class="bg-slate-800 rounded-3xl p-8 border border-slate-700 text-center shadow-2xl">
+                <span class="bg-purple-500/20 text-purple-300 font-bold px-4 py-1.5 rounded-full text-xs uppercase tracking-widest border border-purple-500/30">
+                    Portaria & Recebimento
+                </span>
+                <h2 class="text-2xl font-black text-white mt-3 mb-1">Totem de Check-in de Cargas</h2>
+                <p class="text-slate-400 text-xs mb-4">Digite o CPF do motorista pré-cadastrado no portal</p>
+
+                <div class="bg-slate-950 border-2 border-indigo-500 rounded-2xl p-3 mb-4">
+                    <input type="text" id="displayTotem" value="" placeholder="Digite seu CPF..." class="w-full bg-transparent text-center text-3xl font-mono font-black text-yellow-400 outline-none">
+                </div>
+
+                <div class="grid grid-cols-3 gap-2.5 max-w-xs mx-auto mb-6">
+                    <button type="button" onclick="digitarTotem('1')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">1</button>
+                    <button type="button" onclick="digitarTotem('2')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">2</button>
+                    <button type="button" onclick="digitarTotem('3')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">3</button>
+                    <button type="button" onclick="digitarTotem('4')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">4</button>
+                    <button type="button" onclick="digitarTotem('5')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">5</button>
+                    <button type="button" onclick="digitarTotem('6')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">6</button>
+                    <button type="button" onclick="digitarTotem('7')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">7</button>
+                    <button type="button" onclick="digitarTotem('8')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">8</button>
+                    <button type="button" onclick="digitarTotem('9')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">9</button>
+                    <button type="button" onclick="limparTotem()" class="bg-red-600/30 hover:bg-red-600 active:bg-red-700 text-red-300 hover:text-white border border-red-500/50 font-black py-3 rounded-xl transition cursor-pointer shadow">C</button>
+                    <button type="button" onclick="digitarTotem('0')" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-black py-3 rounded-xl transition cursor-pointer">0</button>
+                    <button type="button" onclick="apagarTotem()" class="bg-slate-600 hover:bg-slate-500 active:bg-slate-400 text-slate-200 font-bold py-3 rounded-xl transition cursor-pointer">⌫</button>
+                </div>
+
+                <button onclick="finalizarCheckinTotem()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-black py-4 rounded-xl shadow-xl transition border-b-4 border-emerald-800 cursor-pointer">
+                    🖨️ FAZER CHECK-IN E GERAR TICKET DE PÁTIO
+                </button>
+            </div>
+        </section>
+
+        <!-- MÓDULO 4: RECEBIMENTO FISCAL -->
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-4 bg-slate-800 rounded-2xl p-4 border border-slate-700 flex flex-col">
+                <h2 class="font-bold text-sm text-white mb-3 flex items-center justify-between">
+                    <span>⌛ Fila do Pátio (Check-in Feito)</span>
+                    <span id="badgeQtdPatio" class="bg-purple-600 text-xs px-2.5 py-0.5 rounded-full">0</span>
+                </h2>
+                <div id="listaPatioFiscal" class="space-y-2 overflow-y-auto flex-1">
+                    <p class="text-xs text-slate-500 text-center py-8">Nenhum veículo no pátio.</p>
+                </div>
+            </div>
+
+            <div class="col-span-8 bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between">
+                <div>
+                    <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
+                        <h2 class="text-xl font-black text-white">Triagem Fiscal & Roteirizador de Docas</h2>
+                        <span id="txtTicketFiscalAtivo" class="bg-purple-900/60 text-purple-300 border border-purple-500 font-mono font-bold text-xs px-3 py-1 rounded-lg">Selecione um Ticket</span>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 grid grid-cols-3 gap-3 mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Motorista</p>
+                            <p id="fiscMotorista" class="text-sm font-bold text-white">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Placa Cavalo / Carreta</p>
+                            <p id="fiscPlaca" class="text-sm font-mono font-black text-yellow-400">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Nota Fiscal</p>
+                            <p id="fiscNf" class="text-sm font-mono font-bold text-indigo-300">-</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Clique nas docas na SEQUÊNCIA desejada para o descarregamento:</h3>
+                        <button type="button" onclick="resetarSequenciaDocas()" class="text-[10px] font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer">🔄 Limpar Rota</button>
+                    </div>
+
+                    <div id="gridDocasFiscal" class="grid grid-cols-2 gap-2.5 mb-4"></div>
+
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-2 mb-4">
+                        <span class="text-xs font-bold text-purple-400">ROTA SEQUENCIAL:</span>
+                        <div id="displayRotaSequencial" class="text-xs font-bold text-white flex flex-wrap gap-1">
+                            <span class="text-slate-500 italic">Nenhuma doca selecionada</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="liberarParaDocaFiscal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl text-xs uppercase tracking-wider shadow-lg cursor-pointer">
+                    🚀 SALVAR ROTA SEQUENCIAL E ENVIAR PARA A 1ª DOCA
+                </button>
+            </div>
+        </section>
+
+        <!-- MÓDULO 5: TABLET OPERADOR DE DOCA -->
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-7 bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between items-center text-center">
+                <div class="w-full flex justify-between items-center border-b border-slate-700 pb-3">
+                    <span class="text-xs font-bold text-slate-400">SELETOR DE DOCA:</span>
+                    <select id="selDocaOperador" onchange="atualizarPainelDoca()" class="bg-yellow-500 text-slate-900 font-black text-sm px-4 py-1.5 rounded-lg outline-none cursor-pointer"></select>
+                </div>
+
+                <div class="my-6 space-y-2">
+                    <span id="badgeStatusDoca" class="bg-blue-500/20 text-blue-400 text-xs font-bold px-3 py-1 rounded-full uppercase border border-blue-500/30">Doca Livre</span>
+                    
+                    <h1 id="txtTicketDocaGrande" class="text-7xl font-black font-mono text-white tracking-tight py-2">---</h1>
+                    
+                    <div class="bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-700/80 inline-block">
+                        <p id="txtPlacaEDetalhesDoca" class="text-base text-yellow-400 font-mono font-bold">Nenhum Veículo em Descarga</p>
+                    </div>
+                </div>
+
+                <button onclick="finalizarDescargaDoca()" class="w-full max-w-sm bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl text-base shadow-lg transition cursor-pointer">
+                    ✅ FINALIZAR DESCARGA E AVANÇAR ROTA
+                </button>
+            </div>
+
+            <div class="col-span-5 bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                        <h2 class="text-base font-black text-white">Fila FIFO nesta Doca</h2>
+                        <span id="badgeQtdDocaFila" class="bg-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
+                    </div>
+
+                    <div id="listaFilaDoca" class="space-y-2 overflow-y-auto max-h-60">
+                        <p class="text-xs text-slate-500 text-center py-8">Nenhum caminhão na fila.</p>
+                    </div>
+                </div>
+
+                <button onclick="chamarProximoSms()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-5 rounded-xl text-xl flex flex-col items-center gap-1 shadow-lg border-b-4 border-amber-700 cursor-pointer">
+                    <span>💬</span>
+                    <span class="text-sm uppercase">CHAMAR PRÓXIMO (DISPARAR SMS / ALERTA)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- MÓDULO 6: CHECK-OUT PORTARIA -->
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-5 bg-slate-800 rounded-3xl p-6 border border-slate-700 flex flex-col justify-between shadow-xl">
+                <div>
+                    <div class="flex justify-between items-center pb-3 border-b border-slate-700 mb-4">
+                        <div>
+                            <h2 class="text-lg font-black text-white">🚪 Fila de Check-out (Portaria)</h2>
+                            <p class="text-xs text-slate-400">Caminhões com descargas finalizadas nas docas</p>
+                        </div>
+                        <span id="badgeQtdCheckout" class="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full">0</span>
+                    </div>
+
+                    <div id="listaAguardandoCheckout" class="space-y-2.5 overflow-y-auto max-h-[26rem] pr-1">
+                        <p class="text-xs text-slate-500 text-center py-10">Nenhum veículo aguardando saída.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-7 bg-slate-800 rounded-3xl p-6 border border-slate-700 flex flex-col justify-between shadow-xl">
+                <div>
+                    <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
+                        <h2 class="text-xl font-black text-white">Registro de Saída da Planta</h2>
+                        <span id="txtTicketCheckoutAtivo" class="bg-amber-950/80 text-amber-400 border border-amber-500 font-mono font-bold text-xs px-3 py-1 rounded-lg">Selecione um Veículo</span>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-700 grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Motorista</p>
+                            <p id="chkMotorista" class="text-base font-bold text-white mt-0.5">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Placa Cavalo / Reboque</p>
+                            <p id="chkPlaca" class="text-base font-mono font-black text-yellow-400 mt-0.5">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Fornecedor / Carga</p>
+                            <p id="chkFornecedor" class="text-xs font-bold text-indigo-300 mt-0.5">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Horário Check-in Totem</p>
+                            <p id="chkHoraEntrada" class="text-xs font-mono font-bold text-emerald-400 mt-0.5">-</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Rota de Docas Atendida</p>
+                            <p id="chkRotaDocas" class="text-xs font-bold text-slate-300 mt-0.5">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="confirmarSaidaPortaria()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
+                    <span>🚪</span> CONFIRMAR SAÍDA DA PLANTA & REALIZAR CHECK-OUT
+                </button>
+            </div>
+        </section>
+
+        <!-- MÓDULO GESTÃO DE MOTORISTAS & BANCO DE DADOS (NOVA ABA) -->
+        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
+            <div class="col-span-12 lg:col-span-4 bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="border-b border-slate-700 pb-3 mb-4">
+                        <h2 class="text-lg font-black text-white flex items-center gap-2">
+                            <span>🪪</span> Cadastro de Motorista
+                        </h2>
+                        <p class="text-xs text-slate-400">Incluir ou atualizar dados na base permanente</p>
+                    </div>
+
+                    <form onsubmit="salvarMotoristaManual(event)" class="space-y-3.5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">CPF (11 Dígitos) *</label>
+                            <input type="text" id="cadMotCpf" placeholder="00000000000" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Nome Completo *</label>
+                            <input type="text" id="cadMotNome" placeholder="Digite o nome completo..." required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-bold outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Celular / WhatsApp *</label>
+                            <input type="text" id="cadMotCelular" placeholder="00900000000" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-yellow-400 font-mono font-bold outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Situação / Status *</label>
+                            <select id="cadMotStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs font-bold text-white outline-none cursor-pointer">
+                                <option value="ATIVO">🟢 ATIVO / LIBERADO (Acessa Totem)</option>
+                                <option value="BLOQUEADO">🔴 BLOQUEADO (Acesso Proibido)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Motivo do Bloqueio / Observação</label>
+                            <textarea id="cadMotObs" rows="2" placeholder="Ex: Problema de segurança, Falta de EPI..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow cursor-pointer">
+                            💾 SALVAR MOTORISTA NA BASE
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TABELA DE BANCO DE DADOS DE MOTORISTAS -->
+            <div class="col-span-12 lg:col-span-8 bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-700 mb-4 gap-2">
+                        <div>
+                            <h2 class="text-lg font-black text-white">Base do Banco de Dados</h2>
+                            <p class="text-xs text-slate-400">Motoristas cadastrados com controle de bloqueio no Totem</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="filtroMotoristaTabela" placeholder="🔍 Buscar CPF ou Nome..." oninput="renderizarTabelaMotoristas()" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-white outline-none">
+                            <span id="badgeQtdMotoristas" class="bg-indigo-600 text-white font-black text-xs px-3 py-1 rounded-full">0</span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[26rem] custom-scrollbar">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0 z-10">
+                                <tr>
+                                    <th class="p-3">CPF</th>
+                                    <th class="p-3">Nome Motorista</th>
+                                    <th class="p-3">Celular</th>
+                                    <th class="p-3">Situação</th>
+                                    <th class="p-3 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblCorpoMotoristas" class="divide-y divide-slate-800 text-slate-200">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MÓDULO 7: TORRE DE CONTROLE DASHBOARD & CENTRAL DE RELATÓRIOS -->
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                    <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase text-center tracking-wider">Status Real dos Agendamentos</h3>
+                    <div class="h-52"><canvas id="chartCheckin"></canvas></div>
+                </div>
+                <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl col-span-2">
+                    <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase text-center tracking-wider">Ocupação Atual por Doca</h3>
+                    <div class="h-52"><canvas id="chartDocas"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">⏱️ Média Real do Tempo de Duração de Janela por Doca (Minutos)</h3>
+                    <span class="text-[10px] font-bold bg-indigo-900/60 text-indigo-300 border border-indigo-500/40 px-3 py-1 rounded-full">Sincronizado Dinamicamente</span>
+                </div>
+                <div class="h-56"><canvas id="chartMediaTempoDoca"></canvas></div>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+                <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-700 gap-3">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>📊</span> RELATÓRIO DE HISTÓRICO DE TICKETS E PÁTIO
+                        </h3>
+                        <p class="text-xs text-slate-400">Baixe o relatório completo no formato padrão de controle para análise</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-700">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block px-1">De:</span>
+                            <input type="date" id="repDataInicio" class="bg-slate-950 border border-slate-800 rounded-lg text-xs p-1 font-mono font-bold text-white outline-none">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block px-1">Até:</span>
+                            <input type="date" id="repDataFim" class="bg-slate-950 border border-slate-800 rounded-lg text-xs p-1 font-mono font-bold text-white outline-none">
+                        </div>
+                        <button onclick="carregarGraficosTorre()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition self-end cursor-pointer">
+                            🔍 Filtrar
+                        </button>
+                        <button onclick="exportarRelatorioExcelFormatado()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow flex items-center gap-1.5 self-end cursor-pointer">
+                            <span>📥</span> BAIXAR EXCEL
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-60 custom-scrollbar">
+                    <table class="w-full text-left text-xs font-mono">
+                        <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
+                            <tr>
+                                <th class="p-2.5">Carga</th>
+                                <th class="p-2.5">Placa</th>
+                                <th class="p-2.5">Dia Seman</th>
+                                <th class="p-2.5">Fornecedor</th>
+                                <th class="p-2.5">Cheg. Planta</th>
+                                <th class="p-2.5">Hrs NF</th>
+                                <th class="p-2.5">Local Doca</th>
+                                <th class="p-2.5">Hora Real Ent.</th>
+                                <th class="p-2.5">Hora Real Saída</th>
+                                <th class="p-2.5">Tempo Descarga</th>
+                                <th class="p-2.5">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblPreviewRelatorio" class="divide-y divide-slate-800 text-slate-200">
+                            <tr>
+                                <td colspan="11" class="text-center py-8 text-slate-500 italic">Nenhum ticket concluído no período selecionado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL DE MENSAGEM / SMS DO PÁTIO -->
+    <div id="modalSmsNotif" onclick="fecharModalSmsExterno(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
+        <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative my-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700">
+                <div class="bg-amber-500 p-2.5 rounded-2xl text-2xl shadow-lg text-slate-900">💬</div>
+                <div>
+                    <h3 class="text-base font-black text-white">Central de Mensagens & Alertas</h3>
+                    <p class="text-xs text-amber-400 font-bold" id="notifDestinoMsg">Destino: +55 (47) 99242-4703</p>
+                </div>
+                <button type="button" onclick="fecharModalSms()" class="ml-auto text-slate-400 hover:text-white font-black text-xl cursor-pointer p-1">✕</button>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700/80 rounded-2xl p-4 mb-5">
+                <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Conteúdo da Notificação:</p>
+                <div id="notifTextoCorpo" class="text-xs font-mono text-slate-200 bg-slate-950 p-3 rounded-xl border border-slate-800 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <button type="button" onclick="copiarTextoNotificacao()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-3 rounded-xl transition flex items-center justify-center gap-2 border border-slate-600 cursor-pointer">
+                    📋 Copiar Texto
+                </button>
+                <button type="button" onclick="dispararSomAlerta()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-black text-xs py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg cursor-pointer">
+                    🔔 Tocar Alerta Sonoro
+                </button>
+            </div>
+
+            <button type="button" onclick="fecharModalSms()" class="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold text-xs py-3.5 rounded-xl transition cursor-pointer relative z-50 shadow-lg border border-indigo-400/30">
+                ✓ Concluir e Continuar Operação
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST DE NOTIFICAÇÃO GLOBAL -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50 min-w-[320px]">
+        <span class="text-2xl" id="toastIcon">✨</span>
+        <div>
+            <p class="font-bold text-sm" id="toastTitulo">Notificação</p>
+            <p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p>
+        </div>
+    </div>
+
+    <!-- TICKET DE IMPRESSÃO DO TOTEM COM QR CODE -->
+    <div id="ticketImpressao" class="hidden">
+        <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px;">
+            <h2 style="font-size:16px; margin:0;">SISTEMA YMS / PCP</h2>
+            <p style="font-size:10px; margin:2px 0;">TICKET DE CONTROLE DE PÁTIO</p>
+        </div>
+        <div style="text-align: center; background: #eee; padding: 6px; margin: 8px 0; border:1px solid #000;">
+            <h1 id="ticketImpressaoId" style="font-size: 36px; font-weight: 900; margin: 0;">T-000</h1>
+        </div>
+        <div style="font-size: 11px; line-height:1.4;">
+            <p><strong>MOTORISTA:</strong> <span id="ticketImpressaoNome">-</span></p>
+            <p><strong>CPF:</strong> <span id="ticketImpressaoCpf">-</span></p>
+            <p><strong>PLACA:</strong> <span id="ticketImpressaoPlaca">-</span></p>
+            <p><strong>TRANSP:</strong> <span id="ticketImpressaoTransp">-</span></p>
+            <p><strong>SLA PATIO:</strong> <span id="ticketImpressaoSla">-</span></p>
+        </div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <div id="qrcodeTicket" style="display: flex; justify-content: center; margin-bottom: 4px;"></div>
+            <p style="font-size: 8px; margin: 0;">ESCANEIE NA PORTARIA / TRIAGEM FISCAL</p>
+        </div>
+    </div>
+
+    <!-- SCRIPT CENTRAL INTERLIGADO -->
+    <script>
+        // CARREGA BASE DE MOTORISTAS COM PERSISTÊNCIA LOCALSTORAGE
+        function carregarBaseMotoristasInicial() {
+            const salvos = localStorage.getItem('yms_base_motoristas');
+            if (salvos) {
+                try { return JSON.parse(salvos); } catch(e) {}
+            }
+            return [
+                { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
+                { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI / Reincidência" }
+            ];
+        }
+
+        function salvarBaseMotoristasNaMemoria() {
+            localStorage.setItem('yms_base_motoristas', JSON.stringify(ymsStore.baseMotoristas));
+        }
+
+        const ymsStore = {
+            agendamentos: [],
+            ordemAtivaFornecedor: null,
+            abaFornecedorAtual: "pendentes",
+            ticketAtivoFiscal: null,
+            ticketAtivoCheckout: null,
+            sequenciaDocasSelecao: [],
+            baseMotoristas: carregarBaseMotoristasInicial()
+        };
+
+        function obterDataHojeISO() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        function obterDataHojePtBR() {
+            const hoje = new Date();
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const ano = hoje.getFullYear();
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        const nomesBase = ['5 Estrelas', 'ALDELBRAS', 'Arcelomittal', 'CSN', 'FOCUS', 'KLABIN', 'Multilog', 'NIDEC', 'PLASTICOVILLE', 'Usiminas', 'Weg Motores', 'Ambev', 'Gerdau', 'Suzano', 'Klabin Papel', 'Bunge', 'Cargill', 'JBS', 'BRF', 'Natura', 'Nestlé', 'Unilever', 'Mondelez', 'Pepsico', 'Heineken', 'Siemens', 'Bosch', 'WEG Transformadores'];
+        const listaTodosFornecedores = [];
+        
+        let contadorForn = 1;
+        while (listaTodosFornecedores.length < 140) {
+            for (let base of nomesBase) {
+                if (listaTodosFornecedores.length < 140) {
+                    listaTodosFornecedores.push(`${base}${contadorForn}`);
+                }
+            }
+            contadorForn++;
+        }
+
+        const listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
+        const slotsDia24h = [];
+        for (let h = 0; h < 24; h++) {
+            for (let m of [0, 30]) {
+                slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+            }
+        }
+
+        let instanceChartCheckin = null;
+        let instanceChartDocas = null;
+        let instanceChartMediaTempo = null;
+
+        function normalizarTexto(txt) {
+            return String(txt || '').toLowerCase().replace(/\s+/g, '').trim();
+        }
+
+        function calcularSlaTicket(ag) {
+            if (!ag || !ag.timeCheckin) return "";
+
+            const timeCheckin = new Date(ag.timeCheckin);
+            const timeFiscal = ag.timeFiscal ? new Date(ag.timeFiscal) : null;
+
+            const [hIni, mIni] = (ag.horaIni || "08:00").split(':').map(Number);
+            const [hFim, mFim] = (ag.horaFim || "09:00").split(':').map(Number);
+            
+            const janelaInicio = new Date(timeCheckin);
+            janelaInicio.setHours(hIni, mIni, 0, 0);
+
+            const janelaFim = new Date(timeCheckin);
+            janelaFim.setHours(hFim, mFim, 0, 0);
+
+            if (timeFiscal) {
+                const diffHorasFiscal = (timeFiscal - timeCheckin) / (1000 * 60 * 60);
+                if (diffHorasFiscal > 1) return "NOTA ATRASADA";
+            }
+
+            if (timeCheckin > janelaInicio) {
+                return "FORNECEDOR ATRASADO";
+            }
+
+            if (ag.timeInicioDescarga && ag.timeFimDescarga) {
+                const duracaoRealMin = (new Date(ag.timeFimDescarga) - new Date(ag.timeInicioDescarga)) / (1000 * 60);
+                const duracaoPlanMin = (janelaFim - janelaInicio) / (1000 * 60);
+                if (duracaoRealMin > duracaoPlanMin) return "DOCA ATRASADA";
+            }
+
+            const limiteAntecipado = new Date(janelaInicio.getTime() - (60 * 60 * 1000));
+            if (timeCheckin < limiteAntecipado) {
+                return "ANTECIPADO";
+            }
+
+            return "NO HORÁRIO";
+        }
+
+        function obterBadgeColorSla(sla) {
+            switch(sla) {
+                case 'ANTECIPADO': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+                case 'NO HORÁRIO': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                case 'FORNECEDOR ATRASADO': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+                case 'NOTA ATRASADA': return 'bg-red-500/20 text-red-400 border-red-500/30';
+                case 'DOCA ATRASADA': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+                default: return 'bg-slate-700 text-slate-300';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setInterval(() => {
+                document.getElementById('relogioGlobal').textContent = new Date().toLocaleTimeString('pt-BR');
+            }, 1000);
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') fecharModalSms();
+            });
+
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+
+            const hojeIso = obterDataHojeISO();
+            document.getElementById('inpData').value = hojeIso;
+            document.getElementById('filtroDataFornecedor').value = hojeIso;
+            document.getElementById('repDataInicio').value = hojeIso;
+            document.getElementById('repDataFim').value = hojeIso;
+
+            popularSelectFornecedores(listaTodosFornecedores);
+            
+            const selDoca = document.getElementById('inpDoca');
+            selDoca.innerHTML = "";
+            listaTodasDocas.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d;
+                selDoca.appendChild(opt);
+            });
+
+            const selDocaOp = document.getElementById('selDocaOperador');
+            selDocaOp.innerHTML = "";
+            listaTodasDocas.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d;
+                selDocaOp.appendChild(opt);
+            });
+
+            atualizarHorariosDisponiveis();
+            sincronizarTodosModulos();
+        });
+
+        function extrairDataReal(row) {
+            let keys = Object.keys(row);
+            let targetKey = keys.find(k => k.match(/dia|data|date|agendamento/i));
+            let rawData = targetKey ? row[targetKey] : Object.values(row)[0];
+            
+            if (!rawData) return obterDataHojePtBR();
+
+            if (typeof rawData === 'number') {
+                const dateObj = XLSX.SSF.parse_date_code(rawData);
+                const dia = String(dateObj.d).padStart(2, '0');
+                const mes = String(dateObj.m).padStart(2, '0');
+                return `${dia}/${mes}/${dateObj.y}`;
+            }
+
+            let dataStr = String(rawData).trim();
+            if (dataStr.includes('-')) {
+                const partes = dataStr.split('T')[0].split('-');
+                if (partes.length === 3) {
+                    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+                }
+            }
+            return dataStr;
+        }
+
+        function dispararSomAlerta() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.4);
+            } catch(e) {}
+        }
+
+        function dispararSmsEtapa(agendamento, etapa) {
+            let numLimpo = String(agendamento.celular || "47992424703").replace(/\D/g, '');
+            let texto = "";
+            const rotaStr = (agendamento.docasSequencia && agendamento.docasSequencia.length > 0) ? agendamento.docasSequencia.join(" ➔ ") : (agendamento.doca || "Doca");
+            const docaAtualStr = agendamento.docasSequencia[agendamento.indexDocaAtual || 0] || "Doca";
+
+            if (etapa === 'CONFIRMADO_FORNECEDOR') {
+                texto = `YMS WHIRLPOOL: Olá ${agendamento.motorista}! Sua viagem para WHIRLPOOL (${agendamento.fornecedor}) em ${agendamento.data} foi CONFIRMADA.\n\n📍 Doca: ${agendamento.doca}\n🕒 Horário Agendado: ${agendamento.horaIni} às ${agendamento.horaFim}\n⚠️ IMPORTANTE: É obrigatório comparecer com 1 HORA DE ANTECEDÊNCIA na fábrica.\n🚚 Placa: ${agendamento.cavalo}\n📌 Apresente seu CPF (${agendamento.cpf}) no totem da portaria ao chegar.`;
+            } else if (etapa === 'CHECKIN_PATIO') {
+                texto = `YMS WHIRLPOOL: Check-in realizado! Seu TICKET DE PÁTIO é: ${agendamento.ticket}. SLA: ${agendamento.statusSlaTicket}. Dirija-se ao Guichê 02 (Triagem Fiscal).`;
+            } else if (etapa === 'TRIAGEM_FISCAL') {
+                texto = `YMS WHIRLPOOL: Ticket ${agendamento.ticket}: Sua NF foi validada!\n\n🛣️ ROTA ROTEIRIZADA: ${rotaStr}\n📍 DIRIDA-SE PRIMEIRO PARA: ${docaAtualStr}. Aguarde a chamada no celular.`;
+            } else if (etapa === 'EM_DESCARGA') {
+                texto = `YMS WHIRLPOOL ALERTA: Motorista ${agendamento.motorista}, seu veículo ${agendamento.cavalo} está autorizado!\n📍 Encoste IMEDIATAMENTE na ${docaAtualStr}.`;
+            } else if (etapa === 'AGUARDANDO_CHECKOUT') {
+                texto = `YMS WHIRLPOOL: Descarregamento finalizado! Dirija-se à Portaria de Saída para realizar o Check-out e liberação da fábrica.`;
+            }
+
+            document.getElementById('notifDestinoMsg').textContent = `Destino: +55 ${numLimpo} (${agendamento.motorista || 'Motorista'})`;
+            document.getElementById('notifTextoCorpo').textContent = texto;
+
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("YMS WHIRLPOOL - Alerta de Carga", { body: texto, icon: "🏭" });
+            }
+
+            dispararSomAlerta();
+
+            document.getElementById('modalSmsNotif').classList.remove('hidden');
+            exibirToast("Alerta Registrado!", `Notificação processada para o motorista.`, "💬");
+        }
+
+        function fecharModalSms() {
+            document.getElementById('modalSmsNotif').classList.add('hidden');
+        }
+
+        function fecharModalSmsExterno(e) {
+            if (e.target.id === 'modalSmsNotif') {
+                fecharModalSms();
+            }
+        }
+
+        function copiarTextoNotificacao() {
+            const txt = document.getElementById('notifTextoCorpo').textContent;
+            navigator.clipboard.writeText(txt).then(() => {
+                exibirToast("Texto Copiado!", "O texto foi copiado para a área de transferência.", "📋");
+            });
+        }
+
+        function mudarPerfil(perfilId) {
+            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.btn-perfil').forEach(btn => {
+                btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
+            });
+
+            document.getElementById(`perfil-${perfilId}`).classList.remove('hidden');
+            const btnAtivo = document.getElementById(`btn-${perfilId}`);
+            btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs bg-indigo-600 text-white shadow";
+
+            sincronizarTodosModulos();
+            if (perfilId === 'torre') carregarGraficosTorre();
+            if (perfilId === 'motoristas') renderizarTabelaMotoristas();
+        }
+
+        function sincronizarTodosModulos() {
+            renderizarGradePCP();
+            renderizarModuloFornecedor();
+            renderizarModuloFiscal();
+            renderizarModuloCheckout();
+            renderizarTabelaMotoristas();
+            atualizarPainelDoca();
+            carregarGraficosTorre();
+        }
+
+        // --- PCP PROGRAMADOR ---
+        function popularSelectFornecedores(lista) {
+            const selForn = document.getElementById('inpFornecedor');
+            selForn.innerHTML = "";
+            
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; 
+                opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+
+            document.getElementById('lblContadorForn').textContent = `(${lista.length} ENCONTRADOS)`;
+        }
+
+        function filtrarOpcoesFornecedor() {
+            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
+            const filtrados = listaTodosFornecedores.filter(f => f.toLowerCase().includes(termo));
+            popularSelectFornecedores(filtrados);
+        }
+
+        function alternarAbaPCP(aba) {
+            document.getElementById('tabIndividualBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            document.getElementById('tabMassaBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            document.getElementById('tabTextoBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+
+            document.getElementById('conteudoIndividual').classList.add('hidden');
+            document.getElementById('conteudoMassa').classList.add('hidden');
+            document.getElementById('conteudoTexto').classList.add('hidden');
+
+            if (aba === 'individual') {
+                document.getElementById('tabIndividualBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoIndividual').classList.remove('hidden');
+            } else if (aba === 'massa') {
+                document.getElementById('tabMassaBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoMassa').classList.remove('hidden');
+            } else {
+                document.getElementById('tabTextoBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoTexto').classList.remove('hidden');
+            }
+        }
+
+        function horaParaMinutos(horaStr) {
+            if (!horaStr || horaStr === '---') return 0;
+            const partes = String(horaStr).trim().split(':');
+            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
+        }
+
+        function formatarHoraExcel(val) {
+            if (val === undefined || val === null || val === '') return '08:00';
+            if (typeof val === 'number') {
+                let totalMinutos = Math.round(val * 24 * 60);
+                let horas = Math.floor(totalMinutos / 60) % 24;
+                let minutos = totalMinutos % 60;
+                return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+            }
+            let str = String(val).trim();
+            if (!isNaN(Number(str)) && str.includes('.')) {
+                let num = Number(str);
+                let totalMinutos = Math.round(num * 24 * 60);
+                let horas = Math.floor(totalMinutos / 60) % 24;
+                let minutos = totalMinutos % 60;
+                return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+            }
+            if (str.includes(':')) {
+                let partes = str.split(':');
+                return `${String(partes[0]).padStart(2, '0')}:${String(partes[1]).padStart(2, '0')}`;
+            }
+            return str;
+        }
+
+        function atualizarHorariosDisponiveis() {
+            const docaSel = document.getElementById('inpDoca').value;
+            const rawData = document.getElementById('inpData').value;
+            if (!rawData) return;
+
+            const partes = rawData.split('-');
+            const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+            const docaNorm = normalizarTexto(docaSel);
+            const dataNorm = normalizarTexto(dataFormatada);
+
+            const ocupados = [];
+            ymsStore.agendamentos.forEach(item => {
+                if (normalizarTexto(item.data) === dataNorm && normalizarTexto(item.doca) === docaNorm) {
+                    let minIni = horaParaMinutos(item.horaIni);
+                    let minFim = horaParaMinutos(item.horaFim);
+                    if (minFim <= minIni) minFim = minIni + 60;
+
+                    ocupados.push({
+                        ini: minIni,
+                        fim: minFim,
+                        ordem: item.ordem,
+                        fornecedor: item.fornecedor
+                    });
+                }
+            });
+
+            const selIni = document.getElementById('inpHora');
+            selIni.innerHTML = "";
+            slotsDia24h.forEach(slot => {
+                const minSlot = horaParaMinutos(slot);
+                let colide = false;
+                for (let oc of ocupados) {
+                    if (minSlot >= oc.ini && minSlot < oc.fim) { colide = true; break; }
+                }
+                if (!colide) {
+                    const opt = document.createElement('option');
+                    opt.value = slot; opt.textContent = `${slot}h (Livre)`;
+                    selIni.appendChild(opt);
+                }
+            });
+
+            const gridTimeline = document.getElementById('gridTimelineHorarios');
+            gridTimeline.innerHTML = "";
+
+            slotsDia24h.forEach(slot => {
+                const minSlot = horaParaMinutos(slot);
+                let agOcupante = null;
+
+                for (let oc of ocupados) {
+                    if (minSlot >= oc.ini && minSlot < oc.fim) {
+                        agOcupante = oc;
+                        break;
+                    }
+                }
+
+                if (agOcupante) {
+                    const btnBox = `
+                        <div title="${agOcupante.ordem} - ${agOcupante.fornecedor}" class="bg-red-500/30 border border-red-500/60 text-red-200 p-1 rounded text-center text-[10px] font-mono font-bold cursor-not-allowed">
+                            ${slot}
+                        </div>
+                    `;
+                    gridTimeline.insertAdjacentHTML('beforeend', btnBox);
+                } else {
+                    const btnBox = `
+                        <div onclick="selecionarHorarioPelaGrade('${slot}')" title="Clique para selecionar ${slot}" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 p-1 rounded text-center text-[10px] font-mono font-bold cursor-pointer transition">
+                            ${slot}
+                        </div>
+                    `;
+                    gridTimeline.insertAdjacentHTML('beforeend', btnBox);
+                }
+            });
+
+            atualizarHorarioFimMinimo();
+        }
+
+        function selecionarHorarioPelaGrade(slot) {
+            const selIni = document.getElementById('inpHora');
+            if (selIni.querySelector(`option[value="${slot}"]`)) {
+                selIni.value = slot;
+                atualizarHorarioFimMinimo();
+                exibirToast("Horário Selecionado!", `Início definido para ${slot}h.`, "🕒");
+            } else {
+                alert(`O horário ${slot}h não está disponível.`);
+            }
+        }
+
+        function atualizarHorarioFimMinimo() {
+            const selIni = document.getElementById('inpHora');
+            const selFim = document.getElementById('inpHoraFim');
+            selFim.innerHTML = "";
+            if (!selIni.value) return;
+
+            const minIni = horaParaMinutos(selIni.value);
+            slotsDia24h.forEach(slot => {
+                if (horaParaMinutos(slot) > minIni) {
+                    const opt = document.createElement('option');
+                    opt.value = slot; opt.textContent = `${slot}h`;
+                    selFim.appendChild(opt);
+                }
+            });
+        }
+
+        function criarJanelaManual(e) {
+            e.preventDefault();
+            const rawData = document.getElementById('inpData').value.split('-');
+            const novaOrdem = `ORD-${ymsStore.agendamentos.length + 1000}`;
+            const horaIni = document.getElementById('inpHora').value;
+            const horaFim = document.getElementById('inpHoraFim').value;
+            const fornSel = document.getElementById('inpFornecedor').value;
+
+            if (!fornSel) {
+                alert("Selecione um fornecedor da lista.");
+                return;
+            }
+
+            if (!horaIni || !horaFim) {
+                alert("Selecione os horários de início e fim da janela.");
+                return;
+            }
+
+            const item = {
+                ordem: novaOrdem,
+                data: `${rawData[2]}/${rawData[1]}/${rawData[0]}`,
+                fornecedor: fornSel,
+                doca: document.getElementById('inpDoca').value,
+                horaIni: horaIni,
+                horaFim: horaFim,
+                status: "AGENDADO",
+                nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
+                timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
+            };
+
+            ymsStore.agendamentos.push(item);
+            ymsStore.ordemAtivaFornecedor = novaOrdem;
+
+            sincronizarTodosModulos();
+            exibirToast("Janela Criada!", `Ordem ${novaOrdem} disponibilizada para ${fornSel}.`, "➕");
+        }
+
+        function tratarDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dz = document.getElementById('dropZonePlanilha');
+            dz.classList.add('border-indigo-400', 'bg-indigo-950/60', 'scale-[1.02]');
+            document.getElementById('iconDropZone').textContent = '📥';
+            document.getElementById('txtDropTitle').textContent = 'Solte a planilha aqui para carregar!';
+        }
+
+        function tratarDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dz = document.getElementById('dropZonePlanilha');
+            dz.classList.remove('border-indigo-400', 'bg-indigo-950/60', 'scale-[1.02]');
+            document.getElementById('iconDropZone').textContent = '📂';
+            document.getElementById('txtDropTitle').textContent = 'Arraste e solte a planilha aqui ou clique para selecionar';
+        }
+
+        function tratarDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            tratarDragLeave(e);
+
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                processarArquivoEspecifico(files[0]);
+            }
+        }
+
+        function lerPlanilhaExcel(event) {
+            const file = event.target.files[0];
+            if (file) processarArquivoEspecifico(file);
+        }
+
+        function processarArquivoEspecifico(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                if (json.length === 0) {
+                    alert("A planilha selecionada está vazia.");
+                    return;
+                }
+
+                json.forEach((row) => {
+                    let keys = Object.keys(row);
+                    
+                    let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
+                    let rawForn = kForn ? row[kForn] : 'Fornecedor';
+                    let fornLimpo = String(rawForn).replace(/\s*-\s*Confirme o agendamento.*/i, '').trim();
+
+                    let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
+                    let docaLida = kDoca ? row[kDoca] : listaTodasDocas[0];
+
+                    let kIni = keys.find(k => k.match(/entrada|inicio|início|hora.*ini|start/i));
+                    let kFim = keys.find(k => k.match(/saida|saída|fim|hora.*fim|end/i));
+
+                    const novaOrdem = `ORD-${ymsStore.agendamentos.length + 1000}`;
+                    
+                    ymsStore.agendamentos.push({
+                        ordem: novaOrdem,
+                        data: extrairDataReal(row),
+                        fornecedor: fornLimpo,
+                        doca: docaLida || listaTodasDocas[0],
+                        horaIni: formatarHoraExcel(kIni ? row[kIni] : '08:00'),
+                        horaFim: formatarHoraExcel(kFim ? row[kFim] : '09:00'),
+                        status: "AGENDADO",
+                        nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
+                        timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
+                    });
+                });
+
+                if (ymsStore.agendamentos.length > 0) {
+                    ymsStore.ordemAtivaFornecedor = ymsStore.agendamentos[0].ordem;
+                }
+
+                sincronizarTodosModulos();
+                exibirToast("Planilha Processada!", `${json.length} janelas importadas com sucesso.`, "🚀");
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processarTextoBruto() {
+            const txt = document.getElementById('txtBruto').value.trim();
+            if (!txt) return;
+            const regex = /(\d{2}\/\d{2}\/\d{4})(.*?)(Doca\s*-\s*.*?)(?=\d{2}:\d{2})(\d{2}:\d{2})(\d{2}:\d{2})/g;
+            let match;
+            let count = 0;
+
+            while ((match = regex.exec(txt)) !== null) {
+                count++;
+                const novaOrdem = `ORD-${ymsStore.agendamentos.length + 1000}`;
+                ymsStore.agendamentos.push({
+                    ordem: novaOrdem,
+                    data: match[1],
+                    fornecedor: match[2].replace(/\s*-\s*Confirme o agendamento.*/i, '').trim(),
+                    doca: match[3].trim(),
+                    horaIni: match[4],
+                    horaFim: match[5],
+                    status: "AGENDADO",
+                    nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
+                    timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
+                });
+            }
+
+            if (ymsStore.agendamentos.length > 0) {
+                ymsStore.ordemAtivaFornecedor = ymsStore.agendamentos[0].ordem;
+            }
+
+            sincronizarTodosModulos();
+            exibirToast("Texto Processado!", `${count} janelas extraídas.`, "⚡");
+        }
+
+        function renderizarGradePCP() {
+            const container = document.getElementById('containerJanelas');
+            container.innerHTML = "";
+            document.getElementById('contadorJanelas').textContent = ymsStore.agendamentos.length;
+
+            if (ymsStore.agendamentos.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>`;
+                document.getElementById('painelAcaoSubir').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('painelAcaoSubir').classList.remove('hidden');
+
+            ymsStore.agendamentos.forEach(item => {
+                const card = `
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
+                                <span class="text-[10px] font-mono font-bold text-slate-400">${item.ordem}</span>
+                            </div>
+                            <p class="text-sm font-black text-white">📍 ${item.doca}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
+                            <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+
+            atualizarHorariosDisponiveis();
+        }
+
+        function confirmarESubirJanelas() {
+            exibirToast("Janelas Publicadas!", `${ymsStore.agendamentos.length} agendamentos foram publicados no YMS.`, "🚀");
+            document.getElementById('subtituloGrade').textContent = "🟢 Todas as janelas estão ativas no Portal do Fornecedor";
+        }
+
+        function limparGrade() {
+            ymsStore.agendamentos = [];
+            ymsStore.ordemAtivaFornecedor = null;
+            sincronizarTodosModulos();
+            exibirToast("Lote Limpo", "Grade de janelas descartada.", "🗑️");
+        }
+
+        // --- PORTAL DO FORNECEDOR (COM VERIFICAÇÃO DE BLOQUEIO DE MOTORISTA) ---
+        function alternarAbaFornecedor(aba) {
+            ymsStore.abaFornecedorAtual = aba;
+            const btnPen = document.getElementById('btnAbaPendentes');
+            const btnCon = document.getElementById('btnAbaConfirmadas');
+
+            if (aba === 'pendentes') {
+                btnPen.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white shadow cursor-pointer";
+                btnCon.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer";
+            } else {
+                btnCon.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-emerald-600 text-white shadow cursor-pointer";
+                btnPen.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer";
+            }
+
+            renderizarModuloFornecedor();
+        }
+
+        function buscarMotoristaPorCpf() {
+            const cpfDigitado = document.getElementById('fornCpf').value.replace(/\D/g, '').trim();
+
+            if (!cpfDigitado) {
+                alert("Digite o CPF do motorista para realizar a busca.");
+                return;
+            }
+
+            const encontrado = ymsStore.baseMotoristas.find(m => m.cpf === cpfDigitado);
+
+            if (encontrado) {
+                if (encontrado.status === 'BLOQUEADO') {
+                    alert(`🚫 MOTORISTA BLOQUEADO NO SISTEMA!\n\nMotorista: ${encontrado.nome}\nCPF: ${encontrado.cpf}\nMotivo: ${encontrado.obs || 'Bloqueado pela administração da planta'}.\n\nNão é possível vincular este motorista à carga.`);
+                    document.getElementById('fornMotorista').value = encontrado.nome;
+                    document.getElementById('fornCelular').value = encontrado.celular;
+                    exibirToast("Acesso Negado!", "Motorista BLOQUEADO no banco de dados.", "🚫");
+                    return;
+                }
+
+                document.getElementById('fornMotorista').value = encontrado.nome;
+                document.getElementById('fornCelular').value = encontrado.celular;
+                exibirToast("Motorista Encontrado!", `Dados de ${encontrado.nome} carregados com sucesso.`, "👤");
+            } else {
+                exibirToast("Novo Cadastro", "CPF não encontrado no pré-cadastro. Digite o Nome e Celular para salvar.", "ℹ️");
+            }
+        }
+
+        function renderizarModuloFornecedor() {
+            const container = document.getElementById('listaOrdensFornecedor');
+            container.innerHTML = "";
+
+            const rawDataSel = document.getElementById('filtroDataFornecedor').value.split('-');
+            const dataFiltroFormatted = `${rawDataSel[2]}/${rawDataSel[1]}/${rawDataSel[0]}`;
+
+            const filtradosData = ymsStore.agendamentos.filter(i => normalizarTexto(i.data) === normalizarTexto(dataFiltroFormatted));
+            let ordensExibicao = [];
+
+            if (ymsStore.abaFornecedorAtual === 'pendentes') {
+                ordensExibicao = filtradosData.filter(i => i.status === 'AGENDADO');
+            } else {
+                ordensExibicao = filtradosData.filter(i => i.status !== 'AGENDADO');
+            }
+
+            if (ordensExibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem encontrada nesta aba para ${dataFiltroFormatted}.</p>`;
+                
+                document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
+                document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
+                document.getElementById('fornNf').value = '';
+                document.getElementById('fornTransp').value = '';
+                document.getElementById('fornCavalo').value = '';
+                document.getElementById('fornCarreta').value = '';
+                document.getElementById('fornMotorista').value = '';
+                document.getElementById('fornCpf').value = '';
+                document.getElementById('fornCelular').value = '';
+                return;
+            }
+
+            if (!ymsStore.ordemAtivaFornecedor || !ordensExibicao.some(i => i.ordem === ymsStore.ordemAtivaFornecedor)) {
+                ymsStore.ordemAtivaFornecedor = ordensExibicao[0].ordem;
+            }
+
+            ordensExibicao.forEach(item => {
+                const isSel = item.ordem === ymsStore.ordemAtivaFornecedor;
+                
+                let badgeColor = 'bg-slate-700 text-slate-300';
+                
+                if (item.status === 'AGENDADO') {
+                    badgeColor = 'bg-amber-500/20 text-yellow-400 border-amber-500/30';
+                } else if (item.status === 'CONFIRMADO_FORNECEDOR' || item.status === 'CONCLUIDO') {
+                    badgeColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                } else if (['CHECKIN_PATIO', 'TRIAGEM_FISCAL', 'EM_DESCARGA', 'AGUARDANDO_CHECKOUT'].includes(item.status)) {
+                    badgeColor = 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50 shadow';
+                }
+
+                const card = `
+                    <div onclick="selecionarOrdemFornecedor('${item.ordem}')" class="${isSel ? 'bg-indigo-950 border-2 border-indigo-500' : 'bg-slate-900 border border-slate-700'} p-3 rounded-xl cursor-pointer transition">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="bg-indigo-600 text-white font-mono text-[10px] px-2 py-0.5 rounded">${item.ordem}</span>
+                            <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full ${badgeColor}">${item.status}</span>
+                        </div>
+                        <p class="text-xs font-black text-white mt-1">${item.fornecedor}</p>
+                        <p class="text-[11px] text-indigo-300">🕒 ${item.horaIni} às ${item.horaFim} (${item.doca})</p>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+
+            const ativa = ymsStore.agendamentos.find(i => i.ordem === ymsStore.ordemAtivaFornecedor);
+            if (ativa) {
+                document.getElementById('txtOrdemSelecionada').textContent = `ORDEM SELECIONADA: ${ativa.ordem} (${ativa.fornecedor})`;
+                document.getElementById('txtStatusOrdem').textContent = ativa.status;
+                document.getElementById('fornNf').value = ativa.nf || '';
+                document.getElementById('fornTransp').value = ativa.transp || '';
+                document.getElementById('fornCavalo').value = ativa.cavalo || '';
+                document.getElementById('fornCarreta').value = ativa.carreta || '';
+                document.getElementById('fornMotorista').value = ativa.motorista || '';
+                document.getElementById('fornCpf').value = ativa.cpf || '';
+                document.getElementById('fornCelular').value = ativa.celular || '';
+            }
+        }
+
+        function selecionarOrdemFornecedor(ordem) {
+            ymsStore.ordemAtivaFornecedor = ordem;
+            renderizarModuloFornecedor();
+        }
+
+        function salvarConfirmacaoFornecedor(e) {
+            e.preventDefault();
+            const ativa = ymsStore.agendamentos.find(i => i.ordem === ymsStore.ordemAtivaFornecedor);
+            if (!ativa) {
+                alert("Selecione uma ordem válida.");
+                return;
+            }
+
+            const cpfLimpo = document.getElementById('fornCpf').value.replace(/\D/g, '');
+            const nomeMot = document.getElementById('fornMotorista').value.trim();
+            const celMot = document.getElementById('fornCelular').value.trim();
+
+            // TRAVA DE SEGURANÇA: MOTORISTA BLOQUEADO
+            const motExiste = ymsStore.baseMotoristas.find(m => m.cpf === cpfLimpo);
+            if (motExiste && motExiste.status === 'BLOQUEADO') {
+                alert(`🚫 MOTORISTA BLOQUEADO!\n\nO motorista ${motExiste.nome} (CPF: ${motExiste.cpf}) está bloqueado no sistema e NÃO pode ser vinculado a esta carga.`);
+                return;
+            }
+
+            ativa.nf = document.getElementById('fornNf').value;
+            ativa.transp = document.getElementById('fornTransp').value;
+            ativa.cavalo = document.getElementById('fornCavalo').value;
+            ativa.carreta = document.getElementById('fornCarreta').value;
+            ativa.motorista = nomeMot;
+            ativa.cpf = cpfLimpo;
+            ativa.celular = celMot;
+            ativa.status = "CONFIRMADO_FORNECEDOR";
+
+            const idxJaExiste = ymsStore.baseMotoristas.findIndex(m => m.cpf === cpfLimpo);
+            if (idxJaExiste !== -1) {
+                ymsStore.baseMotoristas[idxJaExiste].nome = nomeMot;
+                ymsStore.baseMotoristas[idxJaExiste].celular = celMot;
+            } else {
+                ymsStore.baseMotoristas.push({ cpf: cpfLimpo, nome: nomeMot, celular: celMot, status: "ATIVO", obs: "Cadastrado pelo Portal" });
+            }
+
+            salvarBaseMotoristasNaMemoria();
+
+            ymsStore.ordemAtivaFornecedor = null;
+
+            sincronizarTodosModulos();
+            dispararSmsEtapa(ativa, 'CONFIRMADO_FORNECEDOR');
+        }
+
+        // --- TOTEM AUTOATENDIMENTO (TRAVA DE SEGURANÇA PARA BLOQUEADOS) ---
+        function digitarTotem(n) {
+            const input = document.getElementById('displayTotem');
+            if (input.value.length < 11) input.value += n;
+        }
+
+        function limparTotem() { 
+            document.getElementById('displayTotem').value = ''; 
+        }
+
+        function apagarTotem() {
+            const input = document.getElementById('displayTotem');
+            input.value = input.value.slice(0, -1);
+        }
+
+        function finalizarCheckinTotem() {
+            const cpfDig = document.getElementById('displayTotem').value.trim();
+            
+            // VERIFICA SE O MOTORISTA ESTÁ BLOQUEADO NA BASE
+            const motExiste = ymsStore.baseMotoristas.find(m => m.cpf === cpfDig);
+            if (motExiste && motExiste.status === 'BLOQUEADO') {
+                alert(`🚫 ATENÇÃO MOTORISTA BLOQUEADO!\n\nSeu cadastro possui restrições de acesso à planta.\nDirija-se à Portaria Principal para esclarecimentos.`);
+                limparTotem();
+                return;
+            }
+
+            const ag = ymsStore.agendamentos.find(i => i.cpf === cpfDig && (i.status === 'CONFIRMADO_FORNECEDOR' || i.status === 'AGENDADO'));
+
+            if (!ag) {
+                alert("Nenhum agendamento confirmado encontrado para este CPF. Realize o pré-cadastro no Portal do Fornecedor.");
+                return;
+            }
+
+            limparTotem();
+
+            ag.ticket = `T-${Math.floor(100 + Math.random() * 900)}`;
+            ag.status = "CHECKIN_PATIO";
+            ag.timeCheckin = new Date().toISOString();
+            
+            ag.statusSlaTicket = calcularSlaTicket(ag);
+
+            document.getElementById('ticketImpressaoId').textContent = ag.ticket;
+            document.getElementById('ticketImpressaoNome').textContent = ag.motorista || 'Motorista';
+            document.getElementById('ticketImpressaoCpf').textContent = ag.cpf || cpfDig;
+            document.getElementById('ticketImpressaoPlaca').textContent = ag.cavalo || '-';
+            document.getElementById('ticketImpressaoTransp').textContent = ag.transp || '-';
+            document.getElementById('ticketImpressaoSla').textContent = ag.statusSlaTicket;
+
+            document.getElementById('qrcodeTicket').innerHTML = "";
+            new QRCode(document.getElementById("qrcodeTicket"), {
+                text: `${ag.ticket}|CPF:${ag.cpf}|PLACA:${ag.cavalo}|SLA:${ag.statusSlaTicket}`,
+                width: 100,
+                height: 100
+            });
+
+            setTimeout(() => {
+                window.print();
+            }, 300);
+
+            sincronizarTodosModulos();
+            dispararSmsEtapa(ag, 'CHECKIN_PATIO');
+        }
+
+        // --- FISCAL ---
+        function renderizarModuloFiscal() {
+            const container = document.getElementById('listaPatioFiscal');
+            container.innerHTML = "";
+            const emPatio = ymsStore.agendamentos.filter(i => i.status === 'CHECKIN_PATIO');
+            document.getElementById('badgeQtdPatio').textContent = emPatio.length;
+
+            if (emPatio.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Nenhum veículo no pátio aguardando triagem.</p>`;
+            } else {
+                emPatio.forEach(item => {
+                    item.statusSlaTicket = calcularSlaTicket(item);
+                    const isSel = item.ticket === ymsStore.ticketAtivoFiscal;
+                    const badgeSlaColor = obterBadgeColorSla(item.statusSlaTicket);
+
+                    const card = `
+                        <div onclick="selecionarTicketFiscal('${item.ticket}')" class="${isSel ? 'bg-purple-950 border-2 border-purple-500' : 'bg-slate-900 border border-slate-700'} p-3 rounded-xl cursor-pointer transition">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="bg-purple-600 text-white font-mono text-xs px-2 py-0.5 rounded">${item.ticket}</span>
+                                <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full ${badgeSlaColor}">${item.statusSlaTicket}</span>
+                            </div>
+                            <p class="text-xs font-black text-white">${item.cavalo} • ${item.transp}</p>
+                            <p class="text-[11px] text-slate-400">Driver: ${item.motorista} | NF: ${item.nf}</p>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', card);
+                });
+            }
+
+            const gridDocas = document.getElementById('gridDocasFiscal');
+            gridDocas.innerHTML = "";
+            listaTodasDocas.forEach(doca => {
+                const indexNaSeq = ymsStore.sequenciaDocasSelecao.indexOf(doca);
+                const selecionada = indexNaSeq !== -1;
+                const badgeOrdem = selecionada ? `<span class="bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full border border-yellow-300 shadow">${indexNaSeq + 1}ª Doca</span>` : `<span class="text-[10px] text-slate-500 font-bold">+ Adicionar</span>`;
+
+                const box = `
+                    <div onclick="alternarDocaNaSequencia('${doca}')" class="bg-slate-900 p-3.5 rounded-xl flex items-center justify-between border ${selecionada ? 'border-amber-400 bg-amber-950/20' : 'border-slate-700'} cursor-pointer hover:border-purple-500 transition select-none">
+                        <span class="text-xs font-bold ${selecionada ? 'text-amber-300' : 'text-white'}">${doca}</span>
+                        ${badgeOrdem}
+                    </div>
+                `;
+                gridDocas.insertAdjacentHTML('beforeend', box);
+            });
+
+            const displayRota = document.getElementById('displayRotaSequencial');
+            if (ymsStore.sequenciaDocasSelecao.length === 0) {
+                displayRota.innerHTML = `<span class="text-slate-500 italic">Nenhuma doca selecionada</span>`;
+            } else {
+                displayRota.innerHTML = ymsStore.sequenciaDocasSelecao.map((d, idx) => `
+                    <span class="bg-purple-900/80 text-purple-200 border border-purple-500 px-2 py-0.5 rounded-lg">${idx + 1}º: ${d}</span>
+                `).join(" <span class='text-amber-400 font-black'>➔</span> ");
+            }
+
+            const ativo = emPatio.find(i => i.ticket === ymsStore.ticketAtivoFiscal);
+            if (ativo) {
+                document.getElementById('txtTicketFiscalAtivo').textContent = `Atendendo: ${ativo.ticket}`;
+                document.getElementById('fiscMotorista').textContent = ativo.motorista;
+                document.getElementById('fiscPlaca').textContent = `${ativo.cavalo} / ${ativo.carreta || '-'}`;
+                document.getElementById('fiscNf').textContent = ativo.nf;
+            } else {
+                document.getElementById('txtTicketFiscalAtivo').textContent = `Selecione um Ticket`;
+                document.getElementById('fiscMotorista').textContent = `-`;
+                document.getElementById('fiscPlaca').textContent = `-`;
+                document.getElementById('fiscNf').textContent = `-`;
+            }
+        }
+
+        function alternarDocaNaSequencia(doca) {
+            if (!ymsStore.ticketAtivoFiscal) {
+                alert("Selecione um ticket na fila do pátio para iniciar a montagem da rota.");
+                return;
+            }
+            const idx = ymsStore.sequenciaDocasSelecao.indexOf(doca);
+            if (idx === -1) {
+                ymsStore.sequenciaDocasSelecao.push(doca);
+            } else {
+                ymsStore.sequenciaDocasSelecao.splice(idx, 1);
+            }
+            renderizarModuloFiscal();
+        }
+
+        function resetarSequenciaDocas() {
+            ymsStore.sequenciaDocasSelecao = [];
+            renderizarModuloFiscal();
+        }
+
+        function selecionarTicketFiscal(ticket) {
+            ymsStore.ticketAtivoFiscal = ticket;
+            ymsStore.sequenciaDocasSelecao = [];
+            renderizarModuloFiscal();
+        }
+
+        function liberarParaDocaFiscal() {
+            if (!ymsStore.ticketAtivoFiscal) {
+                alert("Selecione um ticket na fila do pátio primeiro.");
+                return;
+            }
+
+            if (ymsStore.sequenciaDocasSelecao.length === 0) {
+                alert("Selecione pelo menos uma doca para formar a sequência.");
+                return;
+            }
+
+            const item = ymsStore.agendamentos.find(i => i.ticket === ymsStore.ticketAtivoFiscal);
+            if (!item) {
+                alert("Ticket não encontrado.");
+                return;
+            }
+
+            item.docasSequencia = [...ymsStore.sequenciaDocasSelecao];
+            item.indexDocaAtual = 0;
+            item.status = "TRIAGEM_FISCAL";
+            item.timeFiscal = new Date().toISOString();
+
+            item.statusSlaTicket = calcularSlaTicket(item);
+
+            ymsStore.ticketAtivoFiscal = null;
+            ymsStore.sequenciaDocasSelecao = [];
+
+            sincronizarTodosModulos();
+            dispararSmsEtapa(item, 'TRIAGEM_FISCAL');
+        }
+
+        // --- OPERADOR DE DOCA ---
+        function atualizarPainelDoca() {
+            const docaSel = document.getElementById('selDocaOperador').value;
+            const containerFila = document.getElementById('listaFilaDoca');
+            containerFila.innerHTML = "";
+
+            const docaNorm = normalizarTexto(docaSel);
+
+            const naFila = ymsStore.agendamentos.filter(i => 
+                i.docasSequencia && 
+                normalizarTexto(i.docasSequencia[i.indexDocaAtual]) === docaNorm && 
+                i.status === 'TRIAGEM_FISCAL'
+            );
+
+            const emDescarga = ymsStore.agendamentos.find(i => 
+                i.docasSequencia && 
+                normalizarTexto(i.docasSequencia[i.indexDocaAtual]) === docaNorm && 
+                i.status === 'EM_DESCARGA'
+            );
+
+            document.getElementById('badgeQtdDocaFila').textContent = naFila.length;
+
+            if (emDescarga) {
+                document.getElementById('badgeStatusDoca').textContent = "Descarga em Andamento";
+                document.getElementById('txtTicketDocaGrande').textContent = emDescarga.ticket || 'T-000';
+                document.getElementById('txtPlacaEDetalhesDoca').textContent = `🚚 Placa: ${emDescarga.cavalo} • ${emDescarga.transp || 'Transp'} (Etapa ${emDescarga.indexDocaAtual + 1} de ${emDescarga.docasSequencia.length})`;
+            } else {
+                document.getElementById('badgeStatusDoca').textContent = "Doca Livre";
+                document.getElementById('txtTicketDocaGrande').textContent = "---";
+                document.getElementById('txtPlacaEDetalhesDoca').textContent = "Nenhum Veículo em Descarga";
+            }
+
+            if (naFila.length === 0) {
+                containerFila.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Nenhum caminhão na fila para esta doca.</p>`;
+                return;
+            }
+
+            naFila.forEach((item, idx) => {
+                const badgeSlaColor = obterBadgeColorSla(item.statusSlaTicket);
+
+                const card = `
+                    <div class="bg-slate-900 p-3 rounded-xl border-l-4 border-emerald-500 flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded">${idx + 1}º FIFO - ${item.ticket}</span>
+                                <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full ${badgeSlaColor}">${item.statusSlaTicket || 'NO HORÁRIO'}</span>
+                            </div>
+                            <p class="text-sm font-black text-white">${item.cavalo}</p>
+                            <p class="text-xs text-slate-400">${item.transp}</p>
+                        </div>
+                    </div>
+                `;
+                containerFila.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        function chamarProximoSms() {
+            const docaSel = document.getElementById('selDocaOperador').value;
+            const docaNorm = normalizarTexto(docaSel);
+
+            const proximo = ymsStore.agendamentos.find(i => 
+                i.docasSequencia && 
+                normalizarTexto(i.docasSequencia[i.indexDocaAtual]) === docaNorm && 
+                i.status === 'TRIAGEM_FISCAL'
+            );
+
+            if (!proximo) {
+                alert("Não há caminhões na fila desta doca.");
+                return;
+            }
+
+            proximo.status = "EM_DESCARGA";
+            if (!proximo.timeInicioDescarga) proximo.timeInicioDescarga = new Date().toISOString();
+
+            sincronizarTodosModulos();
+            dispararSmsEtapa(proximo, 'EM_DESCARGA');
+        }
+
+        function finalizarDescargaDoca() {
+            const docaSel = document.getElementById('selDocaOperador').value;
+            const docaNorm = normalizarTexto(docaSel);
+
+            const emDescarga = ymsStore.agendamentos.find(i => 
+                i.docasSequencia && 
+                normalizarTexto(i.docasSequencia[i.indexDocaAtual]) === docaNorm && 
+                i.status === 'EM_DESCARGA'
+            );
+
+            if (!emDescarga) {
+                alert("Não há operação em andamento nesta doca.");
+                return;
+            }
+
+            emDescarga.timeFimDescarga = new Date().toISOString();
+            emDescarga.indexDocaAtual += 1;
+
+            emDescarga.statusSlaTicket = calcularSlaTicket(emDescarga);
+
+            if (emDescarga.indexDocaAtual < emDescarga.docasSequencia.length) {
+                emDescarga.status = "TRIAGEM_FISCAL";
+                const proximaDoca = emDescarga.docasSequencia[emDescarga.indexDocaAtual];
+                exibirToast("Etapa Concluída!", `Veículo direcionado para a próxima doca: ${proximaDoca}`, "🚛");
+                dispararSmsEtapa(emDescarga, 'TRIAGEM_FISCAL');
+            } else {
+                emDescarga.status = "AGUARDANDO_CHECKOUT";
+                exibirToast("Descargas Concluídas!", `Rota de docas finalizada. Veículo direcionado para a Portaria de Check-out.`, "🚪");
+                dispararSmsEtapa(emDescarga, 'AGUARDANDO_CHECKOUT');
+            }
+
+            sincronizarTodosModulos();
+        }
+
+        // --- CHECK-OUT PORTARIA ---
+        function renderizarModuloCheckout() {
+            const container = document.getElementById('listaAguardandoCheckout');
+            container.innerHTML = "";
+
+            const aguardando = ymsStore.agendamentos.filter(i => i.status === 'AGUARDANDO_CHECKOUT');
+            document.getElementById('badgeQtdCheckout').textContent = aguardando.length;
+
+            if (aguardando.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhum veículo aguardando saída no portão.</p>`;
+                document.getElementById('txtTicketCheckoutAtivo').textContent = "Selecione um Veículo";
+                document.getElementById('chkMotorista').textContent = "-";
+                document.getElementById('chkPlaca').textContent = "-";
+                document.getElementById('chkFornecedor').textContent = "-";
+                document.getElementById('chkHoraEntrada').textContent = "-";
+                document.getElementById('chkRotaDocas').textContent = "-";
+                return;
+            }
+
+            if (!ymsStore.ticketAtivoCheckout || !aguardando.some(i => i.ticket === ymsStore.ticketAtivoCheckout)) {
+                ymsStore.ticketAtivoCheckout = aguardando[0].ticket;
+            }
+
+            aguardando.forEach(item => {
+                const isSel = item.ticket === ymsStore.ticketAtivoCheckout;
+                const badgeSlaColor = obterBadgeColorSla(item.statusSlaTicket);
+
+                const card = `
+                    <div onclick="selecionarTicketCheckout('${item.ticket}')" class="${isSel ? 'bg-amber-950 border-2 border-amber-500' : 'bg-slate-900 border border-slate-700'} p-3.5 rounded-2xl cursor-pointer transition">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="bg-amber-500 text-slate-950 font-mono font-black text-xs px-2.5 py-0.5 rounded">${item.ticket}</span>
+                            <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full ${badgeSlaColor}">${item.statusSlaTicket || 'NO HORÁRIO'}</span>
+                        </div>
+                        <p class="text-sm font-black text-white mt-1">🚚 ${item.cavalo} (${item.transp || 'Transportadora'})</p>
+                        <p class="text-[11px] text-slate-400">Motorista: ${item.motorista || '-'} • NF: ${item.nf || '-'}</p>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+
+            const ativo = aguardando.find(i => i.ticket === ymsStore.ticketAtivoCheckout);
+            if (ativo) {
+                document.getElementById('txtTicketCheckoutAtivo').textContent = `Liberando: ${ativo.ticket}`;
+                document.getElementById('chkMotorista').textContent = ativo.motorista || '-';
+                document.getElementById('chkPlaca').textContent = `${ativo.cavalo} / ${ativo.carreta || '-'}`;
+                document.getElementById('chkFornecedor').textContent = `${ativo.fornecedor} (${ativo.ordem})`;
+                document.getElementById('chkHoraEntrada').textContent = formatarHoraIso(ativo.timeCheckin);
+                document.getElementById('chkRotaDocas').textContent = (ativo.docasSequencia && ativo.docasSequencia.length > 0) ? ativo.docasSequencia.join(" ➔ ") : ativo.doca;
+            }
+        }
+
+        function selecionarTicketCheckout(ticket) {
+            ymsStore.ticketAtivoCheckout = ticket;
+            renderizarModuloCheckout();
+        }
+
+        function confirmarSaidaPortaria() {
+            if (!ymsStore.ticketAtivoCheckout) {
+                alert("Selecione um veículo na fila de Check-out.");
+                return;
+            }
+
+            const item = ymsStore.agendamentos.find(i => i.ticket === ymsStore.ticketAtivoCheckout);
+            if (!item) {
+                alert("Veículo não encontrado.");
+                return;
+            }
+
+            item.timeCheckout = new Date().toISOString();
+            item.status = "CONCLUIDO";
+
+            ymsStore.ticketAtivoCheckout = null;
+
+            sincronizarTodosModulos();
+            exibirToast("Check-out Realizado!", `Veículo ${item.cavalo} liberado da fábrica com sucesso. Status atualizado para CONCLUÍDO.`, "🚪");
+        }
+
+        // --- GESTÃO E BANCO DE DADOS DE MOTORISTAS ---
+        function renderizarTabelaMotoristas() {
+            const tbody = document.getElementById('tblCorpoMotoristas');
+            if (!tbody) return;
+
+            tbody.innerHTML = "";
+            const termoBusca = (document.getElementById('filtroMotoristaTabela')?.value || '').toLowerCase().trim();
+
+            const filtrados = ymsStore.baseMotoristas.filter(m => 
+                m.cpf.includes(termoBusca) || m.nome.toLowerCase().includes(termoBusca)
+            );
+
+            document.getElementById('badgeQtdMotoristas').textContent = ymsStore.baseMotoristas.length;
+
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(m => {
+                const isBloqueado = m.status === 'BLOQUEADO';
+                const badgeStatus = isBloqueado 
+                    ? `<span class="bg-red-500/20 text-red-400 border border-red-500/40 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>`
+                    : `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>`;
+
+                const row = `
+                    <tr class="hover:bg-slate-900/60 transition">
+                        <td class="p-3 font-mono font-bold text-emerald-400">${m.cpf}</td>
+                        <td class="p-3 font-bold text-white">${m.nome}</td>
+                        <td class="p-3 font-mono text-yellow-400">${m.celular}</td>
+                        <td class="p-3">${badgeStatus}</td>
+                        <td class="p-3 text-center space-x-1">
+                            <button onclick="carregarMotoristaParaEdicao('${m.cpf}')" title="Editar dados" class="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded-lg transition text-xs">✏️</button>
+                            <button onclick="alternarStatusMotorista('${m.cpf}')" title="${isBloqueado ? 'Liberar Acesso' : 'Bloquear Acesso'}" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'} text-white p-1.5 rounded-lg transition text-xs">
+                                ${isBloqueado ? '🔓' : '🔒'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function salvarMotoristaManual(e) {
+            e.preventDefault();
+            const cpf = document.getElementById('cadMotCpf').value.replace(/\D/g, '').trim();
+            const nome = document.getElementById('cadMotNome').value.trim();
+            const celular = document.getElementById('cadMotCelular').value.trim();
+            const status = document.getElementById('cadMotStatus').value;
+            const obs = document.getElementById('cadMotObs').value.trim();
+
+            if (!cpf || !nome) {
+                alert("Preencha o CPF e o Nome do motorista.");
+                return;
+            }
+
+            const idx = ymsStore.baseMotoristas.findIndex(m => m.cpf === cpf);
+            if (idx !== -1) {
+                ymsStore.baseMotoristas[idx] = { cpf, nome, celular, status, obs };
+                exibirToast("Motorista Atualizado!", `${nome} teve seus dados e status salvos.`, "🪪");
+            } else {
+                ymsStore.baseMotoristas.push({ cpf, nome, celular, status, obs });
+                exibirToast("Motorista Cadastrado!", `${nome} foi incluído no banco de dados.`, "➕");
+            }
+
+            salvarBaseMotoristasNaMemoria();
+
+            document.getElementById('cadMotCpf').value = "";
+            document.getElementById('cadMotNome').value = "";
+            document.getElementById('cadMotCelular').value = "";
+            document.getElementById('cadMotObs').value = "";
+
+            sincronizarTodosModulos();
+        }
+
+        function carregarMotoristaParaEdicao(cpf) {
+            const mot = ymsStore.baseMotoristas.find(m => m.cpf === cpf);
+            if (!mot) return;
+
+            document.getElementById('cadMotCpf').value = mot.cpf;
+            document.getElementById('cadMotNome').value = mot.nome;
+            document.getElementById('cadMotCelular').value = mot.celular;
+            document.getElementById('cadMotStatus').value = mot.status;
+            document.getElementById('cadMotObs').value = mot.obs || '';
+
+            exibirToast("Carregado para Edição", `Dados de ${mot.nome} prontos para alteração.`, "✏️");
+        }
+
+        function alternarStatusMotorista(cpf) {
+            const mot = ymsStore.baseMotoristas.find(m => m.cpf === cpf);
+            if (!mot) return;
+
+            mot.status = (mot.status === 'BLOQUEADO') ? 'ATIVO' : 'BLOQUEADO';
+            salvarBaseMotoristasNaMemoria();
+            sincronizarTodosModulos();
+
+            exibirToast("Status Alterado!", `Motorista ${mot.nome} agora está ${mot.status}.`, mot.status === 'BLOQUEADO' ? "🔴" : "🟢");
+        }
+
+        // --- TORRE DE CONTROLE & EXPORTAÇÃO EXCEL DO RELATÓRIO ---
+        function obterDiaSemanaPtBR(dataStr) {
+            if (!dataStr) return "SEGUNDA";
+            const [d, m, y] = dataStr.split('/').map(Number);
+            const dt = new Date(y, m - 1, d);
+            const dias = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
+            return dias[dt.getDay()] || 'SEGUNDA';
+        }
+
+        function formatarHoraIso(isoStr) {
+            if (!isoStr) return "--:--";
+            const dt = new Date(isoStr);
+            return dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function calcularDiferencaHorasFormatada(horaIni, horaFim) {
+            if (!horaIni || !horaFim || horaIni === '--:--' || horaFim === '--:--') return "0:00";
+            let mIni = horaParaMinutos(horaIni);
+            let mFim = horaParaMinutos(horaFim);
+            if (mFim < mIni) mFim += 1440;
+            let diff = Math.max(0, mFim - mIni);
+            let h = Math.floor(diff / 60);
+            let m = diff % 60;
+            return `${h}:${String(m).padStart(2, '0')}`;
+        }
+
+        function obterItensFiltradosRelatorio() {
+            const dtIniStr = document.getElementById('repDataInicio').value;
+            const dtFimStr = document.getElementById('repDataFim').value;
+
+            const dtIni = dtIniStr ? new Date(dtIniStr + 'T00:00:00') : new Date('2020-01-01');
+            const dtFim = dtFimStr ? new Date(dtFimStr + 'T23:59:59') : new Date('2030-12-31');
+
+            return ymsStore.agendamentos.filter(ag => {
+                if (!ag.data) return false;
+                const [d, m, y] = ag.data.split('/').map(Number);
+                const dtAg = new Date(y, m - 1, d);
+                return dtAg >= dtIni && dtAg <= dtFim;
+            });
+        }
+
+        function carregarGraficosTorre() {
+            setTimeout(() => {
+                const totalAg = ymsStore.agendamentos.length;
+                const concluidos = ymsStore.agendamentos.filter(i => i.status === 'CONCLUIDO').length;
+                const emPatio = ymsStore.agendamentos.filter(i => i.status === 'CHECKIN_PATIO' || i.status === 'TRIAGEM_FISCAL' || i.status === 'EM_DESCARGA' || i.status === 'AGUARDANDO_CHECKOUT').length;
+                const aguardando = Math.max(0, totalAg - emPatio - concluidos);
+
+                const canvasCheckin = document.getElementById('chartCheckin');
+                if (canvasCheckin) {
+                    if (instanceChartCheckin) instanceChartCheckin.destroy();
+                    instanceChartCheckin = new Chart(canvasCheckin, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Em Pátio', 'Concluídos', 'Aguardando'],
+                            datasets: [{
+                                data: [emPatio, concluidos, aguardando],
+                                backgroundColor: ['#facc15', '#4ade80', '#60a5fa']
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+
+                const contagemDocas = {};
+                listaTodasDocas.forEach(d => contagemDocas[d] = 0);
+
+                ymsStore.agendamentos.forEach(item => {
+                    if (item.status === 'EM_DESCARGA' || item.status === 'TRIAGEM_FISCAL') {
+                        const docaAtual = (item.docasSequencia && item.docasSequencia.length > 0) ? item.docasSequencia[item.indexDocaAtual || 0] : item.doca;
+                        
+                        const docaEncontrada = listaTodasDocas.find(d => normalizarTexto(d) === normalizarTexto(docaAtual));
+                        if (docaEncontrada && contagemDocas[docaEncontrada] !== undefined) {
+                            contagemDocas[docaEncontrada] += 1;
+                        }
+                    }
+                });
+
+                const canvasDocas = document.getElementById('chartDocas');
+                if (canvasDocas) {
+                    if (instanceChartDocas) instanceChartDocas.destroy();
+                    instanceChartDocas = new Chart(canvasDocas, {
+                        type: 'bar',
+                        data: {
+                            labels: listaTodasDocas,
+                            datasets: [{
+                                label: 'Veículos Ativos',
+                                data: listaTodasDocas.map(d => contagemDocas[d]),
+                                backgroundColor: '#6366f1',
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } } }
+                        }
+                    });
+                }
+
+                const somaTemposDoca = {};
+                const qtdAgendamentosDoca = {};
+                listaTodasDocas.forEach(d => { somaTemposDoca[d] = 0; qtdAgendamentosDoca[d] = 0; });
+
+                ymsStore.agendamentos.forEach(item => {
+                    const minIni = horaParaMinutos(item.horaIni);
+                    let minFim = horaParaMinutos(item.horaFim);
+
+                    if (minFim < minIni) {
+                        minFim += 1440;
+                    }
+
+                    let duracaoMinutos = Math.max(0, minFim - minIni);
+
+                    const docasAfetadas = (item.docasSequencia && item.docasSequencia.length > 0) 
+                        ? item.docasSequencia 
+                        : [item.doca];
+
+                    docasAfetadas.forEach(dTarget => {
+                        const docaEncontrada = listaTodasDocas.find(d => normalizarTexto(d) === normalizarTexto(dTarget));
+                        if (docaEncontrada && somaTemposDoca[docaEncontrada] !== undefined) {
+                            somaTemposDoca[docaEncontrada] += duracaoMinutos;
+                            qtdAgendamentosDoca[docaEncontrada] += 1;
+                        }
+                    });
+                });
+
+                const mediasDuracaoReal = listaTodasDocas.map(d => {
+                    return qtdAgendamentosDoca[d] > 0 ? Math.round(somaTemposDoca[d] / qtdAgendamentosDoca[d]) : 0;
+                });
+
+                const canvasMedia = document.getElementById('chartMediaTempoDoca');
+                if (canvasMedia) {
+                    if (instanceChartMediaTempo) instanceChartMediaTempo.destroy();
+                    instanceChartMediaTempo = new Chart(canvasMedia, {
+                        type: 'bar',
+                        data: {
+                            labels: listaTodasDocas,
+                            datasets: [{
+                                label: 'Duração Média Agendada (Minutos)',
+                                data: mediasDuracaoReal,
+                                backgroundColor: '#f59e0b',
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { 
+                                y: { 
+                                    beginAtZero: true, 
+                                    min: 0, 
+                                    ticks: { stepSize: 15 } 
+                                } 
+                            }
+                        }
+                    });
+                }
+
+                const itemsRelatorio = obterItensFiltradosRelatorio();
+                const tbody = document.getElementById('tblPreviewRelatorio');
+                tbody.innerHTML = "";
+
+                if (itemsRelatorio.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-500 italic">Nenhum ticket encontrado no período selecionado.</td></tr>`;
+                    return;
+                }
+
+                itemsRelatorio.forEach(ag => {
+                    const hChegPlanta = formatarHoraIso(ag.timeCheckin);
+                    const hHrsNf = formatarHoraIso(ag.timeFiscal);
+                    const hRealEnt = formatarHoraIso(ag.timeInicioDescarga);
+                    const hRealSaida = formatarHoraIso(ag.timeCheckout || ag.timeFimDescarga);
+                    const tDescarga = calcularDiferencaHorasFormatada(hRealEnt, formatarHoraIso(ag.timeFimDescarga));
+                    const docasStr = (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" / ") : ag.doca;
+
+                    const row = `
+                        <tr class="hover:bg-slate-900/60 transition">
+                            <td class="p-2.5 font-bold text-indigo-400">${ag.ordem}</td>
+                            <td class="p-2.5 text-yellow-400 font-bold">${ag.cavalo || '-'}</td>
+                            <td class="p-2.5">${obterDiaSemanaPtBR(ag.data)}</td>
+                            <td class="p-2.5 font-bold">${ag.fornecedor}</td>
+                            <td class="p-2.5">${hChegPlanta}</td>
+                            <td class="p-2.5">${hHrsNf}</td>
+                            <td class="p-2.5">${docasStr}</td>
+                            <td class="p-2.5 text-emerald-400">${hRealEnt}</td>
+                            <td class="p-2.5 text-emerald-400">${hRealSaida}</td>
+                            <td class="p-2.5 font-bold text-amber-400">${tDescarga}</td>
+                            <td class="p-2.5"><span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[9px] font-bold border border-slate-700">${ag.statusSlaTicket || ag.status}</span></td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+
+            }, 150);
+        }
+
+        function exportarRelatorioExcelFormatado() {
+            const items = obterItensFiltradosRelatorio();
+
+            if (items.length === 0) {
+                alert("Não há dados no período selecionado para exportar.");
+                return;
+            }
+
+            const dadosPlanilha = [];
+
+            dadosPlanilha.push([
+                "PORTARIA", "[", "PADRÃO", "", "", "", "", "", "HORARIO AGENDA", "", "", "HORARIO REAL", "", "", "", "", ""
+            ]);
+
+            dadosPlanilha.push([
+                "CARGA",
+                "PLACA CAMINHÃO",
+                "DIA SEMAN",
+                "FORNECEDORES",
+                "EPI",
+                "CHEG. PLANTA",
+                "HRS NF",
+                "LIBERAÇÃO PORTÃO",
+                "SAÍDA PLANTA",
+                "NO+gfcdx",
+                "LOCAL DOCA",
+                "ENTRADA",
+                "SAÍDA",
+                "TEMPO",
+                "ENTRADA",
+                "SAÍDA",
+                "TEMPO DESCARGA",
+                "STATUS",
+                "CONFERENTE",
+                "CARREGA EMBALAGEM"
+            ]);
+
+            items.forEach(ag => {
+                const hChegPlanta = formatarHoraIso(ag.timeCheckin);
+                const hHrsNf = formatarHoraIso(ag.timeFiscal);
+                const hRealEnt = formatarHoraIso(ag.timeInicioDescarga);
+                const hRealSaidaDescarga = formatarHoraIso(ag.timeFimDescarga);
+                const hSaidaPlantaCheckout = formatarHoraIso(ag.timeCheckout || ag.timeFimDescarga);
+                
+                const tDescarga = calcularDiferencaHorasFormatada(hRealEnt, hRealSaidaDescarga);
+                const tPlan = calcularDiferencaHorasFormatada(ag.horaIni, ag.horaFim);
+                const docasStr = (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" / ") : ag.doca;
+
+                dadosPlanilha.push([
+                    ag.ordem || '',
+                    ag.cavalo || '',
+                    obterDiaSemanaPtBR(ag.data),
+                    ag.fornecedor || '',
+                    "SIM",
+                    hChegPlanta,
+                    hHrsNf,
+                    hChegPlanta,
+                    hSaidaPlantaCheckout,
+                    ag.ticket || '',
+                    docasStr,
+                    ag.horaIni || '',
+                    ag.horaFim || '',
+                    tPlan,
+                    hRealEnt,
+                    hRealSaidaDescarga,
+                    tDescarga,
+                    ag.statusSlaTicket || ag.status || 'NO HORÁRIO',
+                    "OPERADOR DOCA",
+                    "NÃO"
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(dadosPlanilha);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "RELATÓRIO PÁTIO");
+
+            const dtIniStr = document.getElementById('repDataInicio').value || 'inicio';
+            const dtFimStr = document.getElementById('repDataFim').value || 'fim';
+            
+            XLSX.writeFile(wb, `RELATORIO_PATIO_YMS_${dtIniStr}_A_${dtFimStr}.xlsx`);
+            exibirToast("Relatório Gerado!", "O arquivo Excel formatado foi baixado com sucesso.", "📊");
+        }
+
+        function exibirToast(titulo, sub, icone = "✨") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastIcon').textContent = icone;
+            document.getElementById('toastTitulo').textContent = titulo;
+            document.getElementById('toastSub').textContent = sub;
+            toast.className = "fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-100 z-50 min-w-[320px]";
+            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
+        }
+    </script>
+</body>
+</html>
