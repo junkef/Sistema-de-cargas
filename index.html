@@ -4,31 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (Leitura e Geração de Excel) -->
+    <!-- SheetJS (Excel) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js (Gráficos Torre de Controle) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCodeJS (Ticket Impresso do Totem) -->
+    <!-- QRCodeJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <style>
+        /* FALLBACKS CSS NATIVOS - GARANTE FUNCIONAMENTO MESMO SEM CDN */
+        .hidden { display: none !important; }
         input[type="date"] { color-scheme: dark; }
         
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0f172a;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #4f46e5;
-        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
 
         @media print {
             body > *:not(#ticketImpressao) { display: none !important; }
@@ -1203,11 +1204,7 @@
             salvarCredenciaisFornecedoresNaMemoria();
             atualizarTodasListasFornecedores();
 
-            excluirToast("Fornecedor Removido", `Empresa ${empresa} foi excluída da base.`, "🗑️");
-        }
-
-        function excluirToast(titulo, sub, icone) {
-            exibirToast(titulo, sub, icone);
+            exibirToast("Fornecedor Removido", `Empresa ${empresa} foi excluída da base.`, "🗑️");
         }
 
         // CONFIRMAÇÃO E VALIDAÇÃO DA SENHA EXCLUSIVA DO FORNECEDOR
