@@ -266,7 +266,12 @@
                             <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
                             <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos Sincronizados com o YMS</p>
                         </div>
-                        <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">0</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="limparJanelasSubidas()" title="Apagar todas as janelas ativas no banco de dados" class="bg-red-950/80 hover:bg-red-800 text-red-300 border border-red-500/40 text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1 shadow">
+                                🗑️ Limpar Todas Subidas
+                            </button>
+                            <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">0</span>
+                        </div>
                     </div>
                     <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1">
                         <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
@@ -1896,6 +1901,23 @@
             window.ymsStore.rascunhoAgendamentos = [];
             window.renderizarGradePCP();
             window.exibirToast("Rascunho Limpo", "Grade de rascunho foi zerada.", "🗑️");
+        };
+
+        window.limparJanelasSubidas = function() {
+            if (window.ymsStore.agendamentos.length === 0) {
+                alert("Não há janelas subidas/oficiais para apagar.");
+                return;
+            }
+            
+            if (!confirm("⚠️ ATENÇÃO!\n\nVocê tem certeza que deseja APAGAR TODAS as " + window.ymsStore.agendamentos.length + " janelas subidas do sistema?\n\nEssa ação limpará o banco de dados no Firebase para TODOS os usuários conectados em tempo real!")) return;
+            
+            // Zera o array de agendamentos oficiais
+            window.ymsStore.agendamentos = [];
+            
+            // Sincroniza e limpa no Firebase
+            window.salvarAgendamentosNaMemoria();
+            
+            window.exibirToast("Banco Zerado!", "Todas as janelas subidas foram removidas.", "🗑️");
         };
 
         window.renderizarGradePCP = function() {
