@@ -1385,6 +1385,7 @@
 
             if (senhaForn === (cadForn ? cadForn.senha : "123") || senhaForn === "admin" || senhaForn === "1234") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
+                localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
                 window.concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
             } else {
                 alert("Senha incorreta!");
@@ -1415,7 +1416,12 @@
         };
 
         window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos) {
-            window.ymsStore.usuarioLogado = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos };
+            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos };
+            window.ymsStore.usuarioLogado = sessaoData;
+            
+            // Grava a sessão localmente para persistir após F5
+            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessaoData));
+
             document.getElementById('modalLoginGlobal').classList.add('hidden');
             document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
 
@@ -1439,9 +1445,36 @@
             window.mudarPerfil(modulosPermitidos[0]);
         };
 
+        window.restaurarSessaoLocal = function() {
+            try {
+                const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
+                const empForSalva = localStorage.getItem('yms_empresa_fornecedor_logada');
+
+                if (empForSalva) {
+                    window.ymsStore.empresaFornecedorLogada = empForSalva;
+                }
+
+                if (sessaoSalva) {
+                    const parsed = JSON.parse(sessaoSalva);
+                    if (parsed && parsed.key && parsed.modulosCustom) {
+                        window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom);
+                        return true;
+                    }
+                }
+            } catch(e) {
+                console.error("Erro ao restaurar sessão:", e);
+            }
+            return false;
+        };
+
         window.fazerLogoutGlobal = function() {
             window.ymsStore.usuarioLogado = null;
             window.ymsStore.empresaFornecedorLogada = null;
+            
+            // Limpa dados de sessão do navegador
+            localStorage.removeItem('yms_sessao_usuario');
+            localStorage.removeItem('yms_empresa_fornecedor_logada');
+
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
             document.getElementById('boxSenhaLogin').classList.add('hidden');
             document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
@@ -1557,6 +1590,9 @@
                 opt.value = d; opt.textContent = d;
                 selDocaOp.appendChild(opt);
             });
+
+            // Tenta restaurar sessão prévia
+            window.restaurarSessaoLocal();
 
             // Inicializar escuta Realtime
             inicializarEscutadoresFirebase();
