@@ -269,7 +269,7 @@
                         <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">0</span>
                     </div>
                     <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1">
-                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no rascunho.</p>
+                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela aguardando no rascunho.</p>
                     </div>
                 </div>
 
@@ -962,10 +962,21 @@
             ];
         }
 
+        // CARREGA AGENDAMENTOS OFICIAIS DO LOCALSTORAGE (SALA ANTI-F5)
+        function carregarAgendamentosIniciais() {
+            const salvos = localStorage.getItem('yms_agendamentos_oficiais');
+            if (salvos) { try { return JSON.parse(salvos); } catch(e) {} }
+            return [];
+        }
+
         let mapaCredenciaisFornecedores = carregarCredenciaisFornecedoresIniciais();
 
         function obterListaNomesFornecedores() {
             return mapaCredenciaisFornecedores.map(f => f.empresa).sort();
+        }
+
+        function salvarAgendamentosNaMemoria() {
+            localStorage.setItem('yms_agendamentos_oficiais', JSON.stringify(ymsStore.agendamentos));
         }
 
         function salvarCredenciaisFornecedoresNaMemoria() {
@@ -981,8 +992,8 @@
         }
 
         const ymsStore = {
-            agendamentos: [],            // Apenas janelas CONFIRMADAS pelo botão verde
-            rascunhoAgendamentos: [],    // Rascunho do PCP (NÃO VISÍVEL NO FORNECEDOR/PÁTIO)
+            agendamentos: carregarAgendamentosIniciais(), // Carrega do LocalStorage para resistir ao F5
+            rascunhoAgendamentos: [],                    // Rascunho temporário do PCP
             ordemAtivaFornecedor: null,
             abaFornecedorAtual: "pendentes",
             ticketAtivoFiscal: null,
@@ -1524,6 +1535,7 @@
         }
 
         function sincronizarTodosModulos() {
+            salvarAgendamentosNaMemoria(); // Salva estado atualizado contra F5
             renderizarGradePCP();
             renderizarModuloFornecedor();
             renderizarModuloFiscal();
@@ -1589,7 +1601,6 @@
             const dataNorm = normalizarTexto(dataFormatada);
 
             const ocupados = [];
-            // Bloqueia horários ocupados por janelas já confirmadas ou em rascunho
             [...ymsStore.agendamentos, ...ymsStore.rascunhoAgendamentos].forEach(item => {
                 if (normalizarTexto(item.data) === dataNorm && normalizarTexto(item.doca) === docaNorm) {
                     let minIni = horaParaMinutos(item.horaIni);
@@ -1711,7 +1722,6 @@
                 timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
             };
 
-            // Guarda exclusivamente no RASCUNHO (Não vai para os fornecedores)
             ymsStore.rascunhoAgendamentos.push(item);
 
             renderizarGradePCP();
@@ -1780,7 +1790,6 @@
                     const proximoId = ymsStore.agendamentos.length + ymsStore.rascunhoAgendamentos.length + 1000;
                     const novaOrdem = `ORD-${proximoId}`;
                     
-                    // Guarda exclusivamente no RASCUNHO
                     ymsStore.rascunhoAgendamentos.push({
                         ordem: novaOrdem,
                         data: dataLida,
@@ -1826,7 +1835,6 @@
                 const proximoId = ymsStore.agendamentos.length + ymsStore.rascunhoAgendamentos.length + 1000;
                 const novaOrdem = `ORD-${proximoId}`;
                 
-                // Guarda exclusivamente no RASCUNHO
                 ymsStore.rascunhoAgendamentos.push({
                     ordem: novaOrdem,
                     data: dataLida,
@@ -1908,7 +1916,7 @@
 
             const qtdSubida = ymsStore.rascunhoAgendamentos.length;
 
-            // Transfere as janelas do RASCUNHO para a lista OFICIAL do sistema
+            // Transfere do rascunho para a base oficial
             ymsStore.agendamentos.push(...ymsStore.rascunhoAgendamentos);
             
             if (!ymsStore.ordemAtivaFornecedor && ymsStore.rascunhoAgendamentos.length > 0) {
@@ -1918,11 +1926,11 @@
             // Esvazia o rascunho
             ymsStore.rascunhoAgendamentos = [];
 
-            // Sincroniza todos os módulos (agora sim os fornecedores enxergam as janelas)
+            // Salva permanentemente no LocalStorage e atualiza todos os módulos
             sincronizarTodosModulos();
 
             exibirToast("Janelas Publicadas!", `${qtdSubida} agendamentos foram oficialmente publicados no YMS.`, "🚀");
-            alert(`🚀 SUCESSO!\n\n${qtdSubida} janelas foram subidas e agora já estão ATIVAS no Portal do Fornecedor!`);
+            alert(`🚀 SUCESSO!\n\n${qtdSubida} janelas foram subidas e agora já estão SALVAS E ATIVAS no Portal do Fornecedor!`);
         }
 
         // --- PORTAL DO FORNECEDOR ---
@@ -1974,7 +1982,6 @@
 
             document.getElementById('txtEmpresaLogadaFornecedor').textContent = ymsStore.empresaFornecedorLogada || 'TODOS OS FORNECEDORES';
 
-            // O Portal do Fornecedor filtra EXCLUSIVAMENTE agendamentos confirmados (subidos pelo botão verde)
             const filtradosData = ymsStore.agendamentos.filter(i => {
                 const bateData = normalizarTexto(i.data) === normalizarTexto(dataFiltroFormatted);
                 const bateEmpresa = ymsStore.empresaFornecedorLogada ? normalizarTexto(i.fornecedor) === normalizarTexto(ymsStore.empresaFornecedorLogada) : true;
