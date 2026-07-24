@@ -98,7 +98,7 @@
                 </button>
             </div>
 
-            <!-- LOGIN FORNECEDOR COM BUSCA E DEDUP -->
+            <!-- LOGIN FORNECEDOR COM PESQUISA E LISTA FIXA DEDUPLICADA -->
             <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
                 <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
                     <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
@@ -106,13 +106,13 @@
                 </div>
                 <div class="space-y-2.5">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione ou Pesquise a sua Empresa</label>
-                        <div class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa (Pesquisa Rápida)</label>
+                        <div class="bg-slate-900 border border-indigo-500/60 rounded-xl overflow-hidden focus-within:border-indigo-400 transition">
                             <div class="p-2 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
                                 <span class="text-xs">🔍</span>
-                                <input type="text" id="filtroLoginForn" placeholder="Filtrar razão social..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-slate-200 outline-none font-bold">
+                                <input type="text" id="filtroLoginForn" placeholder="Digite para filtrar a empresa..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-white outline-none font-bold placeholder-slate-500">
                             </div>
-                            <select id="selEmpresaFornecedorLogin" size="4" class="w-full bg-slate-900 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1">
+                            <select id="selEmpresaFornecedorLogin" size="5" class="w-full bg-slate-900 text-xs text-slate-100 font-bold outline-none cursor-pointer custom-scrollbar p-1">
                             </select>
                         </div>
                     </div>
@@ -1076,6 +1076,48 @@
 
         window.mapaCredenciaisFornecedores = [];
 
+        // LIMPEZA E NORMALIZAÇÃO ESTRITA DE SUFIXOS E DUPLICADOS
+        window.limparNomeFornecedor = function(nome) {
+            let str = String(nome || '').trim().toUpperCase();
+            if (!str) return '';
+            
+            // Remove sufixos numéricos ao final de nomes importados (Ex: ARCELOMITTAL1 -> ARCELOMITTAL)
+            // preservando exceções como "5 ESTRELAS"
+            if (!str.match(/^5\s+ESTRELAS/i)) {
+                str = str.replace(/[\s\-_]*\d+$/, '').trim();
+            }
+            return str;
+        };
+
+        window.obterListaNomesFornecedores = function() {
+            const conjuntoUnico = new Set();
+
+            // Adiciona da lista mestre
+            listaPadrao60Fornecedores.forEach(item => {
+                const limpo = window.limparNomeFornecedor(item.empresa);
+                if (limpo) conjuntoUnico.add(limpo);
+            });
+
+            // Adiciona da memória do banco
+            if (Array.isArray(window.mapaCredenciaisFornecedores)) {
+                window.mapaCredenciaisFornecedores.forEach(item => {
+                    const limpo = window.limparNomeFornecedor(item.empresa);
+                    if (limpo) conjuntoUnico.add(limpo);
+                });
+            }
+
+            // Adiciona dos agendamentos
+            const todos = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
+            todos.forEach(ag => {
+                if (ag && ag.fornecedor) {
+                    const limpo = window.limparNomeFornecedor(ag.fornecedor);
+                    if (limpo) conjuntoUnico.add(limpo);
+                }
+            });
+
+            return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        };
+
         // --- MÉTODOS DE SINCRONIZAÇÃO EM TEMPO REAL COM FIREBASE ---
         function inicializarEscutadoresFirebase() {
             // Escuta Agendamentos Oficiais
@@ -1137,46 +1179,21 @@
             });
         }
 
-        // AUTO-SINCRONIZA E DEDUPLICA FORNECEDORES NA LISTA MESTRE
         window.garantirTodosFornecedoresNaLista = function() {
             if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
                 window.mapaCredenciaisFornecedores = [];
             }
 
             let alterou = false;
+            const listaLimpaUnica = window.obterListaNomesFornecedores();
 
-            // Função para limpar nome tirando numeração de sufixos de planilhas
-            const normalizarNomeBase = (nome) => {
-                let n = String(nome || '').trim().toUpperCase();
-                // Se tiver números ao final ex: ARCELOMITTAL1 -> ARCELOMITTAL (mas preserva nomes com letras no fim)
-                n = n.replace(/(\D+)\d+$/, '$1').trim();
-                return n;
-            };
-
-            // 1. Garante a inclusão dos fornecedores padrão sem duplicatas
-            listaPadrao60Fornecedores.forEach(fPadrao => {
-                const nomeLimpo = normalizarNomeBase(fPadrao.empresa);
-                if (!window.mapaCredenciaisFornecedores.some(f => normalizarNomeBase(f.empresa) === nomeLimpo)) {
+            listaLimpaUnica.forEach(nomeForn => {
+                if (!window.mapaCredenciaisFornecedores.some(f => window.limparNomeFornecedor(f.empresa) === nomeForn)) {
                     window.mapaCredenciaisFornecedores.push({
-                        empresa: nomeLimpo,
-                        senha: fPadrao.senha
+                        empresa: nomeForn,
+                        senha: `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`
                     });
                     alterou = true;
-                }
-            });
-
-            // 2. Garante fornecedores adicionais das cargas subidas
-            const todosAgendamentos = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
-            todosAgendamentos.forEach(ag => {
-                if (ag && ag.fornecedor) {
-                    const nomeForn = normalizarNomeBase(ag.fornecedor);
-                    if (nomeForn && !window.mapaCredenciaisFornecedores.some(f => normalizarNomeBase(f.empresa) === nomeForn)) {
-                        window.mapaCredenciaisFornecedores.push({
-                            empresa: nomeForn,
-                            senha: `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`
-                        });
-                        alterou = true;
-                    }
                 }
             });
 
@@ -1327,18 +1344,6 @@
             return dataAgendada < hoje;
         };
 
-        // OBTÉM LISTA DE FORNECEDORES TOTALMENTE DEDUPLICADA E LIMPA
-        window.obterListaNomesFornecedores = function() {
-            const mapaUnico = new Set();
-            window.mapaCredenciaisFornecedores.forEach(f => {
-                let n = String(f.empresa || '').trim().toUpperCase();
-                // Limpa numeração do final ex: ARCELOMITTAL1 -> ARCELOMITTAL
-                n = n.replace(/(\D+)\d+$/, '$1').trim();
-                if (n) mapaUnico.add(n);
-            });
-            return Array.from(mapaUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-        };
-
         const configPerfisAcesso = {
             'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
             'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
@@ -1359,6 +1364,7 @@
             document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
 
             if (cfg.eFornecedor) {
+                if (document.getElementById('filtroLoginForn')) document.getElementById('filtroLoginForn').value = '';
                 window.popularSelectLoginEmpresas();
                 document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
             } else if (!cfg.precisaSenha) {
@@ -1380,7 +1386,7 @@
                 const opt = document.createElement('option');
                 opt.value = f; 
                 opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
                 if (idx === 0) opt.selected = true;
                 sel.appendChild(opt);
             });
@@ -1451,7 +1457,7 @@
             }
 
             filtrados.forEach(empresaNome => {
-                const cadForn = window.mapaCredenciaisFornecedores.find(item => item.empresa === empresaNome);
+                const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === empresaNome);
                 const senhaExibicao = cadForn ? cadForn.senha : `${empresaNome.toLowerCase().replace(/\s+/g, '')}@2026`;
                 
                 const row = `
@@ -1551,13 +1557,13 @@
 
         window.salvarNovoFornecedorDinamico = function(e) {
             if (e && e.preventDefault) e.preventDefault();
-            const nomeForn = document.getElementById('cadFornNome').value.trim().toUpperCase();
+            const nomeForn = window.limparNomeFornecedor(document.getElementById('cadFornNome').value);
             let senhaForn = document.getElementById('cadFornSenha').value.trim();
 
             if (!nomeForn) return;
             if (!senhaForn) senhaForn = `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`;
 
-            const jaExiste = window.mapaCredenciaisFornecedores.find(item => item.empresa === nomeForn);
+            const jaExiste = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === nomeForn);
             if (jaExiste) {
                 jaExiste.senha = senhaForn;
             } else {
@@ -1573,16 +1579,16 @@
 
         window.excluirFornecedorDinamico = function(empresa) {
             if (!confirm(`Excluir a empresa "${empresa}" da base?`)) return;
-            window.mapaCredenciaisFornecedores = window.mapaCredenciaisFornecedores.filter(f => f.empresa !== empresa);
+            window.mapaCredenciaisFornecedores = window.mapaCredenciaisFornecedores.filter(f => window.limparNomeFornecedor(f.empresa) !== window.limparNomeFornecedor(empresa));
             window.salvarCredenciaisFornecedoresNaMemoria();
         };
 
         window.confirmarLoginFornecedorEmpresa = function() {
             const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
-            if (!empSel) { alert("Selecione a sua empresa."); return; }
+            if (!empSel) { alert("Selecione a sua empresa na lista."); return; }
             
             const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
-            const cadForn = window.mapaCredenciaisFornecedores.find(item => item.empresa === empSel);
+            const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
 
             if (senhaForn === (cadForn ? cadForn.senha : "123") || senhaForn === "admin" || senhaForn === "1234") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
@@ -2093,7 +2099,7 @@
             const novaOrdem = `ORD-${proximoId}`;
             const horaIni = document.getElementById('inpHora').value;
             const horaFim = document.getElementById('inpHoraFim').value;
-            const fornSel = document.getElementById('inpFornecedor').value;
+            const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor').value);
 
             if (!fornSel) { alert("Selecione um fornecedor."); return; }
 
@@ -2168,7 +2174,7 @@
 
                     let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
                     let rawForn = kForn ? row[kForn] : 'FORNECEDOR';
-                    let fornLimpo = String(rawForn).replace(/\s*-\s*Confirme o agendamento.*/i, '').replace(/(\D+)\d+$/, '$1').trim().toUpperCase();
+                    let fornLimpo = window.limparNomeFornecedor(String(rawForn).replace(/\s*-\s*Confirme o agendamento.*/i, ''));
 
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
                     let docaLida = kDoca ? row[kDoca] : listaTodasDocas[0];
@@ -2225,7 +2231,7 @@
                 count++;
                 const proximoId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                 const novaOrdem = `ORD-${proximoId}`;
-                let fornLimpo = match[2].replace(/\s*-\s*Confirme o agendamento.*/i, '').replace(/(\D+)\d+$/, '$1').trim().toUpperCase();
+                let fornLimpo = window.limparNomeFornecedor(match[2].replace(/\s*-\s*Confirme o agendamento.*/i, ''));
 
                 window.ymsStore.rascunhoAgendamentos.push({
                     ordem: novaOrdem,
@@ -2289,7 +2295,6 @@
                 document.getElementById('painelAcaoSubir').classList.add('hidden');
                 document.getElementById('subtituloGrade').textContent = "Grade de Agendamentos Vazia";
                 
-                // ATUALIZA OS HORÁRIOS PARA LIBERAR TUDO MESMO COM BANCO VAZIO
                 window.atualizarHorariosDisponiveis();
                 return;
             }
@@ -2417,10 +2422,10 @@
             let empresaFiltroAlvo = "";
 
             if (window.ymsStore.empresaFornecedorLogada) {
-                empresaFiltroAlvo = window.ymsStore.empresaFornecedorLogada;
+                empresaFiltroAlvo = window.limparNomeFornecedor(window.ymsStore.empresaFornecedorLogada);
                 containerBoxSeletor.innerHTML = `
                     <div class="bg-slate-900 text-white font-black text-xs p-2.5 rounded-xl border border-emerald-500/40 flex justify-between items-center">
-                        <span class="truncate">${window.ymsStore.empresaFornecedorLogada}</span>
+                        <span class="truncate">${empresaFiltroAlvo}</span>
                         <span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔒 AUTENTICADO</span>
                     </div>
                 `;
@@ -2451,7 +2456,7 @@
                 
                 let bateEmpresa = false;
                 if (empAlvoNorm) {
-                    const fornItemNorm = window.normalizarTexto(i.fornecedor);
+                    const fornItemNorm = window.normalizarTexto(window.limparNomeFornecedor(i.fornecedor));
                     bateEmpresa = fornItemNorm.includes(empAlvoNorm) || empAlvoNorm.includes(fornItemNorm);
                 }
 
@@ -2491,7 +2496,7 @@
                             <span class="bg-indigo-600 text-white font-mono text-[10px] px-2 py-0.5 rounded">${item.ordem}</span>
                             <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">${item.status}</span>
                         </div>
-                        <p class="text-xs font-black text-white mt-1">${item.fornecedor}</p>
+                        <p class="text-xs font-black text-white mt-1">${window.limparNomeFornecedor(item.fornecedor)}</p>
                         <p class="text-[11px] text-indigo-300">🕒 ${item.horaIni} às ${item.horaFim} (${item.doca})</p>
                     </div>
                 `;
@@ -2500,7 +2505,7 @@
 
             const ativa = window.ymsStore.agendamentos.find(i => i.ordem === window.ymsStore.ordemAtivaFornecedor);
             if (ativa) {
-                document.getElementById('txtOrdemSelecionada').textContent = `ORDEM: ${ativa.ordem} (${ativa.fornecedor})`;
+                document.getElementById('txtOrdemSelecionada').textContent = `ORDEM: ${ativa.ordem} (${window.limparNomeFornecedor(ativa.fornecedor)})`;
                 document.getElementById('txtStatusOrdem').textContent = ativa.status;
                 document.getElementById('fornNf').value = ativa.nf || '';
                 document.getElementById('fornTransp').value = ativa.transp || '';
@@ -2861,7 +2866,7 @@
                 document.getElementById('txtTicketCheckoutAtivo').textContent = `Liberando: ${ativo.ticket}`;
                 document.getElementById('chkMotorista').textContent = ativo.motorista || '-';
                 document.getElementById('chkPlaca').textContent = `${ativo.cavalo} / ${ativo.carreta || '-'}`;
-                document.getElementById('chkFornecedor').textContent = `${ativo.fornecedor} (${ativo.ordem})`;
+                document.getElementById('chkFornecedor').textContent = `${window.limparNomeFornecedor(ativo.fornecedor)} (${ativo.ordem})`;
                 document.getElementById('chkHoraEntrada').textContent = window.formatarHoraIso(ativo.timeCheckin);
                 document.getElementById('chkRotaDocas').textContent = (ativo.docasSequencia && ativo.docasSequencia.length > 0) ? ativo.docasSequencia.join(" ➔ ") : ativo.doca;
             }
@@ -3102,7 +3107,7 @@
                             <td class="p-2.5 font-bold text-indigo-400">${ag.ordem}</td>
                             <td class="p-2.5 text-yellow-400 font-bold">${ag.cavalo || '-'}</td>
                             <td class="p-2.5">${window.obterDiaSemanaPtBR(ag.data)}</td>
-                            <td class="p-2.5 font-bold">${ag.fornecedor}</td>
+                            <td class="p-2.5 font-bold">${window.limparNomeFornecedor(ag.fornecedor)}</td>
                             <td class="p-2.5">${window.formatarHoraIso(ag.timeCheckin)}</td>
                             <td class="p-2.5">${window.formatarHoraIso(ag.timeFiscal)}</td>
                             <td class="p-2.5">${(ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" / ") : ag.doca}</td>
@@ -3127,7 +3132,7 @@
 
             items.forEach(ag => {
                 dadosPlanilha.push([
-                    ag.ordem || '', ag.cavalo || '', window.obterDiaSemanaPtBR(ag.data), ag.fornecedor || '', "SIM",
+                    ag.ordem || '', ag.cavalo || '', window.obterDiaSemanaPtBR(ag.data), window.limparNomeFornecedor(ag.fornecedor) || '', "SIM",
                     window.formatarHoraIso(ag.timeCheckin), window.formatarHoraIso(ag.timeFiscal),
                     (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" / ") : ag.doca,
                     window.formatarHoraIso(ag.timeInicioDescarga), window.formatarHoraIso(ag.timeFimDescarga),
