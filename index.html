@@ -2047,7 +2047,7 @@
                 document.getElementById('fornCelular').value = encontrado.celular;
                 window.exibirToast("Motorista Encontrado!", `Dados de ${encontrado.nome} carregados.`, "👤");
             } else {
-                window.exibirToast("Novo Cadastro", "CPF não encontrado. Preencha os dados.", "ℹ️");
+                window.exibirToast("Novo Cadastro", "CPF não encontrado na base. Preencha o nome e celular.", "ℹ️");
             }
         };
 
@@ -2173,19 +2173,43 @@
             }
 
             const cpfLimpo = document.getElementById('fornCpf').value.replace(/\D/g, '');
+            const nomeMot = document.getElementById('fornMotorista').value.trim();
+            const celMot = document.getElementById('fornCelular').value.trim();
+
+            if (!cpfLimpo || !nomeMot) {
+                alert("Preencha obrigatoriamente o CPF e o Nome do Motorista.");
+                return;
+            }
+
             const motExiste = window.ymsStore.baseMotoristas.find(m => m.cpf === cpfLimpo);
             if (motExiste && motExiste.status === 'BLOQUEADO') {
                 alert(`🚫 MOTORISTA BLOQUEADO!\n\nO motorista ${motExiste.nome} está bloqueado e não pode ser cadastrado.`);
                 return;
             }
 
+            // --- CADASTRA / ATUALIZA MOTORISTA NA BASE DO BANCO DE DADOS EM TEMPO REAL ---
+            const idxMot = window.ymsStore.baseMotoristas.findIndex(m => m.cpf === cpfLimpo);
+            if (idxMot !== -1) {
+                window.ymsStore.baseMotoristas[idxMot].nome = nomeMot;
+                if (celMot) window.ymsStore.baseMotoristas[idxMot].celular = celMot;
+            } else {
+                window.ymsStore.baseMotoristas.push({
+                    cpf: cpfLimpo,
+                    nome: nomeMot,
+                    celular: celMot || '',
+                    status: 'ATIVO',
+                    obs: 'Cadastrado via Portal Fornecedor'
+                });
+            }
+            window.salvarBaseMotoristasNaMemoria();
+
             ativa.nf = document.getElementById('fornNf').value;
             ativa.transp = document.getElementById('fornTransp').value;
             ativa.cavalo = document.getElementById('fornCavalo').value;
             ativa.carreta = document.getElementById('fornCarreta').value;
-            ativa.motorista = document.getElementById('fornMotorista').value;
+            ativa.motorista = nomeMot;
             ativa.cpf = cpfLimpo;
-            ativa.celular = document.getElementById('fornCelular').value;
+            ativa.celular = celMot;
             ativa.status = "CONFIRMADO_FORNECEDOR";
 
             window.salvarAgendamentosNaMemoria();
