@@ -1937,6 +1937,9 @@
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no sistema.</p>`;
                 document.getElementById('painelAcaoSubir').classList.add('hidden');
                 document.getElementById('subtituloGrade').textContent = "Grade de Agendamentos Vazia";
+                
+                // ATUALIZA OS HORÁRIOS PARA LIBERAR TUDO (VERDE) MESMO COM O BANCO VAZIO
+                window.atualizarHorariosDisponiveis();
                 return;
             }
 
