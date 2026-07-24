@@ -261,19 +261,25 @@
 
             <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
-                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700/60">
+                    <!-- CABEÇALHO DA GRADE COM CONTADOR -->
+                    <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
                         <div>
                             <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
                             <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos Sincronizados com o YMS</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="limparJanelasSubidas()" title="Apagar todas as janelas ativas no banco de dados" class="bg-red-950/80 hover:bg-red-800 text-red-300 border border-red-500/40 text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1 shadow">
-                                🗑️ Limpar Todas Subidas
-                            </button>
-                            <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">0</span>
+                            <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow">0</span>
                         </div>
                     </div>
-                    <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1">
+
+                    <!-- BOTÃO EM DESTAQUE PARA LIMPAR O BANCO COMPLETO DO FIREBASE -->
+                    <div class="mb-4">
+                        <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
+                            <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
+                        </button>
+                    </div>
+
+                    <div id="containerJanelas" class="space-y-3 max-h-[24rem] overflow-y-auto pr-1">
                         <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
                     </div>
                 </div>
@@ -1905,19 +1911,19 @@
 
         window.limparJanelasSubidas = function() {
             if (window.ymsStore.agendamentos.length === 0) {
-                alert("Não há janelas subidas/oficiais para apagar.");
+                alert("Não há janelas subidas/oficiais no banco de dados para apagar.");
                 return;
             }
             
-            if (!confirm("⚠️ ATENÇÃO!\n\nVocê tem certeza que deseja APAGAR TODAS as " + window.ymsStore.agendamentos.length + " janelas subidas do sistema?\n\nEssa ação limpará o banco de dados no Firebase para TODOS os usuários conectados em tempo real!")) return;
+            const total = window.ymsStore.agendamentos.length;
             
-            // Zera o array de agendamentos oficiais
+            if (!confirm(`⚠️ ATENÇÃO - AÇÃO IRREVERSÍVEL!\n\nVocê tem certeza que deseja APAGAR DEFINITIVAMENTE todas as ${total} janelas subidas?\n\nIsso limpará o banco de dados no Firebase para TODOS os usuários em tempo real!`)) return;
+            
+            // Zera os agendamentos no estado e envia array vazio ao Firebase
             window.ymsStore.agendamentos = [];
-            
-            // Sincroniza e limpa no Firebase
             window.salvarAgendamentosNaMemoria();
             
-            window.exibirToast("Banco Zerado!", "Todas as janelas subidas foram removidas.", "🗑️");
+            window.exibirToast("Banco Zerado!", `Todas as ${total} janelas foram removidas do Firebase.`, "🗑️");
         };
 
         window.renderizarGradePCP = function() {
