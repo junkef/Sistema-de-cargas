@@ -264,18 +264,18 @@
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700/60">
                         <div>
                             <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
-                            <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos em Rascunho (Aguardando Confirmação)</p>
+                            <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos Sincronizados com o YMS</p>
                         </div>
                         <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">0</span>
                     </div>
                     <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1">
-                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela aguardando no rascunho.</p>
+                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
                     </div>
                 </div>
 
                 <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 grid grid-cols-12 gap-3">
                     <button type="button" onclick="limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5">
-                        <span>🗑️</span> LIMPAR GRADE
+                        <span>🗑️</span> LIMPAR RASCUNHO
                     </button>
                     <button type="button" onclick="confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
                         <span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
@@ -1717,6 +1717,7 @@
                 horaIni: horaIni,
                 horaFim: horaFim,
                 status: "AGENDADO",
+                isRascunho: true,
                 nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
                 timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
             };
@@ -1797,6 +1798,7 @@
                         horaIni: formatarHoraExcel(kIni ? row[kIni] : '08:00'),
                         horaFim: formatarHoraExcel(kFim ? row[kFim] : '09:00'),
                         status: "AGENDADO",
+                        isRascunho: true,
                         nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
                         timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
                     });
@@ -1842,6 +1844,7 @@
                     horaIni: match[4],
                     horaFim: match[5],
                     status: "AGENDADO",
+                    isRascunho: true,
                     nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
                     timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
                 });
@@ -1868,25 +1871,44 @@
         function renderizarGradePCP() {
             const container = document.getElementById('containerJanelas');
             container.innerHTML = "";
-            document.getElementById('contadorJanelas').textContent = ymsStore.rascunhoAgendamentos.length;
 
-            if (ymsStore.rascunhoAgendamentos.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela aguardando no rascunho.</p>`;
+            // Une as janelas já confirmadas no sistema com as janelas pendentes de subida
+            const todasJanelasExibicao = [...ymsStore.rascunhoAgendamentos, ...ymsStore.agendamentos];
+            document.getElementById('contadorJanelas').textContent = todasJanelasExibicao.length;
+
+            if (todasJanelasExibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no sistema.</p>`;
                 document.getElementById('painelAcaoSubir').classList.add('hidden');
-                document.getElementById('subtituloGrade').textContent = "Grade de Rascunho Vazia";
+                document.getElementById('subtituloGrade').textContent = "Grade de Agendamentos Vazia";
                 return;
             }
 
-            document.getElementById('painelAcaoSubir').classList.remove('hidden');
-            document.getElementById('subtituloGrade').textContent = "⚠️ Agendamentos em Rascunho (Clique no Botão Verde para Subir)";
+            // Exibe o painel inferior do botão verde apenas se houver pendências no rascunho
+            if (ymsStore.rascunhoAgendamentos.length > 0) {
+                document.getElementById('painelAcaoSubir').classList.remove('hidden');
+                document.getElementById('subtituloGrade').textContent = `⚠️ ${ymsStore.rascunhoAgendamentos.length} Janela(s) em Rascunho - Clique no Botão Verde para Subir ao Sistema`;
+            } else {
+                document.getElementById('painelAcaoSubir').classList.add('hidden');
+                document.getElementById('subtituloGrade').textContent = "🟢 Todas as janelas listadas estão ativas e sincronizadas no YMS";
+            }
 
-            ymsStore.rascunhoAgendamentos.forEach(item => {
+            todasJanelasExibicao.forEach(item => {
+                const ehRascunho = item.isRascunho || ymsStore.rascunhoAgendamentos.some(r => r.ordem === item.ordem);
+                
+                let badgeTag = '';
+                if (ehRascunho) {
+                    badgeTag = `<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-500/50 px-2 py-0.5 rounded">📝 RASCUNHO (PENDENTE SUBIDA)</span>`;
+                } else {
+                    badgeTag = `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status}</span>`;
+                }
+
                 const card = `
-                    <div class="bg-slate-900 border border-indigo-500/40 p-4 rounded-2xl flex justify-between items-center shadow-md hover:border-indigo-400 transition">
+                    <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md hover:border-indigo-400 transition">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
-                                <span class="text-[10px] font-mono font-bold text-amber-400">📝 RASCUNHO (${item.ordem})</span>
+                                ${badgeTag}
+                                <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
                             </div>
                             <p class="text-sm font-black text-white">📍 ${item.doca}</p>
                         </div>
@@ -1895,7 +1917,7 @@
                                 <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
                                 <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
                             </div>
-                            <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" title="Excluir este agendamento do rascunho" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 transition text-xs cursor-pointer ml-1">
+                            <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" title="Excluir agendamento" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 transition text-xs cursor-pointer ml-1">
                                 🗑️
                             </button>
                         </div>
@@ -1915,14 +1937,22 @@
 
             const qtdSubida = ymsStore.rascunhoAgendamentos.length;
 
+            // Marca que não são mais rascunho
+            ymsStore.rascunhoAgendamentos.forEach(item => {
+                delete item.isRascunho;
+            });
+
+            // Transfere do rascunho para a base oficial de agendamentos
             ymsStore.agendamentos.push(...ymsStore.rascunhoAgendamentos);
             
             if (!ymsStore.ordemAtivaFornecedor && ymsStore.rascunhoAgendamentos.length > 0) {
                 ymsStore.ordemAtivaFornecedor = ymsStore.rascunhoAgendamentos[0].ordem;
             }
 
+            // Esvazia o rascunho
             ymsStore.rascunhoAgendamentos = [];
 
+            // Salva no LocalStorage e atualiza todos os módulos
             sincronizarTodosModulos();
 
             exibirToast("Janelas Publicadas!", `${qtdSubida} agendamentos foram oficialmente publicados no YMS.`, "🚀");
@@ -1980,7 +2010,7 @@
 
             const empLogadaNorm = normalizarTexto(ymsStore.empresaFornecedorLogada);
 
-            // Filtro com comparação flexível de fornecedor
+            // Filtro flexível: o fornecedor só enxerga cargas destinadas a ele
             const filtradosData = ymsStore.agendamentos.filter(i => {
                 const bateData = normalizarTexto(i.data) === normalizarTexto(dataFiltroFormatted);
                 
@@ -2058,7 +2088,7 @@
             if (!ativa) { alert("Selecione uma ordem."); return; }
 
             if (dataEhPassada(ativa.data)) {
-                alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possível realizar o pré-cadastro de tickets para datas antigas.`);
+                alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possible realizar o pré-cadastro de tickets para datas antigas.`);
                 return;
             }
 
