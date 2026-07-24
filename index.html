@@ -53,8 +53,8 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
 
-    <!-- MODAL INICIAL DE LOGIN / SELEÇÃO DE PERFIL -->
-    <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center">
+    <!-- MODAL INICIAL DE LOGIN / SELEÇÃO DE PERFIL (OCULTO POR PADRÃO PARA EVITAR PISCAR AO DAR F5) -->
+    <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center hidden">
         <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-4 my-auto">
             <div class="text-center space-y-1">
                 <span class="bg-indigo-600/20 text-indigo-400 p-2 rounded-2xl text-2xl inline-block border border-indigo-500/30">🏭</span>
@@ -1415,8 +1415,9 @@
             }
         };
 
-        window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos) {
-            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos };
+        window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos, abaParaAbrir = null) {
+            const targetAba = abaParaAbrir || modulosPermitidos[0];
+            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos, abaAtiva: targetAba };
             window.ymsStore.usuarioLogado = sessaoData;
             
             // Grava a sessão localmente para persistir após F5
@@ -1442,7 +1443,7 @@
                 });
             }
 
-            window.mudarPerfil(modulosPermitidos[0]);
+            window.mudarPerfil(targetAba);
         };
 
         window.restaurarSessaoLocal = function() {
@@ -1457,13 +1458,16 @@
                 if (sessaoSalva) {
                     const parsed = JSON.parse(sessaoSalva);
                     if (parsed && parsed.key && parsed.modulosCustom) {
-                        window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom);
+                        window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom, parsed.abaAtiva || parsed.modulosCustom[0]);
                         return true;
                     }
                 }
             } catch(e) {
                 console.error("Erro ao restaurar sessão:", e);
             }
+
+            // Caso não haja login ativo no localStorage, exibe o modal de login
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
             return false;
         };
 
@@ -1591,7 +1595,7 @@
                 selDocaOp.appendChild(opt);
             });
 
-            // Tenta restaurar sessão prévia
+            // Tenta restaurar sessão prévia sem exibir o modal
             window.restaurarSessaoLocal();
 
             // Inicializar escuta Realtime
@@ -1689,6 +1693,12 @@
             if (window.ymsStore.usuarioLogado && !window.ymsStore.usuarioLogado.modulosCustom.includes(perfilId)) {
                 alert("Acesso negado a este módulo!");
                 return;
+            }
+
+            // Atualiza a aba ativa salva no localStorage
+            if (window.ymsStore.usuarioLogado) {
+                window.ymsStore.usuarioLogado.abaAtiva = perfilId;
+                localStorage.setItem('yms_sessao_usuario', JSON.stringify(window.ymsStore.usuarioLogado));
             }
 
             document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
