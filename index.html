@@ -931,6 +931,70 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // LISTA MESTRE DOS 60 FORNECEDORES EXTRAÍDA DA PLANILHA EXCEL
+        const listaPadrao60Fornecedores = [
+            { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
+            { empresa: "ADERE", senha: "adere@2026" },
+            { empresa: "ALEPLAST", senha: "aleplast@2026" },
+            { empresa: "ARAMART", senha: "aramart@2026" },
+            { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" },
+            { empresa: "ARMACELL", senha: "armacell@2026" },
+            { empresa: "AROTUBI CURITIBA", senha: "arotubicuritiba@2026" },
+            { empresa: "AROTUBI JOINVILLE", senha: "arotubijoinville@2026" },
+            { empresa: "ASIBRAS", senha: "asibras@2026" },
+            { empresa: "BELENUS", senha: "belenus@2026" },
+            { empresa: "BIGFER", senha: "bigfer@2026" },
+            { empresa: "BOLLHOFF", senha: "bollhoff@2026" },
+            { empresa: "BRASCABOS", senha: "brascabos@2026" },
+            { empresa: "BRASKEN", senha: "brasken@2026" },
+            { empresa: "BUNDY CURITIBA", senha: "bundycuritiba@2026" },
+            { empresa: "BUNDY PINDA", senha: "bundypinda@2026" },
+            { empresa: "CARIBOR", senha: "caribor@2026" },
+            { empresa: "CCL", senha: "ccl@2026" },
+            { empresa: "CISER", senha: "ciser@2026" },
+            { empresa: "COLORFIX", senha: "colorfix@2026" },
+            { empresa: "CREMER", senha: "cremer@2026" },
+            { empresa: "CSN", senha: "csn@2026" },
+            { empresa: "DENK", senha: "denk@2026" },
+            { empresa: "DUFERCO", senha: "duferco@2026" },
+            { empresa: "FOCUS", senha: "focus@2026" },
+            { empresa: "FORMPARTS", senha: "formparts@2026" },
+            { empresa: "GRÁFICA NACIONAL", senha: "graficanacional@2026" },
+            { empresa: "INJEQUALY", senha: "injequaly@2026" },
+            { empresa: "INNARA", senha: "innara@2026" },
+            { empresa: "INNOVA", senha: "innova@2026" },
+            { empresa: "ISHENG", senha: "isheng@2026" },
+            { empresa: "ISOFORMA", senha: "isoforma@2026" },
+            { empresa: "ISOTERM", senha: "isoterm@2026" },
+            { empresa: "KLABIN", senha: "klabin@2026" },
+            { empresa: "KNAUF", senha: "knauf@2026" },
+            { empresa: "LINKPLAS", senha: "linkplas@2026" },
+            { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" },
+            { empresa: "METALMA", senha: "metalma@2026" },
+            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" },
+            { empresa: "MULTILOG", senha: "multilog@2026" },
+            { empresa: "NIDEC", senha: "nidec@2026" },
+            { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
+            { empresa: "PARANAPANEMA", senha: "paranapanema@2026" },
+            { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
+            { empresa: "REFREX", senha: "refrex@2026" },
+            { empresa: "RUDOLPH", senha: "rudolph@2026" },
+            { empresa: "SCHOTT", senha: "schott@2026" },
+            { empresa: "SG/LEAS", senha: "sgleas@2026" },
+            { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" },
+            { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
+            { empresa: "TESA", senha: "tesa@2026" },
+            { empresa: "UNIPLAST", senha: "uniplast@2026" },
+            { empresa: "UNITAAL", senha: "unitaal@2026" },
+            { empresa: "USIMINAS", senha: "usiminas@2026" },
+            { empresa: "VEXILIOM", senha: "vexiliom@2026" },
+            { empresa: "VIPRADO", senha: "viprado@2026" },
+            { empresa: "VITROCOLOR", senha: "vitrocolor@2026" },
+            { empresa: "WEG MOTORES", senha: "weg@2026" },
+            { empresa: "WEG TINTAS", senha: "wegtintas@2026" },
+            { empresa: "WEST ROCK", senha: "westrock@2026" }
+        ];
+
         // Estado da Aplicação
         window.ymsStore = {
             agendamentos: [],
@@ -979,14 +1043,7 @@
                 if (data) {
                     window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
                 } else {
-                    window.mapaCredenciaisFornecedores = [
-                        { empresa: "CSN", senha: "csn@2026" },
-                        { empresa: "ARCELOMITTAL", senha: "arcelormittal@2026" },
-                        { empresa: "LINKPLAS", senha: "linkplas@2026" },
-                        { empresa: "REFREX", senha: "refrex@2026" },
-                        { empresa: "WEG MOTORES", senha: "weg@2026" },
-                        { empresa: "5 ESTRELAS", senha: "5estrelas@2026" }
-                    ];
+                    window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
                 }
                 window.garantirTodosFornecedoresNaLista();
                 window.atualizarTodasListasFornecedores();
@@ -1008,15 +1065,24 @@
             });
         }
 
-        // AUTO-SINCRONIZA TODOS OS FORNECEDORES DOS AGENDAMENTOS NA LISTA MESTRE
+        // AUTO-SINCRONIZA TODOS OS FORNECEDORES NA LISTA MESTRE
         window.garantirTodosFornecedoresNaLista = function() {
             if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
                 window.mapaCredenciaisFornecedores = [];
             }
 
-            const todosAgendamentos = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
             let alterou = false;
 
+            // 1. Garante a inclusão dos 60 fornecedores padrão da planilha
+            listaPadrao60Fornecedores.forEach(fPadrao => {
+                if (!window.mapaCredenciaisFornecedores.some(f => f.empresa === fPadrao.empresa)) {
+                    window.mapaCredenciaisFornecedores.push(fPadrao);
+                    alterou = true;
+                }
+            });
+
+            // 2. Garante fornecedores adicionais presentes nas cargas subidas
+            const todosAgendamentos = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
             todosAgendamentos.forEach(ag => {
                 if (ag && ag.fornecedor) {
                     const nomeForn = String(ag.fornecedor).trim().toUpperCase();
@@ -2074,7 +2140,7 @@
                 return;
             }
 
-            const encontrado = window.ymsStore.baseMotoristas.find(m => m.cpf === cpfDigitado);
+            const encontrado = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfDigitado);
 
             if (encontrado) {
                 if (encontrado.status === 'BLOQUEADO') {
@@ -2082,7 +2148,7 @@
                     return;
                 }
                 document.getElementById('fornMotorista').value = encontrado.nome;
-                document.getElementById('fornCelular').value = encontrado.celular;
+                document.getElementById('fornCelular').value = encontrado.celular || '';
                 window.exibirToast("Motorista Encontrado!", `Dados de ${encontrado.nome} carregados.`, "👤");
             } else {
                 window.exibirToast("Novo Cadastro", "CPF não encontrado na base. Preencha o nome e celular.", "ℹ️");
@@ -2219,7 +2285,7 @@
                 return;
             }
 
-            const motExiste = window.ymsStore.baseMotoristas.find(m => m.cpf === cpfLimpo);
+            const motExiste = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
             if (motExiste && motExiste.status === 'BLOQUEADO') {
                 alert(`🚫 MOTORISTA BLOQUEADO!\n\nO motorista ${motExiste.nome} está bloqueado e não pode ser cadastrado.`);
                 return;
@@ -2230,7 +2296,7 @@
                 window.ymsStore.baseMotoristas = [];
             }
 
-            const idxMot = window.ymsStore.baseMotoristas.findIndex(m => m.cpf === cpfLimpo);
+            const idxMot = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
             if (idxMot !== -1) {
                 window.ymsStore.baseMotoristas[idxMot].nome = nomeMot;
                 if (celMot) window.ymsStore.baseMotoristas[idxMot].celular = celMot;
@@ -2277,7 +2343,7 @@
             const cpfDig = document.getElementById('displayTotem').value.trim();
             if (!cpfDig) { alert("Digite o CPF do motorista."); return; }
 
-            const motExiste = window.ymsStore.baseMotoristas.find(m => m.cpf === cpfDig);
+            const motExiste = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfDig);
             if (motExiste && motExiste.status === 'BLOQUEADO') {
                 alert(`🚫 MOTORISTA BLOQUEADO!\n\nSeu cadastro possui restrições de acesso. Dirija-se à Portaria.`);
                 window.limparTotem();
@@ -2612,13 +2678,16 @@
             const status = document.getElementById('cadMotStatus').value;
             const obs = document.getElementById('cadMotObs').value.trim();
 
-            if (!cpf || !nome) return;
+            if (!cpf || !nome) {
+                alert("Preencha o CPF e o Nome do Motorista.");
+                return;
+            }
 
             if (!Array.isArray(window.ymsStore.baseMotoristas)) {
                 window.ymsStore.baseMotoristas = [];
             }
 
-            const idx = window.ymsStore.baseMotoristas.findIndex(m => m.cpf === cpf);
+            const idx = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpf);
             if (idx !== -1) {
                 window.ymsStore.baseMotoristas[idx] = { cpf, nome, celular, status, obs };
             } else {
@@ -2627,11 +2696,19 @@
 
             window.salvarBaseMotoristasNaMemoria();
             window.renderizarTabelaMotoristas();
-            window.exibirToast("Motorista Salvo!", `${nome} atualizado na base.`, "💾");
+
+            // Limpa o formulário
+            document.getElementById('cadMotCpf').value = '';
+            document.getElementById('cadMotNome').value = '';
+            document.getElementById('cadMotCelular').value = '';
+            document.getElementById('cadMotObs').value = '';
+
+            window.exibirToast("Motorista Salvo!", `${nome} cadastrado na base com sucesso.`, "💾");
         };
 
         window.alternarStatusMotorista = function(cpf) {
-            const mot = window.ymsStore.baseMotoristas.find(m => m.cpf === cpf);
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const mot = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
             if (!mot) return;
             mot.status = (mot.status === 'BLOQUEADO') ? 'ATIVO' : 'BLOQUEADO';
             window.salvarBaseMotoristasNaMemoria();
