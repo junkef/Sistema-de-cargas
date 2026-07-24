@@ -288,8 +288,12 @@
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
             <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
                 <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-                    <span class="text-[10px] font-bold text-emerald-400 uppercase">🔒 Empresa Autenticada</span>
-                    <h3 id="txtEmpresaLogadaFornecedor" class="text-sm font-black text-white bg-slate-900 p-2 rounded-xl border border-slate-700/80 mb-3 mt-1">-</h3>
+                    <span class="text-[10px] font-bold text-emerald-400 uppercase block mb-1">🏢 SELEÇÃO DE EMPRESA / FORNECEDOR</span>
+                    
+                    <div id="boxSeletorFornecedorPortal" class="mb-3">
+                        <!-- Gerado Dinamicamente: Dropdown para Admin OU Caixa Fixa Travada para Fornecedor Logado -->
+                    </div>
+
                     <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">📅 Selecionar Data</label>
                     <input type="date" id="filtroDataFornecedor" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none cursor-pointer">
                 </div>
@@ -954,9 +958,10 @@
             const salvos = localStorage.getItem('yms_credenciais_fornecedores');
             if (salvos) { try { return JSON.parse(salvos); } catch(e) {} }
             return [
+                { empresa: "CSN", senha: "csn@2026" },
+                { empresa: "ARCELOMITTAL", senha: "arcelormittal@2026" },
                 { empresa: "LINKPLAS", senha: "linkplas@2026" },
                 { empresa: "REFREX", senha: "refrex@2026" },
-                { empresa: "CSN", senha: "csn@2026" },
                 { empresa: "WEG MOTORES", senha: "weg@2026" },
                 { empresa: "5 ESTRELAS", senha: "5estrelas@2026" }
             ];
@@ -1292,6 +1297,7 @@
 
         function fazerLogoutGlobal() {
             ymsStore.usuarioLogado = null;
+            ymsStore.empresaFornecedorLogada = null;
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
             document.getElementById('boxSenhaLogin').classList.add('hidden');
             document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
@@ -1872,7 +1878,6 @@
             const container = document.getElementById('containerJanelas');
             container.innerHTML = "";
 
-            // Une as janelas já confirmadas no sistema com as janelas pendentes de subida
             const todasJanelasExibicao = [...ymsStore.rascunhoAgendamentos, ...ymsStore.agendamentos];
             document.getElementById('contadorJanelas').textContent = todasJanelasExibicao.length;
 
@@ -1883,7 +1888,6 @@
                 return;
             }
 
-            // Exibe o painel inferior do botão verde apenas se houver pendências no rascunho
             if (ymsStore.rascunhoAgendamentos.length > 0) {
                 document.getElementById('painelAcaoSubir').classList.remove('hidden');
                 document.getElementById('subtituloGrade').textContent = `⚠️ ${ymsStore.rascunhoAgendamentos.length} Janela(s) em Rascunho - Clique no Botão Verde para Subir ao Sistema`;
@@ -1937,29 +1941,25 @@
 
             const qtdSubida = ymsStore.rascunhoAgendamentos.length;
 
-            // Marca que não são mais rascunho
             ymsStore.rascunhoAgendamentos.forEach(item => {
                 delete item.isRascunho;
             });
 
-            // Transfere do rascunho para a base oficial de agendamentos
             ymsStore.agendamentos.push(...ymsStore.rascunhoAgendamentos);
             
             if (!ymsStore.ordemAtivaFornecedor && ymsStore.rascunhoAgendamentos.length > 0) {
                 ymsStore.ordemAtivaFornecedor = ymsStore.rascunhoAgendamentos[0].ordem;
             }
 
-            // Esvazia o rascunho
             ymsStore.rascunhoAgendamentos = [];
 
-            // Salva no LocalStorage e atualiza todos os módulos
             sincronizarTodosModulos();
 
             exibirToast("Janelas Publicadas!", `${qtdSubida} agendamentos foram oficialmente publicados no YMS.`, "🚀");
             alert(`🚀 SUCESSO!\n\n${qtdSubida} janelas foram subidas e agora já estão SALVAS E ATIVAS no Portal do Fornecedor!`);
         }
 
-        // --- PORTAL DO FORNECEDOR (BUSCA INTELIGENTE POR EMPRESA) ---
+        // --- PORTAL DO FORNECEDOR (SEGREGADO RIGOROSAMENTE POR EMPRESA) ---
         function alternarAbaFornecedor(aba) {
             ymsStore.abaFornecedorAtual = aba;
             const btnPen = document.getElementById('btnAbaPendentes');
@@ -2000,24 +2000,55 @@
         }
 
         function renderizarModuloFornecedor() {
+            const containerBoxSeletor = document.getElementById('boxSeletorFornecedorPortal');
             const container = document.getElementById('listaOrdensFornecedor');
             container.innerHTML = "";
 
             const rawDataSel = document.getElementById('filtroDataFornecedor').value.split('-');
             const dataFiltroFormatted = `${rawDataSel[2]}/${rawDataSel[1]}/${rawDataSel[0]}`;
 
-            document.getElementById('txtEmpresaLogadaFornecedor').textContent = ymsStore.empresaFornecedorLogada || 'TODOS OS FORNECEDORES';
+            let empresaFiltroAlvo = "";
 
-            const empLogadaNorm = normalizarTexto(ymsStore.empresaFornecedorLogada);
+            // Se o usuário está logado estritamente como um Fornecedor
+            if (ymsStore.empresaFornecedorLogada) {
+                empresaFiltroAlvo = ymsStore.empresaFornecedorLogada;
+                containerBoxSeletor.innerHTML = `
+                    <div class="bg-slate-900 text-white font-black text-xs p-2.5 rounded-xl border border-emerald-500/40 flex justify-between items-center">
+                        <span class="truncate">${ymsStore.empresaFornecedorLogada}</span>
+                        <span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔒 AUTENTICADO</span>
+                    </div>
+                `;
+            } else {
+                // Se for Admin/Geral, monta o Select de Empresas
+                const fornecedoresCadastrados = obterListaNomesFornecedores();
+                let selHtml = `<select id="selFornFiltroPortal" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-xl p-2 text-xs font-black text-amber-300 outline-none cursor-pointer">`;
+                
+                fornecedoresCadastrados.forEach(f => {
+                    selHtml += `<option value="${f}">${f}</option>`;
+                });
+                selHtml += `</select>`;
+                
+                const valAnterior = document.getElementById('selFornFiltroPortal')?.value;
+                containerBoxSeletor.innerHTML = selHtml;
+                
+                const selectAtual = document.getElementById('selFornFiltroPortal');
+                if (valAnterior && selectAtual.querySelector(`option[value="${valAnterior}"]`)) {
+                    selectAtual.value = valAnterior;
+                }
+                
+                empresaFiltroAlvo = selectAtual ? selectAtual.value : (fornecedoresCadastrados[0] || "");
+            }
 
-            // Filtro flexível: o fornecedor só enxerga cargas destinadas a ele
+            const empAlvoNorm = normalizarTexto(empresaFiltroAlvo);
+
+            // Filtro rigoroso e segregado por empresa
             const filtradosData = ymsStore.agendamentos.filter(i => {
                 const bateData = normalizarTexto(i.data) === normalizarTexto(dataFiltroFormatted);
                 
-                let bateEmpresa = true;
-                if (empLogadaNorm) {
+                let bateEmpresa = false;
+                if (empAlvoNorm) {
                     const fornItemNorm = normalizarTexto(i.fornecedor);
-                    bateEmpresa = fornItemNorm.includes(empLogadaNorm) || empLogadaNorm.includes(fornItemNorm);
+                    bateEmpresa = fornItemNorm.includes(empAlvoNorm) || empAlvoNorm.includes(fornItemNorm);
                 }
 
                 return bateData && bateEmpresa;
@@ -2031,7 +2062,7 @@
             }
 
             if (ordensExibicao.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem publicada para ${dataFiltroFormatted}.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem publicada para ${empresaFiltroAlvo || 'esta empresa'} na data ${dataFiltroFormatted}.</p>`;
                 document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
                 document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
                 document.getElementById('fornNf').value = '';
@@ -2088,7 +2119,7 @@
             if (!ativa) { alert("Selecione uma ordem."); return; }
 
             if (dataEhPassada(ativa.data)) {
-                alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possible realizar o pré-cadastro de tickets para datas antigas.`);
+                alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possível realizar o pré-cadastro de tickets para datas antigas.`);
                 return;
             }
 
