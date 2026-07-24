@@ -235,7 +235,7 @@
                                 <select id="inpHoraFim" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 outline-none"></select>
                             </div>
                         </div>
-                        <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer">🚀 DISPONIBILIZAR PARA FORNECEDOR</button>
+                        <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
                     </div>
 
                     <div id="conteudoMassa" class="space-y-4 hidden">
@@ -254,7 +254,7 @@
 
                     <div id="conteudoTexto" class="space-y-3 hidden">
                         <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
-                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO BRUTO</button>
+                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
                     </div>
                 </div>
             </div>
@@ -264,12 +264,12 @@
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700/60">
                         <div>
                             <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
-                            <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos Sincronizados com o YMS</p>
+                            <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos em Rascunho (Aguardando Confirmação)</p>
                         </div>
                         <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">0</span>
                     </div>
                     <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1">
-                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
+                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no rascunho.</p>
                     </div>
                 </div>
 
@@ -981,7 +981,8 @@
         }
 
         const ymsStore = {
-            agendamentos: [],
+            agendamentos: [],            // Janelas PUBLICADAS no sistema
+            rascunhoAgendamentos: [],    // Janelas PENDENTES no PCP (aguardando botão verde)
             ordemAtivaFornecedor: null,
             abaFornecedorAtual: "pendentes",
             ticketAtivoFiscal: null,
@@ -1171,7 +1172,6 @@
             ymsStore.baseUsuariosCustom.push(novoUsr);
             salvarUsuariosCustomizadosNaMemoria();
 
-            // Limpa formulário
             document.getElementById('usrNome').value = "";
             document.getElementById('usrLogin').value = "";
             document.getElementById('usrSenha').value = "";
@@ -1237,13 +1237,11 @@
             const pinDig = document.getElementById('inputPinLogin').value.trim();
             const perfilSel = ymsStore.perfilSolicitadoTemp;
 
-            // 1. Verificação Mestra Admin / Superusuário
             if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
                 concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
                 return;
             }
 
-            // 2. Busca o operador na base personalizada criada pelo usuário
             const usrEncontrado = ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
 
             if (usrEncontrado) {
@@ -1591,7 +1589,8 @@
             const dataNorm = normalizarTexto(dataFormatada);
 
             const ocupados = [];
-            ymsStore.agendamentos.forEach(item => {
+            // Verifica ocupados tanto na grade oficial quanto no rascunho
+            [...ymsStore.agendamentos, ...ymsStore.rascunhoAgendamentos].forEach(item => {
                 if (normalizarTexto(item.data) === dataNorm && normalizarTexto(item.doca) === docaNorm) {
                     let minIni = horaParaMinutos(item.horaIni);
                     let minFim = horaParaMinutos(item.horaFim);
@@ -1692,7 +1691,8 @@
             }
 
             const partes = rawData.split('-');
-            const novaOrdem = `ORD-${ymsStore.agendamentos.length + 1000}`;
+            const proximoId = ymsStore.agendamentos.length + ymsStore.rascunhoAgendamentos.length + 1000;
+            const novaOrdem = `ORD-${proximoId}`;
             const horaIni = document.getElementById('inpHora').value;
             const horaFim = document.getElementById('inpHoraFim').value;
             const fornSel = document.getElementById('inpFornecedor').value;
@@ -1711,11 +1711,11 @@
                 timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
             };
 
-            ymsStore.agendamentos.push(item);
-            ymsStore.ordemAtivaFornecedor = novaOrdem;
+            // Adiciona apenas ao RASCUNHO
+            ymsStore.rascunhoAgendamentos.push(item);
 
-            sincronizarTodosModulos();
-            exibirToast("Janela Criada!", `Ordem ${novaOrdem} disponibilizada para ${fornSel}.`, "🚀");
+            renderizarGradePCP();
+            exibirToast("Adicionado ao Rascunho!", `Ordem ${novaOrdem} aguardando subida no botão verde.`, "📝");
         }
 
         function tratarDragOver(e) {
@@ -1777,9 +1777,10 @@
                     let kIni = keys.find(k => k.match(/entrada|inicio|início|hora.*ini|start/i));
                     let kFim = keys.find(k => k.match(/saida|saída|fim|hora.*fim|end/i));
 
-                    const novaOrdem = `ORD-${ymsStore.agendamentos.length + 1000}`;
+                    const proximoId = ymsStore.agendamentos.length + ymsStore.rascunhoAgendamentos.length + 1000;
+                    const novaOrdem = `ORD-${proximoId}`;
                     
-                    ymsStore.agendamentos.push({
+                    ymsStore.rascunhoAgendamentos.push({
                         ordem: novaOrdem,
                         data: dataLida,
                         fornecedor: fornLimpo,
@@ -1793,9 +1794,9 @@
                     inseridos++;
                 });
 
-                sincronizarTodosModulos();
+                renderizarGradePCP();
 
-                let msg = `✅ Processamento concluído!\n\n${inseridos} janelas foram importadas para a grade.`;
+                let msg = `📋 Planilha lida para o rascunho!\n\n${inseridos} janelas estão preparadas na grade. Clique no BOTÃO VERDE para subir definitivamente para o sistema.`;
                 if (ignoradosDataPassada > 0) {
                     msg += `\n\n⚠️ ${ignoradosDataPassada} registro(s) foram ignorados por possuírem DATAS PASSADAS/RETROATIVAS.`;
                 }
@@ -1821,8 +1822,9 @@
                 }
 
                 count++;
-                const novaOrdem = `ORD-${ymsStore.agendamentos.length + 1000}`;
-                ymsStore.agendamentos.push({
+                const proximoId = ymsStore.agendamentos.length + ymsStore.rascunhoAgendamentos.length + 1000;
+                const novaOrdem = `ORD-${proximoId}`;
+                ymsStore.rascunhoAgendamentos.push({
                     ordem: novaOrdem,
                     data: dataLida,
                     fornecedor: match[2].replace(/\s*-\s*Confirme o agendamento.*/i, '').trim().toUpperCase(),
@@ -1835,44 +1837,46 @@
                 });
             }
 
-            sincronizarTodosModulos();
-            alert(`⚡ ${count} janelas importadas.${ignorados > 0 ? ` (${ignorados} ignoradas por data passada)` : ''}`);
+            renderizarGradePCP();
+            alert(`⚡ ${count} janelas adicionadas ao rascunho.${ignorados > 0 ? ` (${ignorados} ignoradas por data passada)` : ''}\nClique no BOTÃO VERDE para confirmar a subida.`);
         }
 
         function removerJanelaIndividual(ordem) {
+            ymsStore.rascunhoAgendamentos = ymsStore.rascunhoAgendamentos.filter(i => i.ordem !== ordem);
             ymsStore.agendamentos = ymsStore.agendamentos.filter(i => i.ordem !== ordem);
             sincronizarTodosModulos();
             exibirToast("Janela Removida", `Agendamento ${ordem} foi apagado.`, "🗑️");
         }
 
         function limparGradeTotal() {
-            if (!confirm("Tem certeza que deseja descartar e APAGAR TODAS as janelas da grade?")) return;
-            ymsStore.agendamentos = [];
-            ymsStore.ordemAtivaFornecedor = null;
-            sincronizarTodosModulos();
-            exibirToast("Grade Limpa", "Todos os agendamentos foram descartados.", "🗑️");
+            if (!confirm("Tem certeza que deseja descartar e APAGAR TODAS as janelas do rascunho?")) return;
+            ymsStore.rascunhoAgendamentos = [];
+            renderizarGradePCP();
+            exibirToast("Rascunho Limpo", "Grade de rascunho foi zerada.", "🗑️");
         }
 
         function renderizarGradePCP() {
             const container = document.getElementById('containerJanelas');
             container.innerHTML = "";
-            document.getElementById('contadorJanelas').textContent = ymsStore.agendamentos.length;
+            document.getElementById('contadorJanelas').textContent = ymsStore.rascunhoAgendamentos.length;
 
-            if (ymsStore.agendamentos.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>`;
+            if (ymsStore.rascunhoAgendamentos.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela aguardando no rascunho.</p>`;
                 document.getElementById('painelAcaoSubir').classList.add('hidden');
+                document.getElementById('subtituloGrade').textContent = "Grade de Rascunho Vazia";
                 return;
             }
 
             document.getElementById('painelAcaoSubir').classList.remove('hidden');
+            document.getElementById('subtituloGrade').textContent = "⚠️ Agendamentos em Rascunho (Clique no Botão Verde para Subir)";
 
-            ymsStore.agendamentos.forEach(item => {
+            ymsStore.rascunhoAgendamentos.forEach(item => {
                 const card = `
-                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md hover:border-slate-600 transition">
+                    <div class="bg-slate-900 border border-indigo-500/40 p-4 rounded-2xl flex justify-between items-center shadow-md hover:border-indigo-400 transition">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
-                                <span class="text-[10px] font-mono font-bold text-slate-400">${item.ordem}</span>
+                                <span class="text-[10px] font-mono font-bold text-amber-400">📝 RASCUNHO (${item.ordem})</span>
                             </div>
                             <p class="text-sm font-black text-white">📍 ${item.doca}</p>
                         </div>
@@ -1881,7 +1885,7 @@
                                 <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
                                 <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
                             </div>
-                            <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" title="Excluir este agendamento" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 transition text-xs cursor-pointer ml-1">
+                            <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" title="Excluir este agendamento do rascunho" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 transition text-xs cursor-pointer ml-1">
                                 🗑️
                             </button>
                         </div>
@@ -1894,8 +1898,26 @@
         }
 
         function confirmarESubirJanelas() {
-            exibirToast("Janelas Publicadas!", `${ymsStore.agendamentos.length} agendamentos foram publicados no YMS.`, "🚀");
-            document.getElementById('subtituloGrade').textContent = "🟢 Todas as janelas estão ativas no Portal do Fornecedor";
+            if (ymsStore.rascunhoAgendamentos.length === 0) {
+                alert("Não há janelas no rascunho para subir.");
+                return;
+            }
+
+            const qtdSubida = ymsStore.rascunhoAgendamentos.length;
+
+            // Transfere o rascunho para a lista oficial de agendamentos do YMS
+            ymsStore.agendamentos.push(...ymsStore.rascunhoAgendamentos);
+            
+            if (!ymsStore.ordemAtivaFornecedor && ymsStore.rascunhoAgendamentos.length > 0) {
+                ymsStore.ordemAtivaFornecedor = ymsStore.rascunhoAgendamentos[0].ordem;
+            }
+
+            // Esvazia o rascunho
+            ymsStore.rascunhoAgendamentos = [];
+
+            sincronizarTodosModulos();
+            exibirToast("Janelas Publicadas!", `${qtdSubida} agendamentos foram oficialmente publicados no YMS.`, "🚀");
+            alert(`🚀 SUCESSO!\n\n${qtdSubida} janelas foram subidas e agora já estão ATIVAS no Portal do Fornecedor!`);
         }
 
         // --- PORTAL DO FORNECEDOR ---
@@ -1961,7 +1983,7 @@
             }
 
             if (ordensExibicao.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem para ${dataFiltroFormatted}.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem publicada para ${dataFiltroFormatted}.</p>`;
                 document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
                 document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
                 return;
