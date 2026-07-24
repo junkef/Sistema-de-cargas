@@ -962,7 +962,6 @@
             ];
         }
 
-        // CARREGA AGENDAMENTOS OFICIAIS DO LOCALSTORAGE (SALA ANTI-F5)
         function carregarAgendamentosIniciais() {
             const salvos = localStorage.getItem('yms_agendamentos_oficiais');
             if (salvos) { try { return JSON.parse(salvos); } catch(e) {} }
@@ -992,8 +991,8 @@
         }
 
         const ymsStore = {
-            agendamentos: carregarAgendamentosIniciais(), // Carrega do LocalStorage para resistir ao F5
-            rascunhoAgendamentos: [],                    // Rascunho temporário do PCP
+            agendamentos: carregarAgendamentosIniciais(),
+            rascunhoAgendamentos: [],
             ordemAtivaFornecedor: null,
             abaFornecedorAtual: "pendentes",
             ticketAtivoFiscal: null,
@@ -1535,7 +1534,7 @@
         }
 
         function sincronizarTodosModulos() {
-            salvarAgendamentosNaMemoria(); // Salva estado atualizado contra F5
+            salvarAgendamentosNaMemoria();
             renderizarGradePCP();
             renderizarModuloFornecedor();
             renderizarModuloFiscal();
@@ -1916,24 +1915,21 @@
 
             const qtdSubida = ymsStore.rascunhoAgendamentos.length;
 
-            // Transfere do rascunho para a base oficial
             ymsStore.agendamentos.push(...ymsStore.rascunhoAgendamentos);
             
             if (!ymsStore.ordemAtivaFornecedor && ymsStore.rascunhoAgendamentos.length > 0) {
                 ymsStore.ordemAtivaFornecedor = ymsStore.rascunhoAgendamentos[0].ordem;
             }
 
-            // Esvazia o rascunho
             ymsStore.rascunhoAgendamentos = [];
 
-            // Salva permanentemente no LocalStorage e atualiza todos os módulos
             sincronizarTodosModulos();
 
             exibirToast("Janelas Publicadas!", `${qtdSubida} agendamentos foram oficialmente publicados no YMS.`, "🚀");
             alert(`🚀 SUCESSO!\n\n${qtdSubida} janelas foram subidas e agora já estão SALVAS E ATIVAS no Portal do Fornecedor!`);
         }
 
-        // --- PORTAL DO FORNECEDOR ---
+        // --- PORTAL DO FORNECEDOR (BUSCA INTELIGENTE POR EMPRESA) ---
         function alternarAbaFornecedor(aba) {
             ymsStore.abaFornecedorAtual = aba;
             const btnPen = document.getElementById('btnAbaPendentes');
@@ -1982,9 +1978,18 @@
 
             document.getElementById('txtEmpresaLogadaFornecedor').textContent = ymsStore.empresaFornecedorLogada || 'TODOS OS FORNECEDORES';
 
+            const empLogadaNorm = normalizarTexto(ymsStore.empresaFornecedorLogada);
+
+            // Filtro com comparação flexível de fornecedor
             const filtradosData = ymsStore.agendamentos.filter(i => {
                 const bateData = normalizarTexto(i.data) === normalizarTexto(dataFiltroFormatted);
-                const bateEmpresa = ymsStore.empresaFornecedorLogada ? normalizarTexto(i.fornecedor) === normalizarTexto(ymsStore.empresaFornecedorLogada) : true;
+                
+                let bateEmpresa = true;
+                if (empLogadaNorm) {
+                    const fornItemNorm = normalizarTexto(i.fornecedor);
+                    bateEmpresa = fornItemNorm.includes(empLogadaNorm) || empLogadaNorm.includes(fornItemNorm);
+                }
+
                 return bateData && bateEmpresa;
             });
 
@@ -1999,6 +2004,13 @@
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem publicada para ${dataFiltroFormatted}.</p>`;
                 document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
                 document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
+                document.getElementById('fornNf').value = '';
+                document.getElementById('fornTransp').value = '';
+                document.getElementById('fornCavalo').value = '';
+                document.getElementById('fornCarreta').value = '';
+                document.getElementById('fornMotorista').value = '';
+                document.getElementById('fornCpf').value = '';
+                document.getElementById('fornCelular').value = '';
                 return;
             }
 
