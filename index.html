@@ -98,7 +98,7 @@
                 </button>
             </div>
 
-            <!-- LOGIN FORNECEDOR -->
+            <!-- LOGIN FORNECEDOR COM BUSCA E DEDUP -->
             <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
                 <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
                     <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
@@ -106,9 +106,15 @@
                 </div>
                 <div class="space-y-2.5">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa / Razão Social</label>
-                        <select id="selEmpresaFornecedorLogin" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500">
-                        </select>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione ou Pesquise a sua Empresa</label>
+                        <div class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
+                            <div class="p-2 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
+                                <span class="text-xs">🔍</span>
+                                <input type="text" id="filtroLoginForn" placeholder="Filtrar razão social..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-slate-200 outline-none font-bold">
+                            </div>
+                            <select id="selEmpresaFornecedorLogin" size="4" class="w-full bg-slate-900 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1">
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
@@ -667,6 +673,57 @@
                 <div class="h-56"><canvas id="chartMediaTempoDoca"></canvas></div>
             </div>
 
+            <!-- PAINEL: CONFIGURAÇÃO DE API DE NOTIFICAÇÕES (WHATSAPP / SMS REAL) -->
+            <div class="bg-slate-800 p-6 rounded-3xl border border-emerald-500/40 shadow-xl space-y-4">
+                <div class="border-b border-slate-700 pb-3 flex flex-wrap justify-between items-center gap-2">
+                    <div>
+                        <h3 class="text-base font-black text-emerald-400 flex items-center gap-2">
+                            <span>📲</span> CONFIGURAÇÃO DA API DE MENSAGENS REAL (WHATSAPP / SMS)
+                        </h3>
+                        <p class="text-xs text-slate-400">Conecte sua API (Z-API, Evolution, Twilio, UltraMsg ou Gateway próprio) para disparar notificações reais para os motoristas.</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700">
+                        <span class="text-xs font-bold text-slate-300">STATUS DA API:</span>
+                        <select id="apiStatusAtivo" class="bg-slate-950 text-xs font-black text-emerald-400 border border-slate-800 rounded-lg p-1 outline-none">
+                            <option value="SIM">🟢 ATIVADA (Dispara Mensagens Reais)</option>
+                            <option value="NAO">🔴 DESATIVADA (Apenas Modal do Sistema)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/80">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Tipo de Provedor / Gateway *</label>
+                        <select id="apiTipoProvedor" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-amber-300 outline-none">
+                            <option value="whatsapp_zapi">WhatsApp (Z-API / Evolution / UltraMsg)</option>
+                            <option value="twilio_sms">Twilio (SMS / WhatsApp)</option>
+                            <option value="zenvia_sms">Zenvia (SMS)</option>
+                            <option value="webhook_custom">Webhook HTTP POST Customizado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">URL / Endpoint da API *</label>
+                        <input type="text" id="apiUrlEndpoint" placeholder="https://api.z-api.io/instances/SUA_INSTANCIA/token/SEU_TOKEN/send-text" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Client-Token / API Key / Header Auth</label>
+                        <input type="text" id="apiAuthToken" placeholder="Digite a chave ou token de autorização..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-yellow-300 outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap justify-between items-center gap-3 pt-1">
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="inputTestNum" placeholder="47992424703 (Apenas dígitos)" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none w-48">
+                        <button type="button" onclick="testarEnvioMensagemApi()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow">
+                            <span>🧪</span> Testar Envio
+                        </button>
+                    </div>
+                    <button type="button" onclick="salvarConfiguracaoApi(event)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-6 py-2.5 rounded-xl uppercase tracking-wider transition shadow-lg border-b-4 border-emerald-800 cursor-pointer flex items-center gap-2">
+                        <span>💾</span> SALVAR CONFIGURAÇÃO DA API NO FIREBASE
+                    </button>
+                </div>
+            </div>
+
             <!-- GESTÃO DE BASE DE FORNECEDORES -->
             <div class="bg-slate-800 p-6 rounded-3xl border border-amber-500/40 shadow-xl space-y-4">
                 <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
@@ -931,7 +988,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // LISTA MESTRE DOS 60 FORNECEDORES EXTRAÍDA DA PLANILHA EXCEL
+        // LISTA MESTRE DOS 60 FORNECEDORES PADRÃO
         const listaPadrao60Fornecedores = [
             { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
             { empresa: "ADERE", senha: "adere@2026" },
@@ -1006,6 +1063,12 @@
             sequenciaDocasSelecao: [],
             baseMotoristas: [],
             baseUsuariosCustom: [],
+            configApi: {
+                ativo: "NAO",
+                tipo: "whatsapp_zapi",
+                urlEndpoint: "",
+                authToken: ""
+            },
             usuarioLogado: null,
             empresaFornecedorLogada: null,
             perfilSolicitadoTemp: null
@@ -1063,9 +1126,18 @@
                 }
                 window.sincronizarTodosModulos();
             });
+
+            // Escuta Configurações da API de Mensagens
+            onValue(ref(db, 'yms_config_api'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.ymsStore.configApi = data;
+                    window.preencherFormularioConfigApi();
+                }
+            });
         }
 
-        // AUTO-SINCRONIZA TODOS OS FORNECEDORES NA LISTA MESTRE
+        // AUTO-SINCRONIZA E DEDUPLICA FORNECEDORES NA LISTA MESTRE
         window.garantirTodosFornecedoresNaLista = function() {
             if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
                 window.mapaCredenciaisFornecedores = [];
@@ -1073,20 +1145,32 @@
 
             let alterou = false;
 
-            // 1. Garante a inclusão dos 60 fornecedores padrão da planilha
+            // Função para limpar nome tirando numeração de sufixos de planilhas
+            const normalizarNomeBase = (nome) => {
+                let n = String(nome || '').trim().toUpperCase();
+                // Se tiver números ao final ex: ARCELOMITTAL1 -> ARCELOMITTAL (mas preserva nomes com letras no fim)
+                n = n.replace(/(\D+)\d+$/, '$1').trim();
+                return n;
+            };
+
+            // 1. Garante a inclusão dos fornecedores padrão sem duplicatas
             listaPadrao60Fornecedores.forEach(fPadrao => {
-                if (!window.mapaCredenciaisFornecedores.some(f => f.empresa === fPadrao.empresa)) {
-                    window.mapaCredenciaisFornecedores.push(fPadrao);
+                const nomeLimpo = normalizarNomeBase(fPadrao.empresa);
+                if (!window.mapaCredenciaisFornecedores.some(f => normalizarNomeBase(f.empresa) === nomeLimpo)) {
+                    window.mapaCredenciaisFornecedores.push({
+                        empresa: nomeLimpo,
+                        senha: fPadrao.senha
+                    });
                     alterou = true;
                 }
             });
 
-            // 2. Garante fornecedores adicionais presentes nas cargas subidas
+            // 2. Garante fornecedores adicionais das cargas subidas
             const todosAgendamentos = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
             todosAgendamentos.forEach(ag => {
                 if (ag && ag.fornecedor) {
-                    const nomeForn = String(ag.fornecedor).trim().toUpperCase();
-                    if (nomeForn && !window.mapaCredenciaisFornecedores.some(f => f.empresa === nomeForn)) {
+                    const nomeForn = normalizarNomeBase(ag.fornecedor);
+                    if (nomeForn && !window.mapaCredenciaisFornecedores.some(f => normalizarNomeBase(f.empresa) === nomeForn)) {
                         window.mapaCredenciaisFornecedores.push({
                             empresa: nomeForn,
                             senha: `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`
@@ -1117,6 +1201,97 @@
 
         window.salvarBaseMotoristasNaMemoria = function() {
             set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
+        };
+
+        window.salvarConfiguracaoApi = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const config = {
+                ativo: document.getElementById('apiStatusAtivo').value,
+                tipo: document.getElementById('apiTipoProvedor').value,
+                urlEndpoint: document.getElementById('apiUrlEndpoint').value.trim(),
+                authToken: document.getElementById('apiAuthToken').value.trim()
+            };
+            window.ymsStore.configApi = config;
+            set(ref(db, 'yms_config_api'), config);
+            window.exibirToast("API Salva!", "Configuração de mensagens atualizada no Firebase.", "📲");
+        };
+
+        window.preencherFormularioConfigApi = function() {
+            const cfg = window.ymsStore.configApi;
+            if (!cfg) return;
+            if (document.getElementById('apiStatusAtivo')) document.getElementById('apiStatusAtivo').value = cfg.ativo || "NAO";
+            if (document.getElementById('apiTipoProvedor')) document.getElementById('apiTipoProvedor').value = cfg.tipo || "whatsapp_zapi";
+            if (document.getElementById('apiUrlEndpoint')) document.getElementById('apiUrlEndpoint').value = cfg.urlEndpoint || "";
+            if (document.getElementById('apiAuthToken')) document.getElementById('apiAuthToken').value = cfg.authToken || "";
+        };
+
+        // ENVIADOR DE MENSAGENS VIA API REAL (FETCH)
+        window.enviarMensagemApiReal = async function(numeroTelefone, textoMensagem) {
+            const cfg = window.ymsStore.configApi;
+            if (!cfg || cfg.ativo !== 'SIM' || !cfg.urlEndpoint) {
+                console.log("API desativada ou URL não configurada.");
+                return false;
+            }
+
+            let numFormatado = String(numeroTelefone).replace(/\D/g, '');
+            if (!numFormatado.startsWith('55') && numFormatado.length <= 11) {
+                numFormatado = '55' + numFormatado;
+            }
+
+            try {
+                let payload = {};
+                let headers = { "Content-Type": "application/json" };
+
+                if (cfg.authToken) {
+                    headers["Client-Token"] = cfg.authToken;
+                    headers["Authorization"] = `Bearer ${cfg.authToken}`;
+                }
+
+                if (cfg.tipo === 'whatsapp_zapi' || cfg.tipo === 'webhook_custom') {
+                    payload = {
+                        phone: numFormatado,
+                        number: numFormatado,
+                        message: textoMensagem
+                    };
+                } else if (cfg.tipo === 'twilio_sms') {
+                    payload = {
+                        To: `+${numFormatado}`,
+                        Body: textoMensagem
+                    };
+                } else if (cfg.tipo === 'zenvia_sms') {
+                    payload = {
+                        from: "YMS SYSTEM",
+                        to: numFormatado,
+                        contents: [{ type: "text", text: textoMensagem }]
+                    };
+                }
+
+                const response = await fetch(cfg.urlEndpoint, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    console.log("📲 Mensagem enviada com sucesso pela API!");
+                    window.exibirToast("Mensagem Enviada!", `Enviada para +${numFormatado}`, "📲");
+                    return true;
+                } else {
+                    console.error("Erro na API de Mensagens:", response.status, await response.text());
+                }
+            } catch (err) {
+                console.error("Falha de conexão com a API de mensagens:", err);
+            }
+            return false;
+        };
+
+        window.testarEnvioMensagemApi = function() {
+            const numTest = document.getElementById('inputTestNum').value.trim();
+            if (!numTest) {
+                alert("Digite o número de telefone com DDD para o teste.");
+                return;
+            }
+            window.enviarMensagemApiReal(numTest, "YMS ECOSYSTEM: Teste de integração de API de mensagens bem-sucedido! 🚚🏭");
         };
 
         // --- LÓGICA DO SISTEMA ---
@@ -1152,8 +1327,16 @@
             return dataAgendada < hoje;
         };
 
+        // OBTÉM LISTA DE FORNECEDORES TOTALMENTE DEDUPLICADA E LIMPA
         window.obterListaNomesFornecedores = function() {
-            return window.mapaCredenciaisFornecedores.map(f => f.empresa).sort();
+            const mapaUnico = new Set();
+            window.mapaCredenciaisFornecedores.forEach(f => {
+                let n = String(f.empresa || '').trim().toUpperCase();
+                // Limpa numeração do final ex: ARCELOMITTAL1 -> ARCELOMITTAL
+                n = n.replace(/(\D+)\d+$/, '$1').trim();
+                if (n) mapaUnico.add(n);
+            });
+            return Array.from(mapaUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         };
 
         const configPerfisAcesso = {
@@ -1187,15 +1370,26 @@
             }
         };
 
-        window.popularSelectLoginEmpresas = function() {
+        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
             const sel = document.getElementById('selEmpresaFornecedorLogin');
             if (!sel) return;
             sel.innerHTML = "";
-            window.obterListaNomesFornecedores().forEach(f => {
+            const lista = listaParaExibir || window.obterListaNomesFornecedores();
+            
+            lista.forEach((f, idx) => {
                 const opt = document.createElement('option');
-                opt.value = f; opt.textContent = f;
+                opt.value = f; 
+                opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
                 sel.appendChild(opt);
             });
+        };
+
+        window.filtrarLoginEmpresas = function() {
+            const termo = document.getElementById('filtroLoginForn').value.toLowerCase().trim();
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectLoginEmpresas(filtrados);
         };
 
         window.popularSelectCadastroEmpresasUsr = function() {
@@ -1231,14 +1425,15 @@
         };
 
         window.atualizarTodasListasFornecedores = function() {
-            window.popularSelectFornecedores(window.obterListaNomesFornecedores());
-            window.popularSelectLoginEmpresas();
+            const fornecedoresLimpos = window.obterListaNomesFornecedores();
+            window.popularSelectFornecedores(fornecedoresLimpos);
+            window.popularSelectLoginEmpresas(fornecedoresLimpos);
             window.popularSelectCadastroEmpresasUsr();
             window.renderizarTabelaFornecedores();
             window.renderizarTabelaMotoristas();
             window.renderizarTabelaUsuariosCustom();
             const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
-            if (badgeTotal) badgeTotal.textContent = `${window.mapaCredenciaisFornecedores.length} Empresas`;
+            if (badgeTotal) badgeTotal.textContent = `${fornecedoresLimpos.length} Empresas`;
         };
 
         window.renderizarTabelaFornecedores = function() {
@@ -1247,20 +1442,24 @@
             tbody.innerHTML = "";
 
             const termo = (document.getElementById('filtroFornTabela')?.value || '').toLowerCase().trim();
-            const filtrados = window.mapaCredenciaisFornecedores.filter(item => item.empresa.toLowerCase().includes(termo));
+            const fornecedoresUnicos = window.obterListaNomesFornecedores();
+            const filtrados = fornecedoresUnicos.filter(item => item.toLowerCase().includes(termo));
 
             if (filtrados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-500 italic">Nenhum fornecedor encontrado.</td></tr>`;
                 return;
             }
 
-            filtrados.forEach(item => {
+            filtrados.forEach(empresaNome => {
+                const cadForn = window.mapaCredenciaisFornecedores.find(item => item.empresa === empresaNome);
+                const senhaExibicao = cadForn ? cadForn.senha : `${empresaNome.toLowerCase().replace(/\s+/g, '')}@2026`;
+                
                 const row = `
                     <tr class="hover:bg-slate-900 transition">
-                        <td class="p-2.5 font-bold text-white uppercase">${item.empresa}</td>
-                        <td class="p-2.5 font-mono text-yellow-300">${item.senha}</td>
+                        <td class="p-2.5 font-bold text-white uppercase">${empresaNome}</td>
+                        <td class="p-2.5 font-mono text-yellow-300">${senhaExibicao}</td>
                         <td class="p-2.5 text-center">
-                            <button type="button" onclick="excluirFornecedorDinamico('${item.empresa}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
+                            <button type="button" onclick="excluirFornecedorDinamico('${empresaNome}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -1380,6 +1579,8 @@
 
         window.confirmarLoginFornecedorEmpresa = function() {
             const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
+            if (!empSel) { alert("Selecione a sua empresa."); return; }
+            
             const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
             const cadForn = window.mapaCredenciaisFornecedores.find(item => item.empresa === empSel);
 
@@ -1667,6 +1868,9 @@
             }
 
             window.dispararSomAlerta();
+
+            // DISPARO DA API REAL SE CONFIGURADA
+            window.enviarMensagemApiReal(numLimpo, texto);
 
             document.getElementById('modalSmsNotif').classList.remove('hidden');
             window.exibirToast("Alerta Registrado!", `Notificação processada para o motorista.`, "💬");
@@ -1964,7 +2168,7 @@
 
                     let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
                     let rawForn = kForn ? row[kForn] : 'FORNECEDOR';
-                    let fornLimpo = String(rawForn).replace(/\s*-\s*Confirme o agendamento.*/i, '').trim().toUpperCase();
+                    let fornLimpo = String(rawForn).replace(/\s*-\s*Confirme o agendamento.*/i, '').replace(/(\D+)\d+$/, '$1').trim().toUpperCase();
 
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
                     let docaLida = kDoca ? row[kDoca] : listaTodasDocas[0];
@@ -2021,11 +2225,12 @@
                 count++;
                 const proximoId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                 const novaOrdem = `ORD-${proximoId}`;
-                
+                let fornLimpo = match[2].replace(/\s*-\s*Confirme o agendamento.*/i, '').replace(/(\D+)\d+$/, '$1').trim().toUpperCase();
+
                 window.ymsStore.rascunhoAgendamentos.push({
                     ordem: novaOrdem,
                     data: dataLida,
-                    fornecedor: match[2].replace(/\s*-\s*Confirme o agendamento.*/i, '').trim().toUpperCase(),
+                    fornecedor: fornLimpo,
                     doca: match[3].trim(),
                     horaIni: match[4],
                     horaFim: match[5],
@@ -2084,7 +2289,7 @@
                 document.getElementById('painelAcaoSubir').classList.add('hidden');
                 document.getElementById('subtituloGrade').textContent = "Grade de Agendamentos Vazia";
                 
-                // ATUALIZA OS HORÁRIOS PARA LIBERAR TUDO (VERDE) MESMO COM O BANCO VAZIO
+                // ATUALIZA OS HORÁRIOS PARA LIBERAR TUDO MESMO COM BANCO VAZIO
                 window.atualizarHorariosDisponiveis();
                 return;
             }
@@ -2337,7 +2542,6 @@
                 return;
             }
 
-            // --- CADASTRA / ATUALIZA MOTORISTA NA BASE DO BANCO DE DADOS EM TEMPO REAL ---
             if (!Array.isArray(window.ymsStore.baseMotoristas)) {
                 window.ymsStore.baseMotoristas = [];
             }
@@ -2356,7 +2560,6 @@
                 });
             }
             
-            // Grava motorista no Firebase e renderiza a tabela imediatamente
             window.salvarBaseMotoristasNaMemoria();
             window.renderizarTabelaMotoristas();
 
@@ -2743,7 +2946,6 @@
             window.salvarBaseMotoristasNaMemoria();
             window.renderizarTabelaMotoristas();
 
-            // Limpa o formulário
             document.getElementById('cadMotCpf').value = '';
             document.getElementById('cadMotNome').value = '';
             document.getElementById('cadMotCelular').value = '';
