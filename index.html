@@ -99,7 +99,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR COMPLETA -->
+    <!-- BARRA SUPERIOR -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -377,7 +377,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO COM CONVERSOR SERIAL DE DATA -->
+    <!-- SCRIPT CORRIGIDO COM CONVERSOR SERIAL DE DATA DO EXCEL -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -425,13 +425,14 @@
             return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
         };
 
-        // 🛠️ CONVERSOR UNIVERSAL DE DATA (CONVERTE NUMERAL SERIAL DO EXCEL 46223 PARA "27/07/2026")
+        // 🛠️ CONVERSOR UNIVERSAL DE DATAS (CONVERTE NUMERAL SERIAL DO EXCEL COMO 46223 PARA "27/07/2026")
         window.normalizarDataParaBR = function(dVal) {
             if (!dVal) return "27/07/2026";
             
-            // Se for número serial do Excel (ex: 46223)
-            if (!isNaN(dVal) && Number(dVal) > 30000) {
-                const dateObj = new Date((Number(dVal) - (25567 + 2)) * 86400 * 1000);
+            // Trata números ordinais do Excel (ex: 46223 ou "46223")
+            const num = Number(dVal);
+            if (!isNaN(num) && num > 30000) {
+                const dateObj = new Date((num - 25569) * 86400 * 1000);
                 const dia = String(dateObj.getUTCDate()).padStart(2, '0');
                 const mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
                 const ano = dateObj.getUTCFullYear();
@@ -521,7 +522,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.atualizarPreviewJanela();
         };
 
-        // 📊 MONTA TIMELINE E CRUZA AS DATAS CORRETAMENTE
+        // 📊 MONTA TIMELINE E CRUZA AS DATAS COM PERFEIÇÃO
         window.atualizarHorariosDisponiveis = function() {
             const docaSel = document.getElementById('inpDoca')?.value;
             const dataSelRaw = document.getElementById('inpData')?.value;
@@ -531,7 +532,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
             const dataFormBusca = window.normalizarDataParaBR(dataSelRaw);
 
-            // Filtra os agendamentos salvos convertendo e garantindo comparação idêntica de datas
+            // Sanitiza os dados e busca os agendamentos daquela doca e data
             const agendadosDocaDia = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])].filter(ag => {
                 const dataAgBr = window.normalizarDataParaBR(ag.data);
                 return ag.doca === docaSel && dataAgBr === dataFormBusca && ag.horaIni !== 'IMEDIATO';
@@ -688,7 +689,12 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                 onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
-                        window.ymsStore.agendamentos = Array.isArray(data) ? data : Object.values(data);
+                        const listaBruta = Array.isArray(data) ? data : Object.values(data);
+                        // Normaliza todas as datas vindas do Firebase
+                        window.ymsStore.agendamentos = listaBruta.map(item => ({
+                            ...item,
+                            data: window.normalizarDataParaBR(item.data)
+                        }));
                     } else {
                         window.ymsStore.agendamentos = [];
                     }
@@ -809,7 +815,10 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
         window.confirmarESubirJanelas = function() {
             if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
-            window.ymsStore.rascunhoAgendamentos.forEach(r => { delete r.isRascunho; });
+            window.ymsStore.rascunhoAgendamentos.forEach(r => { 
+                delete r.isRascunho; 
+                r.data = window.normalizarDataParaBR(r.data);
+            });
             window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos);
             window.ymsStore.rascunhoAgendamentos = [];
             window.salvarAgendamentosNaMemoria();
@@ -841,12 +850,18 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (!container) return;
             container.innerHTML = "";
 
+            // Garante sanitização de datas no rascunho
+            window.ymsStore.rascunhoAgendamentos.forEach(r => {
+                r.data = window.normalizarDataParaBR(r.data);
+            });
+
             const listaExibicao = [...window.ymsStore.rascunhoAgendamentos, ...(window.ymsStore.agendamentos || [])];
             document.getElementById('contadorJanelas').textContent = listaExibicao.length;
 
             if (listaExibicao.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada.</p>`;
                 document.getElementById('painelAcaoSubir').classList.add('hidden');
+                window.atualizarHorariosDisponiveis();
                 return;
             }
 
@@ -865,7 +880,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     badgeTipoOp = `<span class="bg-amber-500 text-slate-950 font-bold text-[9px] px-2 py-0.5 rounded font-mono">🟡 EXTRA</span>`;
                 }
 
-                // Normaliza e formata a exibição da data no card
                 const dataExibicaoFormatada = window.normalizarDataParaBR(item.data);
 
                 container.insertAdjacentHTML('beforeend', `
