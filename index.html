@@ -2027,7 +2027,7 @@
         window.tratarDrop = function(e) { e.preventDefault(); window.tratarDragLeave(e); if (e.dataTransfer.files?.length > 0) window.processarArquivoEspecifico(e.dataTransfer.files[0]); };
         window.lerPlanilhaExcel = function(e) { if (e.target.files[0]) window.processarArquivoEspecifico(e.target.files[0]); };
 
-       window.processarArquivoEspecifico = function(file) {
+      window.processarArquivoEspecifico = function(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
         const data = new Uint8Array(e.target.result);
@@ -2049,7 +2049,7 @@
             let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
             let dataTxt = kData ? window.normalizarDataUniversal(row[kData]) : window.obterDataHojePtBR();
 
-            // 🛑 TRAVA DE SEGURANÇA: Se a data for passada, não entra no rascunho
+            // 🛑 TRAVA DE SEGURANÇA: Se a data for passada em relação a hoje, bloqueia
             if (window.dataEhPassada(dataTxt)) {
                 bloqueadosDataAntiga++;
                 return;
@@ -2059,12 +2059,12 @@
             let fornNome = kForn ? window.limparNomeFornecedor(row[kForn]) : "FORNECEDOR";
 
             let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
-            let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
+            let docaNome = kDoca ? String(row[kDoca]).trim() : (listaTodasDocas ? listaTodasDocas[0] : "Doca");
 
             if (!primeiraDataValida) primeiraDataValida = dataTxt;
 
-            let kIni = keys.find(k => k.match(/entrada|inicio|início|hora.*ini|start|de\b/i));
-            let kFim = keys.find(k => k.match(/saida|saída|fim|hora.*fim|end|até|ate/i));
+            let kIni = keys.find(k => k.match(/entrada|inicio|início|hora.*ini|start/i));
+            let kFim = keys.find(k => k.match(/saida|saída|fim|hora.*fim|end/i));
             let kGeral = keys.find(k => k.match(/hora|horário|horario|janela|slot/i));
 
             let hIni = "08:00", hFim = "09:00";
@@ -2191,13 +2191,12 @@
             window.atualizarHorariosDisponiveis();
         };
 
-       window.confirmarESubirJanelas = function() {
+      window.confirmarESubirJanelas = function() {
     if (window.ymsStore.rascunhoAgendamentos.length === 0) {
         alert("Não há janelas no rascunho para subir.");
         return;
     }
 
-    // 🛑 FILTRA E BLOQUEIA QUALQUER RASCUNHO RETROATIVO
     const pendentesValidos = [];
     let qtdBloqueados = 0;
 
