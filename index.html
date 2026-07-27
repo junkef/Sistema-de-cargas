@@ -192,7 +192,7 @@
                             </div>
                         </div>
 
-                        <!-- QUADRO DE HORÁRIOS -->
+                        <!-- QUADRO DE HORÁRIOS COM CONEXÃO REAL AOS OCUPADOS -->
                         <div id="boxQuadroHorarios" class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px] font-bold">
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
@@ -378,10 +378,17 @@
 
         window.tipoCargaAtivo = 'cotidiano';
 
-        // 🕒 RELÓGIO DIGITAL
+        // 🕒 RELÓGIO DIGITAL REAL
         window.atualizarRelogioDigital = function() {
             const el = document.getElementById('txtRelogio');
             if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
+        };
+
+        // HELPER CONVERSÃO HORA <-> MINUTOS
+        window.horaParaMinutos = function(hStr) {
+            if (!hStr || hStr === 'IMEDIATO' || hStr === '---') return 0;
+            const p = String(hStr).split(':');
+            return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
         };
 
         // 📧 DISPARO DE E-MAIL
@@ -440,25 +447,58 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.atualizarPreviewJanela();
         };
 
-        // MONTA TIMELINE E DISPONIBILIDADE
+        // 📊 MONTA TIMELINE E IDENTIFICA HORÁRIOS OCUPADOS REAL
         window.atualizarHorariosDisponiveis = function() {
-            const slots = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"];
+            const docaSel = document.getElementById('inpDoca')?.value;
+            const dataSelRaw = document.getElementById('inpData')?.value;
             const grid = document.getElementById('gridTimelineHorarios');
             const selIni = document.getElementById('inpHora');
-            if (!grid || !selIni) return;
+            if (!grid || !selIni || !dataSelRaw || !docaSel) return;
+
+            // Formata data YYYY-MM-DD -> DD/MM/YYYY para comparação
+            const p = dataSelRaw.split('-');
+            const dataForm = `${p[2]}/${p[1]}/${p[0]}`;
+
+            // Busca todos os agendamentos ocupando essa doca no dia
+            const agendadosDocaDia = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])].filter(ag => {
+                return ag.doca === docaSel && ag.data === dataForm && ag.horaIni !== 'IMEDIATO';
+            });
+
+            const slots = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"];
 
             grid.innerHTML = "";
             selIni.innerHTML = "";
 
             slots.forEach(s => {
-                grid.insertAdjacentHTML('beforeend', `
-                    <div onclick="document.getElementById('inpHora').value='${s}'; atualizarHorarioFimMinimo();" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 p-1 rounded text-center text-[10px] font-mono font-bold cursor-pointer transition">${s}</div>
-                `);
-                const opt = document.createElement('option');
-                opt.value = s;
-                opt.textContent = `${s}h (Livre)`;
-                selIni.appendChild(opt);
+                const slotMin = window.horaParaMinutos(s);
+                let ocupado = false;
+                let agOcupante = null;
+
+                for (let ag of agendadosDocaDia) {
+                    const iniMin = window.horaParaMinutos(ag.horaIni);
+                    const fimMin = window.horaParaMinutos(ag.horaFim);
+                    if (slotMin >= iniMin && slotMin < fimMin) {
+                        ocupado = true;
+                        agOcupante = ag;
+                        break;
+                    }
+                }
+
+                if (ocupado) {
+                    grid.insertAdjacentHTML('beforeend', `
+                        <div title="${agOcupante.ordem} - ${agOcupante.fornecedor}" class="bg-red-950/80 border border-red-500/80 text-red-300 p-1 rounded text-center text-[10px] font-mono font-bold cursor-not-allowed">${s}</div>
+                    `);
+                } else {
+                    grid.insertAdjacentHTML('beforeend', `
+                        <div onclick="document.getElementById('inpHora').value='${s}'; atualizarHorarioFimMinimo();" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 p-1 rounded text-center text-[10px] font-mono font-bold cursor-pointer transition">${s}</div>
+                    `);
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = `${s}h (Livre)`;
+                    selIni.appendChild(opt);
+                }
             });
+
             window.atualizarHorarioFimMinimo();
         };
 
@@ -684,6 +724,8 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     </div>
                 `);
             });
+
+            window.atualizarHorariosDisponiveis();
         };
 
         window.renderizarModuloFiscal = function() {
@@ -749,7 +791,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         window.fecharModalSms = function() { document.getElementById('modalSmsNotif').classList.add('hidden'); };
         window.fecharModalSmsExterno = function(e) { if (e.target.id === 'modalSmsNotif') window.fecharModalSms(); };
 
-        // 🚀 INICIALIZAÇÃO CONTROLADA
+        // 🚀 INICIALIZAÇÃO
         window.addEventListener('DOMContentLoaded', () => {
             setInterval(window.atualizarRelogioDigital, 1000);
             window.atualizarRelogioDigital();
