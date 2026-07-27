@@ -99,7 +99,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR (RESTAUROU AS 8 ABAS DE NAVEGAÇÃO) -->
+    <!-- BARRA SUPERIOR COMPLETA -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -322,7 +322,7 @@
             </div>
         </section>
 
-        <!-- OUTROS MÓDULOS -->
+        <!-- DEMAIS MÓDULOS -->
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
             <h2 class="text-xl font-bold text-white">🏢 Portal do Fornecedor</h2>
         </section>
@@ -377,7 +377,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO -->
+    <!-- SCRIPT CORRIGIDO COM CONVERSOR SERIAL DE DATA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -425,9 +425,20 @@
             return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
         };
 
-        // CONVERSÃO E COMPATIBILIZAÇÃO UNIVERSAL DE DATAS
-        window.normalizarDataParaBR = function(dStr) {
-            if (!dStr) return "27/07/2026";
+        // 🛠️ CONVERSOR UNIVERSAL DE DATA (CONVERTE NUMERAL SERIAL DO EXCEL 46223 PARA "27/07/2026")
+        window.normalizarDataParaBR = function(dVal) {
+            if (!dVal) return "27/07/2026";
+            
+            // Se for número serial do Excel (ex: 46223)
+            if (!isNaN(dVal) && Number(dVal) > 30000) {
+                const dateObj = new Date((Number(dVal) - (25567 + 2)) * 86400 * 1000);
+                const dia = String(dateObj.getUTCDate()).padStart(2, '0');
+                const mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+                const ano = dateObj.getUTCFullYear();
+                return `${dia}/${mes}/${ano}`;
+            }
+
+            const dStr = String(dVal).trim();
             if (dStr.includes('/')) return dStr;
             const p = dStr.split('-');
             if (p.length === 3) return `${p[2]}/${p[1]}/${p[0]}`;
@@ -450,7 +461,7 @@ Uma nova Carga ${ehCritica ? 'CRITICA' : 'EXTRA'} foi registrada no YMS Ecosyste
 - CODIGO DA JANELA: ${janelaItem.ordem}
 - Fornecedor: ${janelaItem.fornecedor}
 - Doca: ${janelaItem.doca}
-- Data Prevista: ${janelaItem.data}
+- Data Prevista: ${window.normalizarDataParaBR(janelaItem.data)}
 - Motorista: ${janelaItem.motorista || 'A definir'} (CPF: ${janelaItem.cpf || 'N/D'})
 ${ehCritica ? `- Part Number / Item: ${janelaItem.detalhesCriticidade?.partNumber || 'N/D'}\n- Motivo do Risco: ${janelaItem.detalhesCriticidade?.motivo || 'N/D'}\n- PRIORIDADE: CARGA CRITICA (Prioridade na Descarga)\n` : ''}
 Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
@@ -510,7 +521,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.atualizarPreviewJanela();
         };
 
-        // 📊 MONTA TIMELINE E IDENTIFICA HORÁRIOS OCUPADOS
+        // 📊 MONTA TIMELINE E CRUZA AS DATAS CORRETAMENTE
         window.atualizarHorariosDisponiveis = function() {
             const docaSel = document.getElementById('inpDoca')?.value;
             const dataSelRaw = document.getElementById('inpData')?.value;
@@ -520,7 +531,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
             const dataFormBusca = window.normalizarDataParaBR(dataSelRaw);
 
-            // Filtra os agendamentos salvos e do rascunho cruzando doca e data exatas
+            // Filtra os agendamentos salvos convertendo e garantindo comparação idêntica de datas
             const agendadosDocaDia = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])].filter(ag => {
                 const dataAgBr = window.normalizarDataParaBR(ag.data);
                 return ag.doca === docaSel && dataAgBr === dataFormBusca && ag.horaIni !== 'IMEDIATO';
@@ -615,7 +626,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
                     let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
                     let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
-                    let dataTxt = kData ? window.normalizarDataParaBR(String(row[kData]).trim()) : "27/07/2026";
+                    let dataTxt = kData ? window.normalizarDataParaBR(row[kData]) : "27/07/2026";
 
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                     window.ymsStore.rascunhoAgendamentos.push({
@@ -854,6 +865,9 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     badgeTipoOp = `<span class="bg-amber-500 text-slate-950 font-bold text-[9px] px-2 py-0.5 rounded font-mono">🟡 EXTRA</span>`;
                 }
 
+                // Normaliza e formata a exibição da data no card
+                const dataExibicaoFormatada = window.normalizarDataParaBR(item.data);
+
                 container.insertAdjacentHTML('beforeend', `
                     <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
                         <div>
@@ -867,7 +881,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="text-right">
-                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
+                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${dataExibicaoFormatada}</span>
                                 <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
                             </div>
                             <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl transition text-xs cursor-pointer">🗑️</button>
