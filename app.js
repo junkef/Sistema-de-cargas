@@ -112,7 +112,7 @@ window.ymsStore = {
     abaFornecedorAtual: "pendentes", ticketAtivoFiscal: null, ticketAtivoCheckout: null,
     sequenciaDocasSelecao: [], baseMotoristas: [], baseUsuariosCustom: [],
     configApi: { ativo: "NAO", tipo: "whatsapp_zapi", urlEndpoint: "", authToken: "" },
-    usuarioLogado: null, empresaFornecedorLogada: null, perfilSolicitadoTemp: null
+    usuarioLogado: "ADMIN", empresaFornecedorLogada: null, perfilSolicitadoTemp: null
 };
 
 window.mapaCredenciaisFornecedores = [];
@@ -130,9 +130,9 @@ function inicializarEscutadoresFirebase() {
 
 window.salvarAgendamentosNaMemoria = function() { set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos); };
 
-// 🔑 CONTROLE DE ACESSO, LOGIN E PERFIS
+// 🔑 TROCA DE MÓDULO E NAVEGAÇÃO
 window.solicitarAcessoPerfil = function(perfilId) {
-    window.ymsStore.perfilSolicitadoTemp = perfilId;
+    if (perfilId === 'admin') perfilId = 'torre';
     window.ymsStore.usuarioLogado = perfilId.toUpperCase();
     const lblUser = document.getElementById('lblNomeUsuarioLogado');
     if (lblUser) lblUser.textContent = `Sair (${perfilId.toUpperCase()})`;
@@ -140,24 +140,31 @@ window.solicitarAcessoPerfil = function(perfilId) {
     window.mudarPerfil(perfilId);
     const modal = document.getElementById('modalLoginGlobal');
     if (modal) modal.classList.add('hidden');
-    window.exibirToast("Acesso Concedido", `Módulo ${perfilId.toUpperCase()} ativado.`, "🔓");
 };
 
 window.mudarPerfil = function(perfilId) {
-    if (!window.ymsStore.usuarioLogado) {
-        window.abrirModalLogin();
-        return;
-    }
+    if (perfilId === 'admin') perfilId = 'torre';
 
-    document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
+    // Oculta todas as seções de perfis
+    document.querySelectorAll('.perfil-modulo').forEach(el => {
+        el.classList.add('hidden');
+        el.style.display = 'none';
+    });
+
+    // Remove destaque de todos os botões da navbar
     document.querySelectorAll('.btn-perfil').forEach(btn => {
         btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
         btn.classList.add('text-slate-400');
     });
 
+    // Exibe a seção ativa
     const secAtiva = document.getElementById(`perfil-${perfilId}`);
-    if (secAtiva) secAtiva.classList.remove('hidden');
+    if (secAtiva) {
+        secAtiva.classList.remove('hidden');
+        secAtiva.style.display = 'block';
+    }
 
+    // Destaque no botão ativo
     const btnAtivo = document.getElementById(`btn-${perfilId}`);
     if (btnAtivo) {
         btnAtivo.classList.remove('text-slate-400');
@@ -175,10 +182,8 @@ window.fazerLogoutGlobal = function() {
     const lblUser = document.getElementById('lblNomeUsuarioLogado');
     if (lblUser) lblUser.textContent = "Sair";
     window.abrirModalLogin();
-    window.exibirToast("Sessão Encerrada", "Selecione um perfil para acessar.", "🔒");
 };
 
-// 📊 ALTERNÂNCIA DE ABAS NO PCP (Manual / Subida de Planilha / Colar Texto)
 window.alternarAbaPCP = function(aba) {
     const cInd = document.getElementById('conteudoIndividual');
     const cMas = document.getElementById('conteudoMassa');
@@ -204,7 +209,6 @@ window.alternarAbaPCP = function(aba) {
     }
 };
 
-// 📁 LEITURA DE PLANILHAS (EXCEL / CSV)
 window.tratarDragOver = function(e) { e.preventDefault(); };
 window.tratarDragLeave = function(e) { e.preventDefault(); };
 window.tratarDrop = function(e) {
@@ -469,6 +473,31 @@ window.confirmarESubirJanelas = function() {
 
 window.sincronizarTodosModulos = function() {
     window.renderizarGradePCP();
+    window.renderizarTabelaFornecedor();
+};
+
+window.renderizarTabelaFornecedor = function() {
+    const tbody = document.getElementById('tabelaFornecedorAgendamentos');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const ags = window.ymsStore.agendamentos;
+    if (!ags || ags.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento carregado no sistema.</td></tr>`;
+        return;
+    }
+
+    ags.forEach(item => {
+        tbody.insertAdjacentHTML('beforeend', `
+            <tr class="hover:bg-slate-800/50 transition">
+                <td class="p-3 font-mono font-bold text-indigo-400">${item.ordem || '---'}</td>
+                <td class="p-3 font-bold text-amber-400">${window.normalizarDataUniversal(item.data)}</td>
+                <td class="p-3 text-white font-bold">${item.doca}</td>
+                <td class="p-3 font-mono text-emerald-400">${item.horaIni} às ${item.horaFim}</td>
+                <td class="p-3"><span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-bold border border-emerald-500/30">${item.status || 'AGENDADO'}</span></td>
+            </tr>
+        `);
+    });
 };
 
 window.renderizarGradePCP = function() {
@@ -532,8 +561,8 @@ function iniciarAplicacao() {
         });
     }
 
-    // 🔒 EXIBE O MODAL DE LOGIN IMEDIATAMENTE NA ENTRADA
-    window.abrirModalLogin();
+    // Inicializa no módulo PCP Programador
+    window.mudarPerfil('pcp');
 
     window.atualizarHorariosDisponiveis();
     inicializarEscutadoresFirebase();
