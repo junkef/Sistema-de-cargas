@@ -377,7 +377,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO COM EXTRATOR DINÂMICO DE HORÁRIOS -->
+    <!-- SCRIPT CORRIGIDO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -425,9 +425,9 @@
             return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
         };
 
-        // 🛠️ CONVERSOR UNIVERSAL DE DATAS
+        // 🛠️ CONVERSOR DE DATAS
         window.normalizarDataParaBR = function(dVal) {
-            if (!dVal) return "27/07/2026";
+            if (!dVal) return "20/07/2026";
             
             const num = Number(dVal);
             if (!isNaN(num) && num > 30000) {
@@ -445,28 +445,25 @@
             return dStr;
         };
 
-        // 🕒 EXTRATOR INTELIGENTE DE HORÁRIOS DA PLANILHA DO EXCEL
+        // CONVERTE DATA "DD/MM/YYYY" PARA "YYYY-MM-DD"
+        window.normalizarDataParaISO = function(dStrBr) {
+            if (!dStrBr || !dStrBr.includes('/')) return "2026-07-20";
+            const p = dStrBr.split('/');
+            if (p.length === 3) return `${p[2]}-${p[1]}-${p[0]}`;
+            return "2026-07-20";
+        };
+
+        // 🕒 EXTRATOR DE HORÁRIOS
         window.extrairHorarios = function(row) {
-            let keys = Object.keys(row);
-            
-            let kIni = keys.find(k => k.match(/ini|início|inicio|de\b|start/i));
-            let kFim = keys.find(k => k.match(/fim|término|termino|até|ate|end/i));
-            let kGeral = keys.find(k => k.match(/hora|horário|horario|janela|slot/i));
-
-            let rawIni = kIni ? row[kIni] : null;
-            let rawFim = kFim ? row[kFim] : null;
-            let rawGeral = kGeral ? row[kGeral] : null;
-
-            let hIni = "08:00";
-            let hFim = "09:00";
+            let hIni = null, hFim = null;
 
             function formatarHoraVal(val) {
                 if (val === null || val === undefined || val === '') return null;
                 if (typeof val === 'number') {
-                    if (val > 0 && val < 1) {
-                        let totalMinutos = Math.round(val * 24 * 60);
-                        let h = Math.floor(totalMinutos / 60) % 24;
-                        let m = totalMinutos % 60;
+                    if (val >= 0 && val < 1) {
+                        let totalMin = Math.round(val * 24 * 60);
+                        let h = Math.floor(totalMin / 60) % 24;
+                        let m = totalMin % 60;
                         return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
                     } else if (val >= 1 && val <= 24) {
                         return `${String(Math.floor(val)).padStart(2, '0')}:00`;
@@ -477,24 +474,23 @@
                 if (match) {
                     return `${String(match[1]).padStart(2, '0')}:${String(match[2]).padStart(2, '0')}`;
                 }
-                let matchApenasHora = str.match(/^(\d{1,2})$/);
-                if (matchApenasHora) {
-                    return `${String(matchApenasHora[1]).padStart(2, '0')}:00`;
+                let matchSingle = str.match(/^(\d{1,2})$/);
+                if (matchSingle) {
+                    return `${String(matchSingle[1]).padStart(2, '0')}:00`;
                 }
                 return null;
             }
 
-            if (rawIni !== null && rawIni !== undefined) {
-                let p = formatarHoraVal(rawIni);
-                if (p) hIni = p;
-            }
-            if (rawFim !== null && rawFim !== undefined) {
-                let p = formatarHoraVal(rawFim);
-                if (p) hFim = p;
-            }
+            let keys = Object.keys(row);
+            let kIni = keys.find(k => k.match(/ini|início|inicio|de\b|start|hora_i|hr_i|h_i/i));
+            let kFim = keys.find(k => k.match(/fim|término|termino|até|ate|end|hora_f|hr_f|h_f/i));
+            let kGeral = keys.find(k => k.match(/hora|horário|horario|janela|slot|intervalo|range|atendimento/i));
 
-            if (rawGeral !== null && rawGeral !== undefined && (!kIni || !kFim)) {
-                let strGeral = String(rawGeral).trim();
+            if (kIni && row[kIni]) hIni = formatarHoraVal(row[kIni]);
+            if (kFim && row[kFim]) hFim = formatarHoraVal(row[kFim]);
+
+            if (kGeral && row[kGeral] && (!hIni || !hFim)) {
+                let strGeral = String(row[kGeral]).trim();
                 let matches = strGeral.match(/(\d{1,2})[:hH]?(\d{2})?\s*(?:a|às|as|-|ate|até|to|\s)\s*(\d{1,2})[:hH]?(\d{2})?/i);
                 if (matches) {
                     let h1 = String(matches[1]).padStart(2, '0');
@@ -503,16 +499,36 @@
                     let m2 = matches[4] ? String(matches[4]).padStart(2, '0') : "00";
                     hIni = `${h1}:${m1}`;
                     hFim = `${h2}:${m2}`;
-                } else {
-                    let single = formatarHoraVal(rawGeral);
-                    if (single) {
-                        hIni = single;
-                        let min = window.horaParaMinutos(hIni) + 60;
-                        let hF = Math.floor(min / 60) % 24;
-                        let mF = min % 60;
-                        hFim = `${String(hF).padStart(2, '0')}:${String(mF).padStart(2, '0')}`;
+                }
+            }
+
+            // BUSCA PROFUNDA EM TODAS AS COLUNAS DA LINHA
+            if (!hIni || !hFim) {
+                let colunasHoras = [];
+                for (let k of keys) {
+                    let val = row[k];
+                    if (val !== null && val !== undefined) {
+                        let strVal = String(val).trim();
+                        let rangeMatch = strVal.match(/(\d{1,2})[:hH](\d{2})\s*(?:a|às|as|-|ate|até|to|\s)\s*(\d{1,2})[:hH](\d{2})/i);
+                        if (rangeMatch) {
+                            hIni = `${String(rangeMatch[1]).padStart(2, '0')}:${String(rangeMatch[2]).padStart(2, '0')}`;
+                            hFim = `${String(rangeMatch[3]).padStart(2, '0')}:${String(rangeMatch[4]).padStart(2, '0')}`;
+                            break;
+                        }
+                        let formatted = formatarHoraVal(val);
+                        if (formatted) colunasHoras.push(formatted);
                     }
                 }
+                if (!hIni && colunasHoras.length > 0) hIni = colunasHoras[0];
+                if (!hFim && colunasHoras.length > 1) hFim = colunasHoras[1];
+            }
+
+            if (!hIni) hIni = "08:00";
+            if (!hFim) {
+                let min = window.horaParaMinutos(hIni) + 60;
+                let hF = Math.floor(min / 60) % 24;
+                let mF = min % 60;
+                hFim = `${String(hF).padStart(2, '0')}:${String(mF).padStart(2, '0')}`;
             }
 
             return { horaIni: hIni, horaFim: hFim };
@@ -677,13 +693,15 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (file) window.processarArquivoEspecifico(file);
         };
 
+        // 📂 PROCESSADOR DE PLANILHAS COM FORMATADOR FORMATO TEXTO (raw: false)
         window.processarArquivoEspecifico = function(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
+                // raw: false faz o SheetJS entregar a string exata exibida na planilha (ex: "01:00")
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: false });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet);
+                const json = XLSX.utils.sheet_to_json(sheet, { raw: false });
 
                 if (!json || json.length === 0) {
                     alert("A planilha selecionada está vazia.");
@@ -691,6 +709,8 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                 }
 
                 let inseridos = 0;
+                let primeiraDataValida = null;
+
                 json.forEach((row) => {
                     let keys = Object.keys(row);
                     let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
@@ -698,9 +718,11 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
                     let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
                     let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
-                    let dataTxt = kData ? window.normalizarDataParaBR(row[kData]) : "27/07/2026";
+                    let dataTxt = kData ? window.normalizarDataParaBR(row[kData]) : "20/07/2026";
 
-                    // Extração dinâmica de horários
+                    if (!primeiraDataValida) primeiraDataValida = dataTxt;
+
+                    // Extração inteligente e precisa do horário
                     let hor = window.extrairHorarios(row);
 
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
@@ -719,6 +741,13 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     });
                     inseridos++;
                 });
+
+                // Sincroniza o seletor de data da tela com a data importada da planilha
+                if (primeiraDataValida) {
+                    const dataIso = window.normalizarDataParaISO(primeiraDataValida);
+                    const elData = document.getElementById('inpData');
+                    if (elData) elData.value = dataIso;
+                }
 
                 window.renderizarGradePCP();
                 window.exibirToast("Planilha Processada!", `${inseridos} janelas lidas para rascunho.`, "📊");
@@ -750,7 +779,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                     window.ymsStore.rascunhoAgendamentos.push({
                         ordem: `ORD-${proxId}`,
-                        data: "27/07/2026",
+                        data: "20/07/2026",
                         fornecedor: "CSN",
                         doca: listaTodasDocas[0],
                         horaIni: hIni,
@@ -846,7 +875,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             const tipoOp = window.tipoCargaAtivo;
             const fornSel = document.getElementById('inpFornecedor')?.value || "CSN";
             const docaSel = document.getElementById('inpDoca')?.value || listaTodasDocas[0];
-            const dataSel = document.getElementById('inpData')?.value || "2026-07-27";
+            const dataSel = document.getElementById('inpData')?.value || "2026-07-20";
             const dataForm = window.normalizarDataParaBR(dataSel);
 
             let novaOrdem = "", prioridade = 99, nfExibicao = "";
@@ -1063,7 +1092,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             setInterval(window.atualizarRelogioDigital, 1000);
             window.atualizarRelogioDigital();
 
-            const hojeIso = "2026-07-27";
+            const hojeIso = "2026-07-20";
             if (document.getElementById('inpData')) document.getElementById('inpData').value = hojeIso;
 
             const selDoca = document.getElementById('inpDoca');
