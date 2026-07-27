@@ -2191,15 +2191,45 @@
             window.atualizarHorariosDisponiveis();
         };
 
-        window.confirmarESubirJanelas = function() {
-            if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
-            window.ymsStore.rascunhoAgendamentos.forEach(item => { delete item.isRascunho; item.data = window.normalizarDataUniversal(item.data); });
-            window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos);
-            window.ymsStore.rascunhoAgendamentos = [];
-            window.salvarAgendamentosNaMemoria();
-            window.exibirToast("Janelas Publicadas!", "Sincronizado com sucesso.", "🚀");
-        };
+       window.confirmarESubirJanelas = function() {
+    if (window.ymsStore.rascunhoAgendamentos.length === 0) {
+        alert("Não há janelas no rascunho para subir.");
+        return;
+    }
 
+    // 🛑 FILTRA E BLOQUEIA QUALQUER RASCUNHO RETROATIVO
+    const pendentesValidos = [];
+    let qtdBloqueados = 0;
+
+    window.ymsStore.rascunhoAgendamentos.forEach(item => {
+        if (window.dataEhPassada(item.data)) {
+            qtdBloqueados++;
+        } else {
+            delete item.isRascunho;
+            item.data = window.normalizarDataUniversal(item.data);
+            pendentesValidos.push(item);
+        }
+    });
+
+    if (qtdBloqueados > 0) {
+        alert(`🚫 OPERAÇÃO INTERROMPIDA!\n\nForam encontradas ${qtdBloqueados} janelas no rascunho com DATAS PASSADAS.\nElas foram removidas por segurança.`);
+        window.ymsStore.rascunhoAgendamentos = pendentesValidos;
+        window.renderizarGradePCP();
+        return;
+    }
+
+    window.ymsStore.agendamentos.push(...pendentesValidos);
+
+    if (!window.ymsStore.ordemAtivaFornecedor && pendentesValidos.length > 0) {
+        window.ymsStore.ordemAtivaFornecedor = pendentesValidos[0].ordem;
+    }
+
+    window.ymsStore.rascunhoAgendamentos = [];
+    window.garantirTodosFornecedoresNaLista();
+    window.salvarAgendamentosNaMemoria();
+
+    window.exibirToast("Janelas Publicadas!", `${pendentesValidos.length} agendamentos sincronizados.`, "🚀");
+};
         // --- MÓDULO PORTAL FORNECEDOR ---
         window.alternarAbaFornecedor = function(aba) {
             window.ymsStore.abaFornecedorAtual = aba;
