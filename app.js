@@ -130,23 +130,67 @@ function inicializarEscutadoresFirebase() {
 
 window.salvarAgendamentosNaMemoria = function() { set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos); };
 
-// 🔴 FUNÇÃO PARA ZERAR/LIMPAR TODAS AS JANELAS DO FIREBASE
-window.limparJanelasSubidas = function() {
-    if (confirm("⚠️ ATENÇÃO!\n\nTem certeza de que deseja ZERAR/APAGAR TODAS as 9219+ janelas do Firebase?\nEsta ação não poderá ser desfeita.")) {
-        window.ymsStore.agendamentos = [];
-        window.salvarAgendamentosNaMemoria();
-        window.renderizarGradePCP();
-        window.exibirToast("Banco Zerado!", "Todas as janelas foram excluídas do Firebase.", "🗑️");
+// 🔑 CONTROLE DE NAVEGAÇÃO E MÓDULOS
+window.solicitarAcessoPerfil = function(perfilId) {
+    window.ymsStore.perfilSolicitadoTemp = perfilId;
+    window.mudarPerfil(perfilId);
+    const modal = document.getElementById('modalLoginGlobal');
+    if (modal) modal.classList.add('hidden');
+};
+
+window.mudarPerfil = function(perfilId) {
+    document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.btn-perfil').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
+        btn.classList.add('text-slate-400');
+    });
+
+    const secAtiva = document.getElementById(`perfil-${perfilId}`);
+    if (secAtiva) secAtiva.classList.remove('hidden');
+
+    const btnAtivo = document.getElementById(`btn-${perfilId}`);
+    if (btnAtivo) {
+        btnAtivo.classList.remove('text-slate-400');
+        btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow');
     }
 };
 
-// 🔴 FUNÇÃO PARA SAIR/LOGOUT
 window.fazerLogoutGlobal = function() {
-    if (confirm("Deseja realmente sair e voltar para a tela de login?")) {
-        window.ymsStore.usuarioLogado = null;
-        const modal = document.getElementById('modalLoginGlobal');
-        if (modal) modal.classList.remove('hidden');
-        window.exibirToast("Sessão Encerrada", "Você saiu do sistema.", "🔒");
+    window.ymsStore.usuarioLogado = null;
+    const modal = document.getElementById('modalLoginGlobal');
+    if (modal) modal.classList.remove('hidden');
+    window.exibirToast("Sessão Encerrada", "Selecione um perfil para acessar.", "🔒");
+};
+
+window.limparJanelasSubidas = function() {
+    if (confirm("⚠️ ATENÇÃO!\n\nTem certeza de que deseja ZERAR/APAGAR TODAS as janelas do Firebase?")) {
+        window.ymsStore.agendamentos = [];
+        window.salvarAgendamentosNaMemoria();
+        window.renderizarGradePCP();
+        window.exibirToast("Banco Zerado!", "Todas as janelas foram excluídas.", "🗑️");
+    }
+};
+
+window.selecionarTipoCarga = function(tipo) {
+    window.tipoCargaAtivo = tipo;
+    const bCotidiano = document.getElementById('btnTipoCotidiano');
+    const bExtra = document.getElementById('btnTipoExtra');
+    const bCritica = document.getElementById('btnTipoCritica');
+    const badge = document.getElementById('badgeTipoJanela');
+
+    [bCotidiano, bExtra, bCritica].forEach(b => {
+        if(b) b.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 flex flex-col items-center gap-0.5 cursor-pointer";
+    });
+
+    if (tipo === 'cotidiano' && bCotidiano) {
+        bCotidiano.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+        if(badge) { badge.textContent = "🟢 Cotidiano"; badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; }
+    } else if (tipo === 'extra' && bExtra) {
+        bExtra.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-600 border-amber-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+        if(badge) { badge.textContent = "🟡 Extra"; badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; }
+    } else if (tipo === 'critica' && bCritica) {
+        bCritica.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+        if(badge) { badge.textContent = "🔴 Crítica"; badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; }
     }
 };
 
@@ -249,8 +293,7 @@ window.criarJanelaManual = function(e) {
     }
 
     const dataForm = window.normalizarDataUniversal(rawData);
-    const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor').value);
-    if (!fornSel) { alert("Selecione um fornecedor."); return; }
+    const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor')?.value || 'FORNECEDOR');
 
     const tipoOp = window.tipoCargaAtivo;
     let novaOrdem = `ORD-${window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000}`;
@@ -320,13 +363,13 @@ window.renderizarGradePCP = function() {
 
     if (todas.length === 0) {
         container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada no sistema.</p>`;
-        document.getElementById('painelAcaoSubir').classList.add('hidden');
+        document.getElementById('painelAcaoSubir')?.classList.add('hidden');
         window.atualizarHorariosDisponiveis();
         return;
     }
 
-    if (window.ymsStore.rascunhoAgendamentos.length > 0) document.getElementById('painelAcaoSubir').classList.remove('hidden');
-    else document.getElementById('painelAcaoSubir').classList.add('hidden');
+    if (window.ymsStore.rascunhoAgendamentos.length > 0) document.getElementById('painelAcaoSubir')?.classList.remove('hidden');
+    else document.getElementById('painelAcaoSubir')?.classList.add('hidden');
 
     todas.forEach(item => {
         container.insertAdjacentHTML('beforeend', `
