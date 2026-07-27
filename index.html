@@ -6,11 +6,11 @@
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (Excel) -->
+    <!-- SheetJS (Leitura e Geração de Excel) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js -->
+    <!-- Chart.js (Gráficos Torre de Controle) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCodeJS -->
+    <!-- QRCodeJS (Ticket Impresso do Totem) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         .hidden { display: none !important; }
@@ -53,7 +53,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
 
-    <!-- MODAL INICIAL DE LOGIN -->
+    <!-- MODAL INICIAL DE LOGIN / SELEÇÃO DE PERFIL -->
     <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center hidden">
         <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-4 my-auto">
             <div class="text-center space-y-1">
@@ -62,6 +62,7 @@
                 <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
             </div>
 
+            <!-- GRID DE PERFIS -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <button type="button" onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
@@ -96,6 +97,55 @@
                     <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
             </div>
+
+            <!-- LOGIN FORNECEDOR COM PESQUISA -->
+            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
+                <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
+                    <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
+                    <span class="text-[10px] text-amber-400 font-mono font-bold">🔒 Senhas Exclusivas</span>
+                </div>
+                <div class="space-y-2.5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa (Pesquisa Rápida)</label>
+                        <div class="bg-slate-900 border border-indigo-500/60 rounded-xl overflow-hidden focus-within:border-indigo-400 transition">
+                            <div class="p-2 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
+                                <span class="text-xs">🔍</span>
+                                <input type="text" id="filtroLoginForn" placeholder="Digite para filtrar a empresa..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-white outline-none font-bold placeholder-slate-500">
+                            </div>
+                            <select id="selEmpresaFornecedorLogin" size="5" class="w-full bg-slate-900 text-xs text-slate-100 font-bold outline-none cursor-pointer custom-scrollbar p-1">
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
+                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="button" onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                        🔑 AUTENTICAR E ACESSAR PORTAL
+                    </button>
+                </div>
+            </div>
+
+            <!-- LOGIN OPERADOR -->
+            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
+                </div>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
+                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
+                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="button" onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
+                        🔓 ENTRAR NO SISTEMA
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -112,21 +162,21 @@
         </div>
 
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button type="button" onclick="mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
-            <button type="button" onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
-            <button type="button" onclick="mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
-            <button type="button" onclick="mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
-            <button type="button" onclick="mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
-            <button type="button" onclick="mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
-            <button type="button" onclick="mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
-            <button type="button" onclick="mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
+            <button type="button" onclick="mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
+            <button type="button" onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
+            <button type="button" onclick="mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
+            <button type="button" onclick="mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
+            <button type="button" onclick="mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
+            <button type="button" onclick="mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
+            <button type="button" onclick="mudarPerfil('motoristas')" id="btn-motoristas" data-modulo="motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
+            <button type="button" onclick="mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
 
         <div class="flex items-center gap-3">
             <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-2">
-                <span>🕒</span> <span id="txtRelogio">00:00:00</span>
+                <span>🕒</span> <span>00:00:00</span>
             </div>
-            <button type="button" onclick="fazerLogoutGlobal()" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
+            <button type="button" onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
                 <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
             </button>
         </div>
@@ -144,30 +194,36 @@
                         <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
                     </div>
 
-                    <!-- ABA MANUAL -->
                     <div id="conteudoIndividual" class="space-y-3.5">
                         <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
-                            <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
+                            <h2 class="text-base font-black text-white">Ofertar Nova Janela</h2>
                             <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">
                                 🟢 Cotidiano
                             </span>
                         </div>
 
+                        <!-- 🔀 1. SELETOR DO TIPO DE OPERAÇÃO -->
                         <div>
-                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
+                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">
+                                ⚡ SELECIONE O TIPO DE OPERAÇÃO *
+                            </label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
                                 <button type="button" id="btnTipoCotidiano" onclick="selecionarTipoCarga('cotidiano')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟢</span><span>Cotidiano</span>
+                                    <span>🟢</span>
+                                    <span>Cotidiano</span>
                                 </button>
                                 <button type="button" id="btnTipoExtra" onclick="selecionarTipoCarga('extra')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟡</span><span>Extra</span>
+                                    <span>🟡</span>
+                                    <span>Extra</span>
                                 </button>
                                 <button type="button" id="btnTipoCritica" onclick="selecionarTipoCarga('critica')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🔴</span><span>Crítica</span>
+                                    <span>🔴</span>
+                                    <span>Crítica</span>
                                 </button>
                             </div>
                         </div>
 
+                        <!-- FORNECEDOR -->
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
@@ -183,6 +239,7 @@
                             </div>
                         </div>
 
+                        <!-- DOCA E DATA -->
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Doca de Recebimento *</label>
@@ -194,53 +251,63 @@
                             </div>
                         </div>
 
+                        <!-- 🟡 MOTIVO DE PRÉ-SELEÇÃO PARA CARGA EXTRA -->
                         <div id="boxMotivoExtra" class="hidden bg-amber-950/20 p-3 rounded-2xl border border-amber-500/40 space-y-1.5">
-                            <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">📋 Motivo da Inclusão da Carga Extra *</label>
+                            <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">
+                                📋 Motivo da Inclusão da Carga Extra *
+                            </label>
                             <select id="pcpMotivoExtra" class="w-full bg-slate-900 border border-amber-500/50 rounded-xl p-2 text-xs text-white font-bold outline-none cursor-pointer">
                                 <option value="Aumento de Demanda / Pico de Produção">📈 Aumento de Demanda / Pico de Produção</option>
                                 <option value="Atraso na Entrega Anterior do Fornecedor">🚚 Atraso na Entrega Anterior do Fornecedor</option>
                                 <option value="Ajuste de Estoque de Segurança">📦 Ajuste de Estoque de Segurança</option>
                                 <option value="Refugo / Substituição de Lote Com Defeito">⚠️ Refugo / Substituição de Lote Com Defeito</option>
+                                <option value="Solicitação Especial da Torre de Controle">📡 Solicitação Especial da Torre de Controle</option>
                             </select>
                         </div>
 
+                        <!-- 👤 CAMPOS DO MOTORISTA -->
                         <div id="boxDadosMotorista" class="hidden bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
-                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">👤 Dados do Motorista</span>
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">👤 Dados do Motorista (Preenchidos pelo PCP)</span>
+                            
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-[9px] font-bold text-slate-400 mb-0.5">CPF *</label>
-                                    <input type="text" id="pcpCpf" value="10847778940" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 font-bold outline-none">
+                                    <label class="block text-[9px] font-bold text-slate-400 mb-0.5">CPF do Motorista *</label>
+                                    <input type="text" id="pcpCpf" value="10847778940" placeholder="000.000.000-00" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 font-bold outline-none">
                                 </div>
                                 <div>
-                                    <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Celular *</label>
-                                    <input type="text" id="pcpCelular" value="47992424703" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-yellow-400 font-bold outline-none">
+                                    <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Celular / WhatsApp *</label>
+                                    <input type="text" id="pcpCelular" value="47992424703" placeholder="(47) 99999-0000" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-yellow-400 font-bold outline-none">
                                 </div>
                             </div>
+
                             <div>
                                 <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Nome do Motorista *</label>
-                                <input type="text" id="pcpMotorista" value="Fernando Junkes" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white font-bold outline-none">
+                                <input type="text" id="pcpMotorista" value="Fernando Junkes" placeholder="Nome completo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white font-bold outline-none">
                             </div>
                         </div>
 
+                        <!-- 🔴 CAMPOS ESPECÍFICOS DE CARGA CRÍTICA -->
                         <div id="boxCamposCriticos" class="hidden bg-red-950/30 p-3 rounded-2xl border border-red-500/40 space-y-2">
                             <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider block">🚨 Detalhes da Carga Crítica (Risco de Parada)</span>
+                            
                             <div>
-                                <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Part Number / Item *</label>
-                                <input type="text" id="pcpCodigoCritico" value="PN-882910" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
+                                <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Código do Material / Part Number *</label>
+                                <input type="text" id="pcpCodigoCritico" value="PN-882910 / Chapa CSN" placeholder="Ex: PN-882910" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
                             </div>
+
                             <div>
-                                <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Motivo da Parada *</label>
-                                <textarea id="pcpMotivoCritico" rows="2" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-slate-200 outline-none">Estoque da linha F3 encerra em 40 minutos. Descarga prioritária na chegada.</textarea>
+                                <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Motivo da Criticidade / Observação *</label>
+                                <textarea id="pcpMotivoCritico" rows="2" placeholder="Ex: Parada de linha iminente na F3." class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-slate-200 outline-none">Estoque da linha F3 encerra em 40 minutos. Descarga prioritária na chegada.</textarea>
                             </div>
                         </div>
 
-                        <!-- QUADRO DE TIMELINE SINCRONIZADO -->
+                        <!-- 🕒 QUADRO DE DISPONIBILIDADE -->
                         <div id="boxQuadroHorarios" class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px] font-bold">
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
                                 <span class="text-slate-400"><span class="text-emerald-400">■</span> Livre <span class="text-red-400 ml-1">■</span> Ocupado</span>
                             </div>
-                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-24 overflow-y-auto pr-1 custom-scrollbar"></div>
+                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-24 overflow-y-auto pr-1"></div>
 
                             <div class="grid grid-cols-2 gap-3 pt-1">
                                 <div>
@@ -254,6 +321,7 @@
                             </div>
                         </div>
 
+                        <!-- PREVIEW DO CÓDIGO DA JANELA -->
                         <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                             <span class="text-slate-400 font-bold">IDENTIFICADOR DA JANELA:</span>
                             <span id="previewNumeroJanela" class="font-mono font-black text-emerald-400 bg-slate-900 px-2.5 py-0.5 rounded border border-emerald-500/30">CSN</span>
@@ -266,28 +334,25 @@
 
                     <div id="conteudoMassa" class="space-y-4 hidden">
                         <div id="dropZonePlanilha" 
-                             onclick="document.getElementById('fileInput').click()" 
+                             onclick="document.getElementById('fileInput').click()"
                              ondragover="tratarDragOver(event)" 
                              ondragleave="tratarDragLeave(event)" 
                              ondrop="tratarDrop(event)"
-                             class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition">
+                             class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all duration-200">
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
-                            <div class="text-4xl mb-3">📂</div>
-                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Suporta arquivos Excel (.xlsx, .xls e .csv)</p>
+                            <div class="text-4xl mb-3" id="iconDropZone">📂</div>
+                            <p class="text-sm font-bold text-white mb-1" id="txtDropTitle">Arraste e solte a planilha aqui ou clique para selecionar</p>
+                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv (Filtra datas antigas automaticamente)</p>
                         </div>
                     </div>
 
                     <div id="conteudoTexto" class="space-y-3 hidden">
-                        <textarea id="txtBruto" rows="6" placeholder="Cole aqui o texto ou extrato das janelas..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
-                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">
-                            ⚡ PROCESSAR TEXTO PARA RASCUNHO
-                        </button>
+                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
+                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
                     </div>
                 </div>
             </div>
 
-            <!-- PAINEL DIREITO: GRADE -->
             <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
@@ -301,74 +366,95 @@
                     </div>
 
                     <div class="mb-4">
-                        <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
+                        <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
                             <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
                         </button>
                     </div>
 
                     <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1 custom-scrollbar">
-                        <p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada.</p>
+                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
                     </div>
                 </div>
 
                 <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 grid grid-cols-12 gap-3">
-                    <button type="button" onclick="limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider cursor-pointer">
+                    <button type="button" onclick="limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5">
                         <span>🗑️</span> LIMPAR RASCUNHO
                     </button>
-                    <button type="button" onclick="confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider cursor-pointer">
+                    <button type="button" onclick="confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
                         <span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- DEMAIS MÓDULOS -->
-        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
-            <h2 class="text-xl font-bold text-white">🏢 Portal do Fornecedor</h2>
-        </section>
-        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 hidden">
-            <h2 class="text-xl font-bold text-white">🏭 Totem Portaria</h2>
-        </section>
+        <!-- DEMAIS MÓDULOS DE SUPORTE -->
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden"></section>
+        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 flex flex-col justify-center hidden"></section>
         <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <div class="col-span-4 bg-slate-800 rounded-2xl p-4 border border-slate-700">
-                <h2 class="font-bold text-sm text-white mb-3">⌛ Fila do Pátio (Check-in Feito)</h2>
-                <div id="listaPatioFiscal" class="space-y-2 overflow-y-auto"></div>
+            <div class="col-span-4 bg-slate-800 rounded-2xl p-4 border border-slate-700 flex flex-col">
+                <h2 class="font-bold text-sm text-white mb-3 flex items-center justify-between">
+                    <span>⌛ Fila do Pátio (Check-in Feito)</span>
+                    <span id="badgeQtdPatio" class="bg-purple-600 text-xs px-2.5 py-0.5 rounded-full">0</span>
+                </h2>
+                <div id="listaPatioFiscal" class="space-y-2 overflow-y-auto flex-1">
+                    <p class="text-xs text-slate-500 text-center py-8">Nenhum veículo no pátio.</p>
+                </div>
             </div>
-            <div class="col-span-8 bg-slate-800 rounded-2xl p-6 border border-slate-700">
-                <h2 class="text-xl font-black text-white">Triagem Fiscal & Roteirizador de Docas</h2>
-                <p id="fiscNf" class="text-sm font-bold text-indigo-300 mt-2">-</p>
+            <div class="col-span-8 bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between">
+                <div>
+                    <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
+                        <h2 class="text-xl font-black text-white">Triagem Fiscal & Roteirizador de Docas</h2>
+                        <span id="txtTicketFiscalAtivo" class="bg-purple-900/60 text-purple-300 border border-purple-500 font-mono font-bold text-xs px-3 py-1 rounded-lg">Selecione um Ticket</span>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 grid grid-cols-3 gap-3 mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Motorista</p>
+                            <p id="fiscMotorista" class="text-sm font-bold text-white">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Placa Cavalo / Carreta</p>
+                            <p id="fiscPlaca" class="text-sm font-mono font-black text-yellow-400">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Nota Fiscal</p>
+                            <p id="fiscNf" class="text-sm font-mono font-bold text-indigo-300">-</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
-        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <h2 class="text-xl font-bold text-white">🚛 Operador de Doca</h2>
-        </section>
-        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <h2 class="text-xl font-bold text-white">🚪 Check-out Portaria</h2>
-        </section>
-        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <h2 class="text-xl font-bold text-white">🪪 Cad. Motoristas</h2>
-        </section>
-        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <h2 class="text-xl font-bold text-white">📡 Torre de Controle</h2>
-        </section>
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"></section>
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"></section>
+        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"></section>
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"></section>
     </div>
 
-    <!-- MODAL DE NOTIFICAÇÃO -->
-    <div id="modalSmsNotif" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+    <!-- MODAL DE NOTIFICAÇÃO E ALERTAS (E-MAIL E MENSAGENS) -->
+    <div id="modalSmsNotif" onclick="fecharModalSmsExterno(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
+        <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative my-auto" onclick="event.stopPropagation()">
             <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700">
                 <div class="bg-amber-500 p-2.5 rounded-2xl text-2xl shadow-lg text-slate-900">💬</div>
                 <div>
                     <h3 class="text-base font-black text-white">Central de Alertas YMS</h3>
                     <p class="text-xs text-amber-400 font-bold" id="notifDestinoMsg">Destino: fernando_junkes@whirlpool.com</p>
                 </div>
+                <button type="button" onclick="fecharModalSms()" class="ml-auto text-slate-400 hover:text-white font-black text-xl cursor-pointer p-1">✕</button>
             </div>
-            <div id="notifTextoCorpo" class="text-xs font-mono text-slate-200 bg-slate-950 p-3 rounded-xl border border-slate-800 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto mb-4"></div>
-            <button type="button" onclick="fecharModalSms()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl cursor-pointer">✓ Concluir</button>
+
+            <div class="bg-slate-900 border border-slate-700/80 rounded-2xl p-4 mb-5">
+                <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Conteúdo do Alerta:</p>
+                <div id="notifTextoCorpo" class="text-xs font-mono text-slate-200 bg-slate-950 p-3 rounded-xl border border-slate-800 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                </div>
+            </div>
+
+            <button type="button" onclick="fecharModalSms()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl transition cursor-pointer relative z-50 shadow-lg border border-indigo-400/30">
+                ✓ Concluir
+            </button>
         </div>
     </div>
 
-    <!-- TOAST -->
+    <!-- TOAST DE NOTIFICAÇÃO GLOBAL -->
     <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50 min-w-[320px]">
         <span class="text-2xl" id="toastIcon">✨</span>
         <div>
@@ -377,7 +463,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM SUPORTE A DATAS AMERICANAS M/D/YY -->
+    <!-- SCRIPT REVOLUCIONADO COM TRATAMENTO DEFINITIVO DE DATAS E SINCRONISMO DA TIMELINE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -395,7 +481,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const listaPadraoFornecedores = [
+        const listaPadrao60Fornecedores = [
             "5 ESTRELAS", "ADERE", "ALEPLAST", "ARAMART", "ARCELORMITTAL", "ARMACELL",
             "ASIBRAS", "BELENUS", "BIGFER", "BRASCABOS", "BRASKEN", "CARIBOR",
             "CISER", "COLORFIX", "CREMER", "CSN", "DENK", "DUFERCO", "FOCUS",
@@ -415,21 +501,23 @@
         window.tipoCargaAtivo = 'cotidiano';
 
         window.atualizarRelogioDigital = function() {
-            const el = document.getElementById('txtRelogio');
-            if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
+            const relogio = document.getElementById('relogioGlobal');
+            if (relogio) {
+                relogio.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
+            }
         };
 
-        window.horaParaMinutos = function(hStr) {
-            if (!hStr || hStr === 'IMEDIATO' || hStr === '---') return 0;
-            const p = String(hStr).split(':');
-            return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
+        window.horaParaMinutos = function(horaStr) {
+            if (!horaStr || horaStr === '---' || horaStr === 'IMEDIATO') return 0;
+            const partes = String(horaStr).trim().split(':');
+            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
         };
 
-        // 🛠️ PARSER UNIVERSAL DE DATA BR / ISO / SERIAL EXCEL / AMERICANO (7/20/26)
-        window.normalizarDataParaBR = function(dVal) {
+        // 🛠️ PARSER E NORMALIZADOR UNIVERSAL DE DATAS (CORRIGE DATAS AMERICANAS "7/20/26" E NUMERAIS EXCEL "46223")
+        window.normalizarDataUniversal = function(dVal) {
             if (!dVal) return "20/07/2026";
-            
-            // 1. Número Serial do Excel (ex: 46223)
+
+            // Case 1: Numeral Serial do Excel (ex: 46223)
             const num = Number(dVal);
             if (!isNaN(num) && num > 30000) {
                 const dateObj = new Date((num - 25569) * 86400 * 1000);
@@ -441,9 +529,9 @@
 
             let dStr = String(dVal).trim();
 
-            // 2. Formato ISO (YYYY-MM-DD)
+            // Case 2: Formato ISO YYYY-MM-DD
             if (dStr.includes('-')) {
-                const p = dStr.split('-');
+                const p = dStr.split('T')[0].split('-');
                 if (p.length === 3) {
                     let y = p[0], m = p[1], d = p[2];
                     if (y.length === 2) y = "20" + y;
@@ -451,7 +539,7 @@
                 }
             }
 
-            // 3. Formato com barras: "7/20/26", "20/07/2026", "07/20/2026"
+            // Case 3: Formato com Barras ("7/20/26" -> "20/07/2026")
             if (dStr.includes('/')) {
                 const p = dStr.split('/');
                 if (p.length === 3) {
@@ -460,109 +548,35 @@
                     let y = p[2];
                     if (y.length === 2) y = "20" + y;
 
-                    // Se n1 <= 12 e n2 > 12 -> Formato Americano M/D/YYYY (ex: 7/20/26)
+                    // Detecta se Mês/Dia está invertido (Formato Americano M/D/YY)
                     if (n1 <= 12 && n2 > 12) {
-                        let dia = String(n2).padStart(2, '0');
-                        let mes = String(n1).padStart(2, '0');
-                        return `${dia}/${mes}/${y}`;
+                        return `${String(n2).padStart(2, '0')}/${String(n1).padStart(2, '0')}/${y}`;
                     }
 
-                    let dia = String(n1).padStart(2, '0');
-                    let mes = String(n2).padStart(2, '0');
-                    return `${dia}/${mes}/${y}`;
+                    return `${String(n1).padStart(2, '0')}/${String(n2).padStart(2, '0')}/${y}`;
                 }
             }
 
             return dStr;
         };
 
+        // CONVERTE QUALQUER DATA PARA O PADRÃO EXIGIDO PELO INPUT HTML (YYYY-MM-DD)
         window.normalizarDataParaISO = function(dVal) {
-            const br = window.normalizarDataParaBR(dVal);
-            const p = br.split('/');
+            const brStr = window.normalizarDataUniversal(dVal);
+            const p = brStr.split('/');
             if (p.length === 3) {
                 return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
             }
             return "2026-07-20";
         };
 
-        // 🕒 EXTRATOR DE HORÁRIOS
-        window.extrairHorarios = function(row) {
-            let hIni = null, hFim = null;
-
-            function formatarHoraVal(val) {
-                if (val === null || val === undefined || val === '') return null;
-                if (typeof val === 'number') {
-                    if (val >= 0 && val < 1) {
-                        let totalMin = Math.round(val * 24 * 60);
-                        let h = Math.floor(totalMin / 60) % 24;
-                        let m = totalMin % 60;
-                        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-                    } else if (val >= 1 && val <= 24) {
-                        return `${String(Math.floor(val)).padStart(2, '0')}:00`;
-                    }
-                }
-                let str = String(val).trim();
-                let match = str.match(/(\d{1,2})[:hH](\d{2})/);
-                if (match) {
-                    return `${String(match[1]).padStart(2, '0')}:${String(match[2]).padStart(2, '0')}`;
-                }
-                let matchSingle = str.match(/^(\d{1,2})$/);
-                if (matchSingle) {
-                    return `${String(matchSingle[1]).padStart(2, '0')}:00`;
-                }
-                return null;
+        window.limparNomeFornecedor = function(nome) {
+            let str = String(nome || '').trim().toUpperCase();
+            if (!str) return 'FORNECEDOR';
+            if (!str.match(/^5\s+ESTRELAS/i)) {
+                str = str.replace(/[\s\-_]*\d+$/, '').trim();
             }
-
-            let keys = Object.keys(row);
-            let kIni = keys.find(k => k.match(/ini|início|inicio|de\b|start|hora_i|hr_i|h_i/i));
-            let kFim = keys.find(k => k.match(/fim|término|termino|até|ate|end|hora_f|hr_f|h_f/i));
-            let kGeral = keys.find(k => k.match(/hora|horário|horario|janela|slot|intervalo|range|atendimento/i));
-
-            if (kIni && row[kIni]) hIni = formatarHoraVal(row[kIni]);
-            if (kFim && row[kFim]) hFim = formatarHoraVal(row[kFim]);
-
-            if (kGeral && row[kGeral] && (!hIni || !hFim)) {
-                let strGeral = String(row[kGeral]).trim();
-                let matches = strGeral.match(/(\d{1,2})[:hH]?(\d{2})?\s*(?:a|às|as|-|ate|até|to|\s)\s*(\d{1,2})[:hH]?(\d{2})?/i);
-                if (matches) {
-                    let h1 = String(matches[1]).padStart(2, '0');
-                    let m1 = matches[2] ? String(matches[2]).padStart(2, '0') : "00";
-                    let h2 = String(matches[3]).padStart(2, '0');
-                    let m2 = matches[4] ? String(matches[4]).padStart(2, '0') : "00";
-                    hIni = `${h1}:${m1}`;
-                    hFim = `${h2}:${m2}`;
-                }
-            }
-
-            if (!hIni || !hFim) {
-                let colunasHoras = [];
-                for (let k of keys) {
-                    let val = row[k];
-                    if (val !== null && val !== undefined) {
-                        let strVal = String(val).trim();
-                        let rangeMatch = strVal.match(/(\d{1,2})[:hH](\d{2})\s*(?:a|às|as|-|ate|até|to|\s)\s*(\d{1,2})[:hH](\d{2})/i);
-                        if (rangeMatch) {
-                            hIni = `${String(rangeMatch[1]).padStart(2, '0')}:${String(rangeMatch[2]).padStart(2, '0')}`;
-                            hFim = `${String(rangeMatch[3]).padStart(2, '0')}:${String(rangeMatch[4]).padStart(2, '0')}`;
-                            break;
-                        }
-                        let formatted = formatarHoraVal(val);
-                        if (formatted) colunasHoras.push(formatted);
-                    }
-                }
-                if (!hIni && colunasHoras.length > 0) hIni = colunasHoras[0];
-                if (!hFim && colunasHoras.length > 1) hFim = colunasHoras[1];
-            }
-
-            if (!hIni) hIni = "08:00";
-            if (!hFim) {
-                let min = window.horaParaMinutos(hIni) + 60;
-                let hF = Math.floor(min / 60) % 24;
-                let mF = min % 60;
-                hFim = `${String(hF).padStart(2, '0')}:${String(mF).padStart(2, '0')}`;
-            }
-
-            return { horaIni: hIni, horaFim: hFim };
+            return str;
         };
 
         window.dispararEmailCriticoEmMassa = function(janelaItem) {
@@ -581,7 +595,7 @@ Uma nova Carga ${ehCritica ? 'CRITICA' : 'EXTRA'} foi registrada no YMS Ecosyste
 - CODIGO DA JANELA: ${janelaItem.ordem}
 - Fornecedor: ${janelaItem.fornecedor}
 - Doca: ${janelaItem.doca}
-- Data Prevista: ${window.normalizarDataParaBR(janelaItem.data)}
+- Data Prevista: ${window.normalizarDataUniversal(janelaItem.data)}
 - Motorista: ${janelaItem.motorista || 'A definir'} (CPF: ${janelaItem.cpf || 'N/D'})
 ${ehCritica ? `- Part Number / Item: ${janelaItem.detalhesCriticidade?.partNumber || 'N/D'}\n- Motivo do Risco: ${janelaItem.detalhesCriticidade?.motivo || 'N/D'}\n- PRIORIDADE: CARGA CRITICA (Prioridade na Descarga)\n` : ''}
 Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
@@ -594,28 +608,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             document.getElementById('modalSmsNotif').classList.remove('hidden');
 
             window.exibirToast("Alerta Criado!", "E-mail de notificação gerado.", "📧");
-        };
-
-        window.mudarPerfil = function(perfilId) {
-            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
-            document.querySelectorAll('.btn-perfil').forEach(btn => {
-                btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
-            });
-
-            const moduloAlvo = document.getElementById(`perfil-${perfilId}`);
-            if (moduloAlvo) moduloAlvo.classList.remove('hidden');
-
-            const btnAtivo = document.getElementById(`btn-${perfilId}`);
-            if (btnAtivo) btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow";
-        };
-
-        window.solicitarAcessoPerfil = function(keyPerfil) {
-            window.mudarPerfil(keyPerfil);
-            document.getElementById('modalLoginGlobal').classList.add('hidden');
-        };
-
-        window.fazerLogoutGlobal = function() {
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
         };
 
         window.popularSelectFornecedores = function(lista) {
@@ -636,41 +628,48 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
         window.filtrarOpcoesFornecedor = function() {
             const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = listaPadraoFornecedores.filter(f => f.toLowerCase().includes(termo));
+            const filtrados = listaPadrao60Fornecedores.filter(f => f.toLowerCase().includes(termo));
             window.popularSelectFornecedores(filtrados);
             window.atualizarPreviewJanela();
         };
 
-        // 📊 MONTA TIMELINE E IDENTIFICA OS HORÁRIOS OCUPADOS
+        // 📊 MONTA TIMELINE DE DISPONIBILIDADE DA DOCA E MARCA SLOT OCUPADO
         window.atualizarHorariosDisponiveis = function() {
             const docaSel = document.getElementById('inpDoca')?.value;
             let dataSelRaw = document.getElementById('inpData')?.value;
             const grid = document.getElementById('gridTimelineHorarios');
             const selIni = document.getElementById('inpHora');
-            if (!grid || !selIni) return;
+            if (!grid || !selIni || !docaSel) return;
 
-            // Se o campo Data estiver vazio (dd/mm/aaaa), autopreenche com a data da lista
+            // Se o campo Data estiver vazio no HTML (dd/mm/aaaa), autopreenche com a data ativa do sistema
             if (!dataSelRaw) {
-                const todos = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
-                if (todos.length > 0 && todos[0].data) {
-                    dataSelRaw = window.normalizarDataParaISO(todos[0].data);
-                    const elData = document.getElementById('inpData');
-                    if (elData) elData.value = dataSelRaw;
+                const listaTotal = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
+                if (listaTotal.length > 0 && listaTotal[0].data) {
+                    dataSelRaw = window.normalizarDataParaISO(listaTotal[0].data);
                 } else {
                     dataSelRaw = "2026-07-20";
-                    const elData = document.getElementById('inpData');
-                    if (elData) elData.value = dataSelRaw;
                 }
+                const elData = document.getElementById('inpData');
+                if (elData) elData.value = dataSelRaw;
             }
 
-            const dataFormBusca = window.normalizarDataParaBR(dataSelRaw);
+            const dataFormBusca = window.normalizarDataUniversal(dataSelRaw);
 
+            // Filtra agendamentos pareando doca e data sanitizada
             const agendadosDocaDia = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])].filter(ag => {
-                const dataAgBr = window.normalizarDataParaBR(ag.data);
-                return ag.doca === docaSel && dataAgBr === dataFormBusca && ag.horaIni !== 'IMEDIATO';
+                const dataAgBr = window.normalizarDataUniversal(ag.data);
+                const bateDoca = ag.doca === docaSel;
+                const bateData = dataAgBr === dataFormBusca;
+                const ehValido = ag.horaIni !== 'IMEDIATO';
+                return bateDoca && bateData && ehValido;
             });
 
-            const slots = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"];
+            const slots = [];
+            for (let h = 0; h < 24; h++) {
+                for (let m of [0, 30]) {
+                    slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+                }
+            }
 
             grid.innerHTML = "";
             selIni.innerHTML = "";
@@ -682,7 +681,9 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
                 for (let ag of agendadosDocaDia) {
                     const iniMin = window.horaParaMinutos(ag.horaIni);
-                    const fimMin = window.horaParaMinutos(ag.horaFim);
+                    let fimMin = window.horaParaMinutos(ag.horaFim);
+                    if (fimMin <= iniMin) fimMin = iniMin + 60;
+
                     if (slotMin >= iniMin && slotMin < fimMin) {
                         ocupado = true;
                         agOcupante = ag;
@@ -713,16 +714,18 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             const selFim = document.getElementById('inpHoraFim');
             if (!selFim) return;
             selFim.innerHTML = "";
-            const slots = ["00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "00:00"];
-            
-            slots.forEach(s => {
-                if (s > iniVal || s === "00:00") {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = `${s}h`;
-                    selFim.appendChild(opt);
+
+            const minIni = window.horaParaMinutos(iniVal);
+            for (let h = 0; h < 24; h++) {
+                for (let m of [0, 30]) {
+                    let slot = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                    if (window.horaParaMinutos(slot) > minIni) {
+                        const opt = document.createElement('option');
+                        opt.value = slot; opt.textContent = `${slot}h`;
+                        selFim.appendChild(opt);
+                    }
                 }
-            });
+            }
         };
 
         window.tratarDragOver = function(e) { e.preventDefault(); e.stopPropagation(); };
@@ -738,6 +741,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (file) window.processarArquivoEspecifico(file);
         };
 
+        // 📂 PROCESSADOR DE PLANILHAS EXCEL (FORMATO ORIGINAL DA SUA APLICAÇÃO)
         window.processarArquivoEspecifico = function(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -757,15 +761,33 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                 json.forEach((row) => {
                     let keys = Object.keys(row);
                     let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
-                    let fornNome = kForn ? String(row[kForn]).trim().toUpperCase() : "FORNECEDOR";
+                    let fornNome = kForn ? window.limparNomeFornecedor(row[kForn]) : "FORNECEDOR";
+
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
                     let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
+
                     let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
-                    let dataTxt = kData ? window.normalizarDataParaBR(row[kData]) : "20/07/2026";
+                    let dataTxt = kData ? window.normalizarDataUniversal(row[kData]) : "20/07/2026";
 
                     if (!primeiraDataValida) primeiraDataValida = dataTxt;
 
-                    let hor = window.extrairHorarios(row);
+                    // Captura e extrai intervalos de horário da planilha
+                    let kIni = keys.find(k => k.match(/entrada|inicio|início|hora.*ini|start|de\b/i));
+                    let kFim = keys.find(k => k.match(/saida|saída|fim|hora.*fim|end|até|ate/i));
+                    let kGeral = keys.find(k => k.match(/hora|horário|horario|janela|slot/i));
+
+                    let hIni = "08:00", hFim = "09:00";
+
+                    if (kIni && row[kIni]) hIni = String(row[kIni]).trim();
+                    if (kFim && row[kFim]) hFim = String(row[kFim]).trim();
+
+                    if (kGeral && row[kGeral] && (!kIni || !kFim)) {
+                        let matches = String(row[kGeral]).match(/(\d{1,2}:\d{2})\s*(?:às|as|-|a)\s*(\d{1,2}:\d{2})/i);
+                        if (matches) {
+                            hIni = matches[1];
+                            hFim = matches[2];
+                        }
+                    }
 
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                     window.ymsStore.rascunhoAgendamentos.push({
@@ -773,8 +795,8 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                         data: dataTxt,
                         fornecedor: fornNome,
                         doca: docaNome,
-                        horaIni: hor.horaIni,
-                        horaFim: hor.horaFim,
+                        horaIni: hIni,
+                        horaFim: hFim,
                         tipoOperacao: 'COTIDIANO',
                         prioridadeFila: 99,
                         status: "AGENDADO",
@@ -806,15 +828,11 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             let count = 0;
             linhas.forEach((linha) => {
                 if (linha.trim()) {
-                    let matches = linha.match(/(\d{1,2})[:hH](\d{2})?\s*(?:a|às|as|-|ate|até|to|\s)\s*(\d{1,2})[:hH](\d{2})?/i);
+                    let matches = linha.match(/(\d{1,2}:\d{2})\s*(?:às|as|-|a)\s*(\d{1,2}:\d{2})/i);
                     let hIni = "08:00", hFim = "09:00";
                     if (matches) {
-                        let h1 = String(matches[1]).padStart(2, '0');
-                        let m1 = matches[2] ? String(matches[2]).padStart(2, '0') : "00";
-                        let h2 = String(matches[3]).padStart(2, '0');
-                        let m2 = matches[4] ? String(matches[4]).padStart(2, '0') : "00";
-                        hIni = `${h1}:${m1}`;
-                        hFim = `${h2}:${m2}`;
+                        hIni = matches[1];
+                        hFim = matches[2];
                     }
 
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
@@ -845,9 +863,10 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     const data = snapshot.val();
                     if (data) {
                         const listaBruta = Array.isArray(data) ? data : Object.values(data);
+                        // Normalização rigorosa em tempo real para todas as datas do Firebase
                         window.ymsStore.agendamentos = listaBruta.map(item => ({
                             ...item,
-                            data: window.normalizarDataParaBR(item.data)
+                            data: window.normalizarDataUniversal(item.data)
                         }));
                     } else {
                         window.ymsStore.agendamentos = [];
@@ -903,7 +922,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         };
 
         window.atualizarPreviewJanela = function() {
-            const fornSel = document.getElementById('inpFornecedor')?.value || "CSN";
+            const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor')?.value);
             const preview = document.getElementById('previewNumeroJanela');
             if (!preview) return;
             if (window.tipoCargaAtivo === 'critica') preview.textContent = `${fornSel}-CRITICO`;
@@ -914,10 +933,10 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         window.criarJanelaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const tipoOp = window.tipoCargaAtivo;
-            const fornSel = document.getElementById('inpFornecedor')?.value || "CSN";
+            const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor')?.value);
             const docaSel = document.getElementById('inpDoca')?.value || listaTodasDocas[0];
             const dataSel = document.getElementById('inpData')?.value || "2026-07-20";
-            const dataForm = window.normalizarDataParaBR(dataSel);
+            const dataForm = window.normalizarDataUniversal(dataSel);
 
             let novaOrdem = "", prioridade = 99, nfExibicao = "";
             let codPN = document.getElementById('pcpCodigoCritico').value || "PN-882910";
@@ -971,7 +990,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
             window.ymsStore.rascunhoAgendamentos.forEach(r => { 
                 delete r.isRascunho; 
-                r.data = window.normalizarDataParaBR(r.data);
+                r.data = window.normalizarDataUniversal(r.data);
             });
             window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos);
             window.ymsStore.rascunhoAgendamentos = [];
@@ -1004,8 +1023,9 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (!container) return;
             container.innerHTML = "";
 
+            // Força a sanitização de data em toda a exibição
             window.ymsStore.rascunhoAgendamentos.forEach(r => {
-                r.data = window.normalizarDataParaBR(r.data);
+                r.data = window.normalizarDataUniversal(r.data);
             });
 
             const listaExibicao = [...window.ymsStore.rascunhoAgendamentos, ...(window.ymsStore.agendamentos || [])];
@@ -1033,7 +1053,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     badgeTipoOp = `<span class="bg-amber-500 text-slate-950 font-bold text-[9px] px-2 py-0.5 rounded font-mono">🟡 EXTRA</span>`;
                 }
 
-                const dataExibicaoFormatada = window.normalizarDataParaBR(item.data);
+                const dataExibicao = window.normalizarDataUniversal(item.data);
 
                 container.insertAdjacentHTML('beforeend', `
                     <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
@@ -1048,7 +1068,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="text-right">
-                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${dataExibicaoFormatada}</span>
+                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${dataExibicao}</span>
                                 <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
                             </div>
                             <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl transition text-xs cursor-pointer">🗑️</button>
@@ -1118,6 +1138,12 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             }
         };
 
+        window.mudarPerfil = function(id) {
+            document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
+            const alvo = document.getElementById(`perfil-${id}`);
+            if (alvo) alvo.classList.remove('hidden');
+        };
+
         window.exibirToast = function(titulo, sub, icone = "✨") {
             const toast = document.getElementById('toast');
             document.getElementById('toastIcon').textContent = icone;
@@ -1128,6 +1154,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         };
 
         window.fecharModalSms = function() { document.getElementById('modalSmsNotif').classList.add('hidden'); };
+        window.fecharModalSmsExterno = function(e) { if (e.target.id === 'modalSmsNotif') window.fecharModalSms(); };
 
         window.addEventListener('DOMContentLoaded', () => {
             setInterval(window.atualizarRelogioDigital, 1000);
@@ -1146,7 +1173,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                 });
             }
 
-            window.popularSelectFornecedores(listaPadraoFornecedores);
+            window.popularSelectFornecedores(listaPadrao60Fornecedores);
             window.atualizarPreviewJanela();
             inicializarEscutadoresFirebase();
         });
