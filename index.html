@@ -6,11 +6,11 @@
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (Leitura e Geração de Excel) -->
+    <!-- SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js (Gráficos Torre de Controle) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCodeJS (Ticket Impresso do Totem) -->
+    <!-- QRCodeJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         .hidden { display: none !important; }
@@ -67,7 +67,7 @@
                     <span class="text-xl group-hover:scale-110 transition-transform">🪪</span>
                     <span class="text-xs">Cad. Motoristas</span>
                 </button>
-                <button type="button" onclick="solicitarAcessoPerfil('admin')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="solicitarAcessoPerfil('torre')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">📡</span>
                     <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
@@ -249,7 +249,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabelaFornecedorAgendamentos" class="divide-y divide-slate-700/50">
-                            <tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento para este fornecedor.</td></tr>
+                            <tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento carregado no sistema.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -340,7 +340,329 @@
         <div><p class="font-bold text-sm" id="toastTitulo">Notificação</p><p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p></div>
     </div>
 
-    <!-- CARREGAMENTO SEGURO DO MOTOR JS EXTERNO -->
-    <script type="module" src="app.js"></script>
+    <!-- SCRIPT TUDO-EM-UM -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        window.listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
+
+        window.slotsDia24h = [];
+        for (let h = 0; h < 24; h++) {
+            for (let m of [0, 30]) {
+                window.slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+            }
+        }
+
+        window.obterDataHojePtBR = function() {
+            const hoje = new Date();
+            return `${String(hoje.getDate()).padStart(2, '0')}/${String(hoje.getMonth() + 1).padStart(2, '0')}/${hoje.getFullYear()}`;
+        };
+
+        window.obterDataHojeISO = function() {
+            const hoje = new Date();
+            return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+        };
+
+        window.normalizarTexto = function(txt) {
+            return String(txt || '').toLowerCase().replace(/\s+/g, '').trim();
+        };
+
+        window.horaParaMinutos = function(horaStr) {
+            if (!horaStr || horaStr === '---' || horaStr === 'IMEDIATO') return 0;
+            const partes = String(horaStr).trim().split(':');
+            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
+        };
+
+        window.limparNomeFornecedor = function(nome) {
+            let str = String(nome || '').trim().toUpperCase();
+            return str || 'FORNECEDOR';
+        };
+
+        window.normalizarDataUniversal = function(dVal) {
+            if (!dVal) return window.obterDataHojePtBR();
+            let dStr = String(dVal).trim();
+            if (dStr.includes('-')) {
+                const p = dStr.split('T')[0].split('-');
+                if (p.length === 3) return `${p[2].padStart(2, '0')}/${p[1].padStart(2, '0')}/${p[0]}`;
+            }
+            return dStr;
+        };
+
+        window.dataEhPassada = function(dataStr) {
+            if (!dataStr) return false;
+            let ano, mes, dia;
+            if (dataStr.includes('/')) {
+                const p = dataStr.split('/');
+                dia = parseInt(p[0], 10); mes = parseInt(p[1], 10) - 1; ano = parseInt(p[2], 10);
+            } else if (dataStr.includes('-')) {
+                const p = dataStr.split('-');
+                ano = parseInt(p[0], 10); mes = parseInt(p[1], 10) - 1; dia = parseInt(p[2], 10);
+            } else return false;
+            const dt = new Date(ano, mes, dia);
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+            return dt < hoje;
+        };
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCljoMUprqBfj9k8y0w7dE3MW7bWdjZlgA",
+            authDomain: "yms-patio-6ba8c.firebaseapp.com",
+            databaseURL: "https://yms-patio-6ba8c-default-rtdb.firebaseio.com",
+            projectId: "yms-patio-6ba8c",
+            storageBucket: "yms-patio-6ba8c.firebasestorage.app",
+            messagingSenderId: "789675229632",
+            appId: "1:789675229632:web:b209d3dc57b702c8710825"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.ymsStore = {
+            agendamentos: [], rascunhoAgendamentos: [], usuarioLogado: "ADMIN"
+        };
+
+        window.tipoCargaAtivo = 'cotidiano';
+
+        function inicializarEscutadoresFirebase() {
+            onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
+                const data = snapshot.val();
+                window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                window.sincronizarTodosModulos();
+            });
+        }
+
+        window.salvarAgendamentosNaMemoria = function() { set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos); };
+
+        window.solicitarAcessoPerfil = function(perfilId) {
+            window.ymsStore.usuarioLogado = perfilId.toUpperCase();
+            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${perfilId.toUpperCase()})`;
+            window.mudarPerfil(perfilId);
+            document.getElementById('modalLoginGlobal').classList.add('hidden');
+        };
+
+        window.mudarPerfil = function(perfilId) {
+            document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.btn-perfil').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
+                btn.classList.add('text-slate-400');
+            });
+
+            const secAtiva = document.getElementById(`perfil-${perfilId}`);
+            if (secAtiva) secAtiva.classList.remove('hidden');
+
+            const btnAtivo = document.getElementById(`btn-${perfilId}`);
+            if (btnAtivo) {
+                btnAtivo.classList.remove('text-slate-400');
+                btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow');
+            }
+        };
+
+        window.fazerLogoutGlobal = function() {
+            window.ymsStore.usuarioLogado = null;
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+        };
+
+        window.alternarAbaPCP = function(aba) {
+            document.getElementById('conteudoIndividual').classList.toggle('hidden', aba !== 'individual');
+            document.getElementById('conteudoMassa').classList.toggle('hidden', aba !== 'massa');
+            document.getElementById('conteudoTexto').classList.toggle('hidden', aba !== 'texto');
+        };
+
+        window.atualizarHorariosDisponiveis = function() {
+            const elDoca = document.getElementById('inpDoca');
+            if (!elDoca || !elDoca.value) return;
+            let rawData = document.getElementById('inpData')?.value || window.obterDataHojeISO();
+
+            const selIni = document.getElementById('inpHora');
+            if (selIni) selIni.innerHTML = "";
+            
+            const hojeIso = window.obterDataHojeISO();
+            const agora = new Date();
+            const minAtuais = agora.getHours() * 60 + agora.getMinutes();
+
+            window.slotsDia24h.forEach(slot => {
+                const minSlot = window.horaParaMinutos(slot);
+                let colide = (rawData === hojeIso && minSlot < minAtuais);
+
+                if (!colide && selIni) {
+                    const opt = document.createElement('option');
+                    opt.value = slot; opt.textContent = `${slot}h (Livre)`;
+                    selIni.appendChild(opt);
+                }
+            });
+
+            const gridTimeline = document.getElementById('gridTimelineHorarios');
+            if (gridTimeline) {
+                gridTimeline.innerHTML = "";
+                window.slotsDia24h.forEach(slot => {
+                    const minSlot = window.horaParaMinutos(slot);
+                    let passouHoje = (rawData === hojeIso && minSlot < minAtuais);
+
+                    if (passouHoje) {
+                        gridTimeline.insertAdjacentHTML('beforeend', `<div class="bg-red-500/20 border border-red-500/40 text-red-300 p-1 rounded text-center text-[10px] font-mono font-bold cursor-not-allowed opacity-60">${slot}</div>`);
+                    } else {
+                        gridTimeline.insertAdjacentHTML('beforeend', `<div onclick="selecionarHorarioPelaGrade('${slot}')" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 p-1 rounded text-center text-[10px] font-mono font-bold cursor-pointer transition">${slot}</div>`);
+                    }
+                });
+            }
+            window.atualizarHorarioFimMinimo();
+        };
+
+        window.selecionarHorarioPelaGrade = function(slot) {
+            const selIni = document.getElementById('inpHora');
+            if (selIni && selIni.querySelector(`option[value="${slot}"]`)) {
+                selIni.value = slot; window.atualizarHorarioFimMinimo();
+            }
+        };
+
+        window.atualizarHorarioFimMinimo = function() {
+            const selIni = document.getElementById('inpHora'), selFim = document.getElementById('inpHoraFim');
+            if (!selIni || !selFim || !selIni.value) return; selFim.innerHTML = "";
+            const minIni = window.horaParaMinutos(selIni.value);
+            window.slotsDia24h.forEach(slot => {
+                if (window.horaParaMinutos(slot) > minIni) {
+                    const opt = document.createElement('option'); opt.value = slot; opt.textContent = `${slot}h`; selFim.appendChild(opt);
+                }
+            });
+        };
+
+        window.criarJanelaManual = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const rawData = document.getElementById('inpData').value;
+            const horaIni = document.getElementById('inpHora').value;
+
+            if (window.dataEhPassada(rawData)) { 
+                alert("OPERAÇÃO BLOQUEADA: Não é possível agendar em datas passadas."); 
+                return; 
+            }
+
+            const hojeIso = window.obterDataHojeISO();
+            if (rawData === hojeIso && horaIni !== 'IMEDIATO') {
+                const agora = new Date();
+                const minAtuais = agora.getHours() * 60 + agora.getMinutes();
+                if (window.horaParaMinutos(horaIni) < minAtuais) {
+                    alert(`OPERAÇÃO BLOQUEADA: O horário ${horaIni}h já passou hoje!`);
+                    return;
+                }
+            }
+
+            const item = {
+                ordem: `ORD-${Date.now().toString().slice(-4)}`,
+                data: window.normalizarDataUniversal(rawData),
+                fornecedor: document.getElementById('inpFornecedor')?.value || 'FORNECEDOR',
+                doca: document.getElementById('inpDoca').value,
+                horaIni, horaFim: document.getElementById('inpHoraFim').value || "09:00",
+                status: "AGENDADO", isRascunho: true
+            };
+
+            window.ymsStore.rascunhoAgendamentos.push(item);
+            window.renderizarGradePCP();
+        };
+
+        window.confirmarESubirJanelas = function() {
+            if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
+            window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos.map(i => { delete i.isRascunho; return i; }));
+            window.ymsStore.rascunhoAgendamentos = [];
+            window.salvarAgendamentosNaMemoria();
+        };
+
+        window.limparJanelasSubidas = function() {
+            if (confirm("Deseja apagar todas as janelas salvas?")) {
+                window.ymsStore.agendamentos = [];
+                window.salvarAgendamentosNaMemoria();
+            }
+        };
+
+        window.limparGradeTotal = function() {
+            window.ymsStore.rascunhoAgendamentos = [];
+            window.renderizarGradePCP();
+        };
+
+        window.sincronizarTodosModulos = function() {
+            window.renderizarGradePCP();
+            window.renderizarTabelaFornecedor();
+        };
+
+        window.renderizarTabelaFornecedor = function() {
+            const tbody = document.getElementById('tabelaFornecedorAgendamentos');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+            const ags = window.ymsStore.agendamentos;
+            if (!ags || ags.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento no sistema.</td></tr>`;
+                return;
+            }
+            ags.forEach(item => {
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-800/50 transition">
+                        <td class="p-3 font-mono font-bold text-indigo-400">${item.ordem || '---'}</td>
+                        <td class="p-3 font-bold text-amber-400">${item.data}</td>
+                        <td class="p-3 text-white font-bold">${item.doca}</td>
+                        <td class="p-3 font-mono text-emerald-400">${item.horaIni} às ${item.horaFim}</td>
+                        <td class="p-3"><span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-bold border border-emerald-500/30">${item.status || 'AGENDADO'}</span></td>
+                    </tr>
+                `);
+            });
+        };
+
+        window.renderizarGradePCP = function() {
+            const container = document.getElementById('containerJanelas');
+            if (!container) return; container.innerHTML = "";
+            const todas = [...window.ymsStore.rascunhoAgendamentos, ...window.ymsStore.agendamentos];
+            document.getElementById('contadorJanelas').textContent = todas.length;
+
+            if (todas.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada no sistema.</p>`;
+                document.getElementById('painelAcaoSubir')?.classList.add('hidden');
+                return;
+            }
+
+            if (window.ymsStore.rascunhoAgendamentos.length > 0) document.getElementById('painelAcaoSubir')?.classList.remove('hidden');
+            else document.getElementById('painelAcaoSubir')?.classList.add('hidden');
+
+            todas.forEach(item => {
+                const tagRascunho = item.isRascunho ? `<span class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-500/30 ml-2">📝 RASCUNHO</span>` : '';
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow">
+                        <div>
+                            <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span> ${tagRascunho}
+                            <p class="text-sm font-black text-white mt-1">📍 ${item.doca}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
+                            <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                        </div>
+                    </div>
+                `);
+            });
+        };
+
+        function iniciarAplicacao() {
+            setInterval(() => {
+                const r = document.getElementById('relogioGlobal');
+                if (r) r.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
+            }, 1000);
+
+            if (document.getElementById('inpData')) document.getElementById('inpData').value = window.obterDataHojeISO();
+
+            const selDoca = document.getElementById('inpDoca');
+            if (selDoca) {
+                selDoca.innerHTML = "";
+                window.listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option'); opt.value = d; opt.textContent = d; selDoca.appendChild(opt);
+                });
+            }
+
+            window.mudarPerfil('pcp');
+            window.atualizarHorariosDisponiveis();
+            inicializarEscutadoresFirebase();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', iniciarAplicacao);
+        } else {
+            iniciarAplicacao();
+        }
+    </script>
 </body>
 </html>
