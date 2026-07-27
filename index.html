@@ -6,7 +6,7 @@
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS -->
+    <!-- SheetJS (Excel) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -62,7 +62,6 @@
                 <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
             </div>
 
-            <!-- GRID DE PERFIS -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <button type="button" onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
@@ -97,59 +96,10 @@
                     <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
             </div>
-
-            <!-- LOGIN FORNECEDOR -->
-            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
-                <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
-                    <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
-                    <span class="text-[10px] text-amber-400 font-mono font-bold">🔒 Senhas Exclusivas</span>
-                </div>
-                <div class="space-y-2.5">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa</label>
-                        <div class="bg-slate-900 border border-indigo-500/60 rounded-xl overflow-hidden focus-within:border-indigo-400 transition">
-                            <div class="p-2 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
-                                <span class="text-xs">🔍</span>
-                                <input type="text" id="filtroLoginForn" placeholder="Digite para filtrar a empresa..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-white outline-none font-bold placeholder-slate-500">
-                            </div>
-                            <select id="selEmpresaFornecedorLogin" size="5" class="w-full bg-slate-900 text-xs text-slate-100 font-bold outline-none cursor-pointer custom-scrollbar p-1">
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
-                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
-                        🔑 AUTENTICAR E ACESSAR PORTAL
-                    </button>
-                </div>
-            </div>
-
-            <!-- LOGIN OPERADOR -->
-            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
-                </div>
-                
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
-                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
-                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
-                        🔓 ENTRAR NO SISTEMA
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR COMPLETA (TODOS OS PERFIS) -->
+    <!-- BARRA SUPERIOR (RESTAUROU AS 8 ABAS DE NAVEGAÇÃO) -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -203,28 +153,21 @@
                             </span>
                         </div>
 
-                        <!-- SELETOR DO TIPO DE OPERAÇÃO -->
                         <div>
-                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">
-                                ⚡ SELECIONE O TIPO DE OPERAÇÃO *
-                            </label>
+                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
                                 <button type="button" id="btnTipoCotidiano" onclick="selecionarTipoCarga('cotidiano')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟢</span>
-                                    <span>Cotidiano</span>
+                                    <span>🟢</span><span>Cotidiano</span>
                                 </button>
                                 <button type="button" id="btnTipoExtra" onclick="selecionarTipoCarga('extra')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟡</span>
-                                    <span>Extra</span>
+                                    <span>🟡</span><span>Extra</span>
                                 </button>
                                 <button type="button" id="btnTipoCritica" onclick="selecionarTipoCarga('critica')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🔴</span>
-                                    <span>Crítica</span>
+                                    <span>🔴</span><span>Crítica</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- FORNECEDOR -->
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
@@ -240,7 +183,6 @@
                             </div>
                         </div>
 
-                        <!-- DOCA E DATA -->
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Doca de Recebimento *</label>
@@ -252,7 +194,6 @@
                             </div>
                         </div>
 
-                        <!-- MOTIVO CARGA EXTRA -->
                         <div id="boxMotivoExtra" class="hidden bg-amber-950/20 p-3 rounded-2xl border border-amber-500/40 space-y-1.5">
                             <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">📋 Motivo da Inclusão da Carga Extra *</label>
                             <select id="pcpMotivoExtra" class="w-full bg-slate-900 border border-amber-500/50 rounded-xl p-2 text-xs text-white font-bold outline-none cursor-pointer">
@@ -263,7 +204,6 @@
                             </select>
                         </div>
 
-                        <!-- CAMPOS MOTORISTA -->
                         <div id="boxDadosMotorista" class="hidden bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
                             <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">👤 Dados do Motorista</span>
                             <div class="grid grid-cols-2 gap-2">
@@ -282,7 +222,6 @@
                             </div>
                         </div>
 
-                        <!-- CAMPOS CRÍTICOS -->
                         <div id="boxCamposCriticos" class="hidden bg-red-950/30 p-3 rounded-2xl border border-red-500/40 space-y-2">
                             <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider block">🚨 Detalhes da Carga Crítica (Risco de Parada)</span>
                             <div>
@@ -295,7 +234,7 @@
                             </div>
                         </div>
 
-                        <!-- QUADRO DE HORÁRIOS -->
+                        <!-- QUADRO DE TIMELINE SINCRONIZADO -->
                         <div id="boxQuadroHorarios" class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px] font-bold">
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
@@ -315,7 +254,6 @@
                             </div>
                         </div>
 
-                        <!-- PREVIEW ID -->
                         <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                             <span class="text-slate-400 font-bold">IDENTIFICADOR DA JANELA:</span>
                             <span id="previewNumeroJanela" class="font-mono font-black text-emerald-400 bg-slate-900 px-2.5 py-0.5 rounded border border-emerald-500/30">CSN</span>
@@ -326,7 +264,6 @@
                         </button>
                     </div>
 
-                    <!-- ABA SUBIDA DE PLANILHA -->
                     <div id="conteudoMassa" class="space-y-4 hidden">
                         <div id="dropZonePlanilha" 
                              onclick="document.getElementById('fileInput').click()" 
@@ -341,7 +278,6 @@
                         </div>
                     </div>
 
-                    <!-- ABA COLAR TEXTO -->
                     <div id="conteudoTexto" class="space-y-3 hidden">
                         <textarea id="txtBruto" rows="6" placeholder="Cole aqui o texto ou extrato das janelas..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
                         <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">
@@ -386,165 +322,49 @@
             </div>
         </section>
 
-        <!-- MÓDULO 2: PORTAL DO FORNECEDOR -->
-        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-                    <span class="text-[10px] font-bold text-emerald-400 uppercase block mb-1">🏢 SELEÇÃO DE EMPRESA</span>
-                    <div id="boxSeletorFornecedorPortal" class="mb-3"></div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">📅 Selecionar Data</label>
-                    <input type="date" id="filtroDataFornecedor" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none">
-                </div>
-
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex-1 flex flex-col">
-                    <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700 mb-3">
-                        <button type="button" id="btnAbaPendentes" onclick="alternarAbaFornecedor('pendentes')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white">⏳ Pendentes</button>
-                        <button type="button" id="btnAbaConfirmadas" onclick="alternarAbaFornecedor('confirmadas')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400">✅ Confirmadas</button>
-                    </div>
-                    <div id="listaOrdensFornecedor" class="space-y-2 overflow-y-auto flex-1 max-h-[22rem]">
-                        <p class="text-xs text-slate-500 text-center py-6">Carregando ordens...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-span-12 md:col-span-8 bg-slate-800 rounded-2xl border border-slate-700 p-6 flex flex-col justify-between">
-                <div>
-                    <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
-                        <span id="txtOrdemSelecionada" class="text-xs font-bold uppercase text-indigo-400">SELECIONE UMA ORDEM</span>
-                        <span id="txtStatusOrdem" class="bg-slate-700 text-slate-300 font-bold text-xs px-3 py-1 rounded-full">Aguardando Escolha</span>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Nota Fiscal (NF-e) *</label>
-                                <input type="text" id="fornNf" placeholder="Número da NF-e..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Transportadora *</label>
-                                <input type="text" id="fornTransp" placeholder="Transportadora..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold outline-none">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Cavalo *</label>
-                                <input type="text" id="fornCavalo" placeholder="ABC1234" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Carreta</label>
-                                <input type="text" id="fornCarreta" placeholder="XYZ9876" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase outline-none">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- OUTROS MÓDULOS -->
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <h2 class="text-xl font-bold text-white">🏢 Portal do Fornecedor</h2>
         </section>
-
-        <!-- MÓDULO 3: TOTEM AUTOATENDIMENTO -->
-        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 flex flex-col justify-center hidden">
-            <div class="bg-slate-800 rounded-3xl p-8 border border-slate-700 text-center shadow-2xl">
-                <span class="bg-purple-500/20 text-purple-300 font-bold px-4 py-1.5 rounded-full text-xs uppercase tracking-widest border border-purple-500/30">Portaria & Recebimento</span>
-                <h2 class="text-2xl font-black text-white mt-3 mb-1">Totem de Check-in de Cargas</h2>
-                <p class="text-slate-400 text-xs mb-4">Digite o CPF ou o Número da Janela</p>
-
-                <div class="bg-slate-950 border-2 border-indigo-500 rounded-2xl p-3 mb-4">
-                    <input type="text" id="displayTotem" placeholder="CPF ou Código..." class="w-full bg-transparent text-center text-2xl font-mono font-black text-yellow-400 uppercase outline-none">
-                </div>
-
-                <button type="button" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-black py-4 rounded-xl shadow-xl transition border-b-4 border-emerald-800 cursor-pointer">
-                    🖨️ FAZER CHECK-IN E GERAR TICKET DE PÁTIO
-                </button>
-            </div>
+        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 hidden">
+            <h2 class="text-xl font-bold text-white">🏭 Totem Portaria</h2>
         </section>
-
-        <!-- MÓDULO 4: TRIAGEM FISCAL -->
         <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <div class="col-span-4 bg-slate-800 rounded-2xl p-4 border border-slate-700 flex flex-col">
-                <h2 class="font-bold text-sm text-white mb-3 flex items-center justify-between">
-                    <span>⌛ Fila do Pátio (Check-in Feito)</span>
-                    <span id="badgeQtdPatio" class="bg-purple-600 text-xs px-2.5 py-0.5 rounded-full">0</span>
-                </h2>
-                <div id="listaPatioFiscal" class="space-y-2 overflow-y-auto flex-1">
-                    <p class="text-xs text-slate-500 text-center py-8">Nenhum veículo no pátio.</p>
-                </div>
+            <div class="col-span-4 bg-slate-800 rounded-2xl p-4 border border-slate-700">
+                <h2 class="font-bold text-sm text-white mb-3">⌛ Fila do Pátio (Check-in Feito)</h2>
+                <div id="listaPatioFiscal" class="space-y-2 overflow-y-auto"></div>
             </div>
-
-            <div class="col-span-8 bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between">
-                <div>
-                    <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
-                        <h2 class="text-xl font-black text-white">Triagem Fiscal & Roteirizador de Docas</h2>
-                        <span id="txtTicketFiscalAtivo" class="bg-purple-900/60 text-purple-300 border border-purple-500 font-mono font-bold text-xs px-3 py-1 rounded-lg">Selecione um Ticket</span>
-                    </div>
-
-                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 grid grid-cols-3 gap-3 mb-4">
-                        <div>
-                            <p class="text-[10px] font-bold uppercase text-slate-400">Motorista</p>
-                            <p id="fiscMotorista" class="text-sm font-bold text-white">-</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-bold uppercase text-slate-400">Placa Cavalo / Carreta</p>
-                            <p id="fiscPlaca" class="text-sm font-mono font-black text-yellow-400">-</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-bold uppercase text-slate-400">Nota Fiscal</p>
-                            <p id="fiscNf" class="text-sm font-mono font-bold text-indigo-300">-</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-span-8 bg-slate-800 rounded-2xl p-6 border border-slate-700">
+                <h2 class="text-xl font-black text-white">Triagem Fiscal & Roteirizador de Docas</h2>
+                <p id="fiscNf" class="text-sm font-bold text-indigo-300 mt-2">-</p>
             </div>
         </section>
-
-        <!-- MÓDULO 5: OPERADOR DE DOCA -->
-        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <div class="col-span-7 bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between items-center text-center">
-                <h1 class="text-7xl font-black font-mono text-white tracking-tight py-2">---</h1>
-                <p class="text-base text-yellow-400 font-mono font-bold">Nenhum Veículo em Descarga</p>
-            </div>
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
+            <h2 class="text-xl font-bold text-white">🚛 Operador de Doca</h2>
         </section>
-
-        <!-- MÓDULO 6: CHECK-OUT PORTARIA -->
-        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <div class="col-span-12 bg-slate-800 rounded-3xl p-6 border border-slate-700">
-                <h2 class="text-lg font-black text-white">🚪 Check-out Portaria</h2>
-            </div>
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
+            <h2 class="text-xl font-bold text-white">🚪 Check-out Portaria</h2>
         </section>
-
-        <!-- MÓDULO 7: CADASTRO DE MOTORISTAS -->
-        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <div class="col-span-12 bg-slate-800 rounded-3xl p-6 border border-slate-700">
-                <h2 class="text-lg font-black text-white">🪪 Cadastro de Motoristas</h2>
-            </div>
+        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
+            <h2 class="text-xl font-bold text-white">🪪 Cad. Motoristas</h2>
         </section>
-
-        <!-- MÓDULO 8: TORRE DE CONTROLE / ADMIN -->
-        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
-            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700">
-                <h2 class="text-lg font-black text-white">📡 Torre de Controle & Métricas</h2>
-            </div>
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
+            <h2 class="text-xl font-bold text-white">📡 Torre de Controle</h2>
         </section>
-
     </div>
 
     <!-- MODAL DE NOTIFICAÇÃO -->
-    <div id="modalSmsNotif" onclick="fecharModalSmsExterno(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+    <div id="modalSmsNotif" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
             <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700">
                 <div class="bg-amber-500 p-2.5 rounded-2xl text-2xl shadow-lg text-slate-900">💬</div>
                 <div>
                     <h3 class="text-base font-black text-white">Central de Alertas YMS</h3>
                     <p class="text-xs text-amber-400 font-bold" id="notifDestinoMsg">Destino: fernando_junkes@whirlpool.com</p>
                 </div>
-                <button type="button" onclick="fecharModalSms()" class="ml-auto text-slate-400 hover:text-white font-black text-xl cursor-pointer p-1">✕</button>
             </div>
-
-            <div class="bg-slate-900 border border-slate-700/80 rounded-2xl p-4 mb-5">
-                <div id="notifTextoCorpo" class="text-xs font-mono text-slate-200 bg-slate-950 p-3 rounded-xl border border-slate-800 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
-                </div>
-            </div>
-
-            <button type="button" onclick="fecharModalSms()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl cursor-pointer shadow-lg border border-indigo-400/30">
-                ✓ Concluir
-            </button>
+            <div id="notifTextoCorpo" class="text-xs font-mono text-slate-200 bg-slate-950 p-3 rounded-xl border border-slate-800 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto mb-4"></div>
+            <button type="button" onclick="fecharModalSms()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl cursor-pointer">✓ Concluir</button>
         </div>
     </div>
 
@@ -557,7 +377,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT REVOLUCIONADO & BLINDADO -->
+    <!-- SCRIPT CORRIGIDO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -594,20 +414,26 @@
 
         window.tipoCargaAtivo = 'cotidiano';
 
-        // 🕒 RELÓGIO DIGITAL REAL
         window.atualizarRelogioDigital = function() {
             const el = document.getElementById('txtRelogio');
             if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
         };
 
-        // HELPER CONVERSÃO HORA <-> MINUTOS
         window.horaParaMinutos = function(hStr) {
             if (!hStr || hStr === 'IMEDIATO' || hStr === '---') return 0;
             const p = String(hStr).split(':');
             return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
         };
 
-        // 📧 DISPARO DE E-MAIL
+        // CONVERSÃO E COMPATIBILIZAÇÃO UNIVERSAL DE DATAS
+        window.normalizarDataParaBR = function(dStr) {
+            if (!dStr) return "27/07/2026";
+            if (dStr.includes('/')) return dStr;
+            const p = dStr.split('-');
+            if (p.length === 3) return `${p[2]}/${p[1]}/${p[0]}`;
+            return dStr;
+        };
+
         window.dispararEmailCriticoEmMassa = function(janelaItem) {
             const destinatarios = "fernando_junkes@whirlpool.com";
             const ehCritica = janelaItem.tipoOperacao === 'CRITICA';
@@ -639,7 +465,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.exibirToast("Alerta Criado!", "E-mail de notificação gerado.", "📧");
         };
 
-        // NAVEGAÇÃO DE NÍVEL DE PERFIL
         window.mudarPerfil = function(perfilId) {
             document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
             document.querySelectorAll('.btn-perfil').forEach(btn => {
@@ -662,7 +487,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
         };
 
-        // POPULAR FORNECEDORES
         window.popularSelectFornecedores = function(lista) {
             const selForn = document.getElementById('inpFornecedor');
             if (!selForn) return;
@@ -686,7 +510,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.atualizarPreviewJanela();
         };
 
-        // MONTA TIMELINE E IDENTIFICA HORÁRIOS OCUPADOS REAL
+        // 📊 MONTA TIMELINE E IDENTIFICA HORÁRIOS OCUPADOS
         window.atualizarHorariosDisponiveis = function() {
             const docaSel = document.getElementById('inpDoca')?.value;
             const dataSelRaw = document.getElementById('inpData')?.value;
@@ -694,11 +518,12 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             const selIni = document.getElementById('inpHora');
             if (!grid || !selIni || !dataSelRaw || !docaSel) return;
 
-            const p = dataSelRaw.split('-');
-            const dataForm = `${p[2]}/${p[1]}/${p[0]}`;
+            const dataFormBusca = window.normalizarDataParaBR(dataSelRaw);
 
+            // Filtra os agendamentos salvos e do rascunho cruzando doca e data exatas
             const agendadosDocaDia = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])].filter(ag => {
-                return ag.doca === docaSel && ag.data === dataForm && ag.horaIni !== 'IMEDIATO';
+                const dataAgBr = window.normalizarDataParaBR(ag.data);
+                return ag.doca === docaSel && dataAgBr === dataFormBusca && ag.horaIni !== 'IMEDIATO';
             });
 
             const slots = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"];
@@ -723,7 +548,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
                 if (ocupado) {
                     grid.insertAdjacentHTML('beforeend', `
-                        <div title="${agOcupante.ordem} - ${agOcupante.fornecedor}" class="bg-red-950/80 border border-red-500/80 text-red-300 p-1 rounded text-center text-[10px] font-mono font-bold cursor-not-allowed">${s}</div>
+                        <div title="Ocupado por ${agOcupante.ordem} - ${agOcupante.fornecedor}" class="bg-red-950/80 border border-red-500/80 text-red-300 p-1 rounded text-center text-[10px] font-mono font-bold cursor-not-allowed">${s}</div>
                     `);
                 } else {
                     grid.insertAdjacentHTML('beforeend', `
@@ -756,7 +581,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             });
         };
 
-        // LEITURA DE PLANILHAS E DRAG & DROP
         window.tratarDragOver = function(e) { e.preventDefault(); e.stopPropagation(); };
         window.tratarDragLeave = function(e) { e.preventDefault(); e.stopPropagation(); };
         window.tratarDrop = function(e) {
@@ -791,7 +615,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
                     let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
                     let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
-                    let dataTxt = kData ? String(row[kData]).trim() : "27/07/2026";
+                    let dataTxt = kData ? window.normalizarDataParaBR(String(row[kData]).trim()) : "27/07/2026";
 
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                     window.ymsStore.rascunhoAgendamentos.push({
@@ -848,7 +672,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.exibirToast("Texto Processado!", `${count} janelas geradas no rascunho.`, "📋");
         };
 
-        // FIREBASE ESCUTADORES
         function inicializarEscutadoresFirebase() {
             try {
                 onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
@@ -923,8 +746,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             const fornSel = document.getElementById('inpFornecedor')?.value || "CSN";
             const docaSel = document.getElementById('inpDoca')?.value || listaTodasDocas[0];
             const dataSel = document.getElementById('inpData')?.value || "2026-07-27";
-            const partesData = dataSel.split('-');
-            const dataForm = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+            const dataForm = window.normalizarDataParaBR(dataSel);
 
             let novaOrdem = "", prioridade = 99, nfExibicao = "";
             let codPN = document.getElementById('pcpCodigoCritico').value || "PN-882910";
@@ -1063,8 +885,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             container.innerHTML = "";
             
             const emPatio = window.ymsStore.agendamentos.filter(i => i.status === 'CHECKIN_PATIO' || i.status === 'CONFIRMADO_FORNECEDOR');
-            document.getElementById('badgeQtdPatio').textContent = emPatio.length;
-
+            
             emPatio.forEach(item => {
                 const isSel = item.ticket === window.ymsStore.ticketAtivoFiscal;
                 const isCritico = item.tipoOperacao === 'CRITICA' || item.prioridadeFila === 1;
@@ -1082,8 +903,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
             const ativo = emPatio.find(i => (i.ticket || i.ordem) === window.ymsStore.ticketAtivoFiscal);
             if (ativo) {
-                document.getElementById('fiscMotorista').textContent = ativo.motorista || '-';
-                document.getElementById('fiscPlaca').textContent = `${ativo.cavalo || '-'} / ${ativo.carreta || '-'}`;
                 document.getElementById('fiscNf').textContent = ativo.tipoOperacao === 'CRITICA' ? `🔴 CRÍTICO / ${ativo.detalhesCriticidade?.partNumber || ''}` : (ativo.nf || '-');
             }
         };
@@ -1128,9 +947,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         };
 
         window.fecharModalSms = function() { document.getElementById('modalSmsNotif').classList.add('hidden'); };
-        window.fecharModalSmsExterno = function(e) { if (e.target.id === 'modalSmsNotif') window.fecharModalSms(); };
 
-        // 🚀 INICIALIZAÇÃO
         window.addEventListener('DOMContentLoaded', () => {
             setInterval(window.atualizarRelogioDigital, 1000);
             window.atualizarRelogioDigital();
@@ -1149,7 +966,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             }
 
             window.popularSelectFornecedores(listaPadraoFornecedores);
-            window.atualizarHorariosDisponiveis();
             window.atualizarPreviewJanela();
             inicializarEscutadoresFirebase();
         });
