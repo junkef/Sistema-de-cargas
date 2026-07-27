@@ -30,7 +30,7 @@
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
 
     <!-- MODAL INICIAL DE LOGIN -->
-    <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center hidden">
+    <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center">
         <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-4 my-auto">
             <div class="text-center space-y-1">
                 <span class="bg-indigo-600/20 text-indigo-400 p-2 rounded-2xl text-2xl inline-block border border-indigo-500/30">🏭</span>
@@ -72,49 +72,6 @@
                     <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
             </div>
-
-            <!-- LOGIN FORNECEDOR COM PESQUISA -->
-            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
-                <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
-                    <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
-                    <span class="text-[10px] text-amber-400 font-mono font-bold">🔒 Senhas Exclusivas</span>
-                </div>
-                <div class="space-y-2.5">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa</label>
-                        <div class="bg-slate-900 border border-indigo-500/60 rounded-xl overflow-hidden">
-                            <div class="p-2 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
-                                <span class="text-xs">🔍</span>
-                                <input type="text" id="filtroLoginForn" placeholder="Digite para filtrar..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-white outline-none font-bold">
-                            </div>
-                            <select id="selEmpresaFornecedorLogin" size="5" class="w-full bg-slate-900 text-xs text-slate-100 font-bold outline-none cursor-pointer custom-scrollbar p-1"></select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
-                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">🔑 AUTENTICAR E ACESSAR PORTAL</button>
-                </div>
-            </div>
-
-            <!-- LOGIN OPERADOR -->
-            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
-                </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
-                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
-                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">🔓 ENTRAR NO SISTEMA</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -131,14 +88,14 @@
         </div>
 
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button type="button" onclick="mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
-            <button type="button" onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
-            <button type="button" onclick="mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
-            <button type="button" onclick="mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
-            <button type="button" onclick="mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
-            <button type="button" onclick="mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
-            <button type="button" onclick="mudarPerfil('motoristas')" id="btn-motoristas" data-modulo="motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
-            <button type="button" onclick="mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
+            <button type="button" onclick="mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
+            <button type="button" onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
+            <button type="button" onclick="mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Portaria</button>
+            <button type="button" onclick="mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Triagem Fiscal</button>
+            <button type="button" onclick="mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador Doca</button>
+            <button type="button" onclick="mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
+            <button type="button" onclick="mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
+            <button type="button" onclick="mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
 
         <div class="flex items-center gap-3">
@@ -184,17 +141,8 @@
                         </div>
 
                         <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
-                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(0 CADASTRADOS)</span>
-                            </div>
-                            <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
-                                <div class="p-2 border-b border-slate-800 bg-slate-900 flex items-center gap-2">
-                                    <span class="text-xs">🔍</span>
-                                    <input type="text" id="filtroForn" placeholder="Filtrar fornecedor..." oninput="filtrarOpcoesFornecedor()" class="w-full bg-transparent text-xs text-slate-200 outline-none font-bold">
-                                </div>
-                                <select id="inpFornecedor" size="3" onchange="atualizarPreviewJanela()" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1"></select>
-                            </div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fornecedor *</label>
+                            <input type="text" id="inpFornecedor" placeholder="Digite o nome do fornecedor..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white font-bold outline-none">
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -205,47 +153,6 @@
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data</label>
                                 <input type="date" id="inpData" onchange="atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none">
-                            </div>
-                        </div>
-
-                        <div id="boxMotivoExtra" class="hidden bg-amber-950/20 p-3 rounded-2xl border border-amber-500/40 space-y-1.5">
-                            <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">📋 Motivo da Inclusão da Carga Extra *</label>
-                            <select id="pcpMotivoExtra" class="w-full bg-slate-900 border border-amber-500/50 rounded-xl p-2 text-xs text-white font-bold outline-none cursor-pointer">
-                                <option value="Aumento de Demanda / Pico de Produção">📈 Aumento de Demanda / Pico de Produção</option>
-                                <option value="Atraso na Entrega Anterior do Fornecedor">🚚 Atraso na Entrega Anterior do Fornecedor</option>
-                                <option value="Ajuste de Estoque de Segurança">📦 Ajuste de Estoque de Segurança</option>
-                                <option value="Refugo / Substituição de Lote Com Defeito">⚠️ Refugo / Substituição de Lote Com Defeito</option>
-                                <option value="Solicitação Especial da Torre de Controle">📡 Solicitação Especial da Torre de Controle</option>
-                            </select>
-                        </div>
-
-                        <div id="boxDadosMotorista" class="hidden bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
-                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">👤 Dados do Motorista</span>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[9px] font-bold text-slate-400 mb-0.5">CPF do Motorista *</label>
-                                    <input type="text" id="pcpCpf" value="10847778940" placeholder="000.000.000-00" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 font-bold outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Celular / WhatsApp *</label>
-                                    <input type="text" id="pcpCelular" value="47992424703" placeholder="(47) 99999-0000" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-yellow-400 font-bold outline-none">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Nome do Motorista *</label>
-                                <input type="text" id="pcpMotorista" value="Fernando Junkes" placeholder="Nome completo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white font-bold outline-none">
-                            </div>
-                        </div>
-
-                        <div id="boxCamposCriticos" class="hidden bg-red-950/30 p-3 rounded-2xl border border-red-500/40 space-y-2">
-                            <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider block">🚨 Detalhes da Carga Crítica</span>
-                            <div>
-                                <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Código do Material / Part Number *</label>
-                                <input type="text" id="pcpCodigoCritico" value="PN-882910 / Chapa CSN" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Motivo da Criticidade / Observação *</label>
-                                <textarea id="pcpMotivoCritico" rows="2" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-slate-200 outline-none">Estoque da linha F3 encerra em 40 minutos. Descarga prioritária na chegada.</textarea>
                             </div>
                         </div>
 
@@ -268,11 +175,6 @@
                             </div>
                         </div>
 
-                        <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                            <span class="text-slate-400 font-bold">IDENTIFICADOR DA JANELA:</span>
-                            <span id="previewNumeroJanela" class="font-mono font-black text-emerald-400 bg-slate-900 px-2.5 py-0.5 rounded border border-emerald-500/30">CSN</span>
-                        </div>
-
                         <button type="button" id="btnSubmitFormPcp" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">
                             <span>➕</span> ADICIONAR À GRADE DE RASCUNHO
                         </button>
@@ -289,7 +191,6 @@
 
                     <div id="conteudoTexto" class="space-y-3 hidden">
                         <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
-                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
                     </div>
                 </div>
             </div>
@@ -299,7 +200,7 @@
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
                         <div>
                             <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
-                            <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos Sincronizados com o YMS</p>
+                            <p class="text-xs text-slate-400">Agendamentos Sincronizados com o YMS</p>
                         </div>
                         <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow">0</span>
                     </div>
@@ -326,36 +227,114 @@
             </div>
         </section>
 
-        <!-- MÓDULOS SECUNDÁRIOS -->
-        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700"><h2 class="text-xl font-black text-white">🏢 Portal Fornecedor</h2></div>
+        <!-- MÓDULO 2: PORTAL FORNECEDOR -->
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-black text-white">🏢 Portal do Fornecedor</h2>
+                    <p class="text-xs text-slate-400">Gerenciamento de Agendamentos, Confirmação de Cargas e Check-in</p>
+                </div>
+                <span class="bg-indigo-600/20 text-indigo-400 text-xs font-bold px-3 py-1.5 rounded-xl border border-indigo-500/30">Agendamentos Ativos</span>
+            </div>
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900 text-slate-400 uppercase font-bold border-b border-slate-700">
+                            <tr>
+                                <th class="p-3">Ordem</th>
+                                <th class="p-3">Data</th>
+                                <th class="p-3">Doca</th>
+                                <th class="p-3">Horário</th>
+                                <th class="p-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaFornecedorAgendamentos" class="divide-y divide-slate-700/50">
+                            <tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento para este fornecedor.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
-        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-3xl p-8 border border-slate-700 text-center"><h2 class="text-2xl font-black text-white">Totem Portaria</h2></div>
+        <!-- MÓDULO 3: TOTEM PORTARIA -->
+        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-3xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="bg-slate-800/90 rounded-3xl p-8 border border-slate-700/80 shadow-2xl text-center space-y-4">
+                <span class="text-5xl inline-block">🏭</span>
+                <h2 class="text-2xl font-black text-white">Totem de Autoatendimento Portaria</h2>
+                <p class="text-xs text-slate-400">Digite o CPF do motorista ou Número da Ordem para realizar o Check-in imediato</p>
+
+                <div class="space-y-3 pt-2">
+                    <input type="text" id="totemInpBusca" placeholder="Digite o CPF ou ORDEM..." class="w-full bg-slate-950 border-2 border-indigo-500/60 rounded-2xl p-4 text-center text-lg font-mono font-bold text-emerald-400 outline-none">
+                    <button type="button" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-4 rounded-2xl shadow-lg transition uppercase tracking-wider">
+                        🔍 REALIZAR CHECK-IN E IMPRIMIR TICKET
+                    </button>
+                </div>
+            </div>
         </section>
 
-        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700"><h2 class="text-xl font-black text-white">📑 Triagem Fiscal</h2></div>
+        <!-- MÓDULO 4: TRIAGEM FISCAL -->
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-black text-white">📑 Triagem Fiscal & Conferência</h2>
+                    <p class="text-xs text-slate-400">Validação de Chaves de Nota Fiscal, Peso e Liberação para Doca</p>
+                </div>
+            </div>
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
+                <p class="text-xs text-slate-400 text-center py-6">Fila de triagem fiscal aguardando entrada de motoristas.</p>
+            </div>
         </section>
 
-        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700"><h2 class="text-xl font-black text-white">🚛 Operador Doca</h2></div>
+        <!-- MÓDULO 5: OPERADOR DOCA -->
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-black text-white">🚛 Operação de Doca & Carregamento</h2>
+                    <p class="text-xs text-slate-400">Início de Descarregamento, Fim de Carga e Liberação do Veículo</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-amber-400 block mb-2">📍 Doca - (04N/06N)</span>
+                    <p class="text-xs text-slate-400">Status: <span class="text-emerald-400 font-bold">LIVRE</span></p>
+                </div>
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-amber-400 block mb-2">📍 Doca - 1 F2 (7S)</span>
+                    <p class="text-xs text-slate-400">Status: <span class="text-emerald-400 font-bold">LIVRE</span></p>
+                </div>
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-amber-400 block mb-2">📍 Doca - Basico F3 (CS1)</span>
+                    <p class="text-xs text-slate-400">Status: <span class="text-emerald-400 font-bold">LIVRE</span></p>
+                </div>
+            </div>
         </section>
 
-        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700"><h2 class="text-xl font-black text-white">🚪 Check-out Portaria</h2></div>
+        <!-- MÓDULO 6: CHECK-OUT PORTARIA -->
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
+                <h2 class="text-xl font-black text-white mb-1">🚪 Check-out de Portaria</h2>
+                <p class="text-xs text-slate-400">Registro de saída e liberação de veículos do pátio</p>
+            </div>
         </section>
 
-        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700"><h2 class="text-xl font-black text-white">🪪 Base de Motoristas</h2></div>
+        <!-- MÓDULO 7: CAD. MOTORISTAS -->
+        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
+                <h2 class="text-xl font-black text-white mb-1">🪪 Cadastros & Base de Motoristas</h2>
+                <p class="text-xs text-slate-400">Histórico de condutores e dados de contato</p>
+            </div>
         </section>
 
-        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700"><h2 class="text-xl font-black text-white">📡 Torre de Controle</h2></div>
+        <!-- MÓDULO 8: TORRE DE CONTROLE -->
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
+                <h2 class="text-xl font-black text-white mb-1">📡 Torre de Controle & Indicadores YMS</h2>
+                <p class="text-xs text-slate-400">Visão geral do pátio, métricas de permanência e SLA de docas</p>
+            </div>
         </section>
     </div>
 
+    <!-- TOAST NOTIFICAÇÕES -->
     <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50 min-w-[320px]">
         <span class="text-2xl" id="toastIcon">✨</span>
         <div><p class="font-bold text-sm" id="toastTitulo">Notificação</p><p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p></div>
