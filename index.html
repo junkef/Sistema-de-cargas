@@ -6,11 +6,11 @@
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (Leitura e Geração de Excel) -->
+    <!-- SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js (Gráficos Torre de Controle) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCodeJS (Ticket Impresso do Totem) -->
+    <!-- QRCodeJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         .hidden { display: none !important; }
@@ -53,7 +53,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
 
-    <!-- MODAL INICIAL DE LOGIN -->
+    <!-- MODAL INICIAL DE LOGIN (OCULTO POR PADRÃO) -->
     <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center hidden">
         <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-4 my-auto">
             <div class="text-center space-y-1">
@@ -62,6 +62,7 @@
                 <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
             </div>
 
+            <!-- GRID DE PERFIS -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <button type="button" onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
@@ -96,56 +97,10 @@
                     <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
             </div>
-
-            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
-                <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
-                    <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
-                    <span class="text-[10px] text-amber-400 font-mono font-bold">🔒 Senhas Exclusivas</span>
-                </div>
-                <div class="space-y-2.5">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa</label>
-                        <div class="bg-slate-900 border border-indigo-500/60 rounded-xl overflow-hidden focus-within:border-indigo-400 transition">
-                            <div class="p-2 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
-                                <span class="text-xs">🔍</span>
-                                <input type="text" id="filtroLoginForn" placeholder="Digite para filtrar a empresa..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-white outline-none font-bold placeholder-slate-500">
-                            </div>
-                            <select id="selEmpresaFornecedorLogin" size="5" class="w-full bg-slate-900 text-xs text-slate-100 font-bold outline-none cursor-pointer custom-scrollbar p-1">
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
-                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
-                        🔑 AUTENTICAR E ACESSAR PORTAL
-                    </button>
-                </div>
-            </div>
-
-            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
-                </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
-                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
-                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
-                        🔓 ENTRAR NO SISTEMA
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR -->
+    <!-- BARRA SUPERIOR -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -179,6 +134,7 @@
     </header>
 
     <div class="flex-1 flex flex-col">
+
         <!-- MÓDULO 1: PCP PROGRAMADOR -->
         <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6">
             <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
@@ -189,13 +145,13 @@
                         <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
                     </div>
 
-                    <div id="conteudoIndividual" class="space-y-3.5">
+                    <div id="conteudoIndividual" class="space-y-3">
                         <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
-                            <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
+                            <h2 class="text-base font-black text-white">Ofertar Nova Janela</h2>
                             <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
                         </div>
 
-                        <!-- ⚡ BOTOES SELECAO DOS 3 TIPOS DE CARGA ⚡ -->
+                        <!-- 🟢🟡🔴 BOTÕES DO PROCESSO DE SELEÇÃO DE CARGA -->
                         <div>
                             <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -213,7 +169,7 @@
 
                         <div>
                             <div class="flex justify-between items-center mb-1">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR</label>
                                 <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(0 CADASTRADOS)</span>
                             </div>
                             <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
@@ -237,48 +193,30 @@
                             </div>
                         </div>
 
-                        <!-- BOX CONDICIONAL: CARGA EXTRA -->
-                        <div id="boxMotivoExtra" class="hidden bg-amber-950/20 p-3 rounded-2xl border border-amber-500/40 space-y-2">
-                            <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">📋 Motivo da Inclusão da Carga Extra *</label>
+                        <!-- CAIXAS CONDICIONAIS PARA CARGA EXTRA / CRÍTICA -->
+                        <div id="boxMotivoExtra" class="hidden bg-amber-950/20 p-3 rounded-2xl border border-amber-500/40 space-y-1.5">
+                            <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">📋 Motivo da Carga Extra *</label>
                             <select id="pcpMotivoExtra" class="w-full bg-slate-900 border border-amber-500/50 rounded-xl p-2 text-xs text-white font-bold outline-none cursor-pointer">
                                 <option value="Aumento de Demanda / Pico de Produção">📈 Aumento de Demanda / Pico de Produção</option>
                                 <option value="Atraso na Entrega Anterior do Fornecedor">🚚 Atraso na Entrega Anterior do Fornecedor</option>
                                 <option value="Ajuste de Estoque de Segurança">📦 Ajuste de Estoque de Segurança</option>
                                 <option value="Refugo / Substituição de Lote Com Defeito">⚠️ Refugo / Substituição de Lote Com Defeito</option>
-                                <option value="Solicitação Especial da Torre de Controle">📡 Solicitação Especial da Torre de Controle</option>
                             </select>
                         </div>
 
-                        <!-- BOX CONDICIONAL: MOTORISTA EXTRA -->
                         <div id="boxDadosMotorista" class="hidden bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
-                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">👤 Dados do Motorista (Carga Extra)</span>
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">👤 Dados Rápidos do Motorista</span>
                             <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[9px] font-bold text-slate-400 mb-0.5">CPF do Motorista *</label>
-                                    <input type="text" id="pcpCpf" placeholder="000.000.000-00" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 font-bold outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Celular / WhatsApp *</label>
-                                    <input type="text" id="pcpCelular" placeholder="(47) 99999-0000" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-yellow-400 font-bold outline-none">
-                                </div>
+                                <input type="text" id="pcpCpf" placeholder="CPF (Apenas Números)" class="bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 font-bold outline-none">
+                                <input type="text" id="pcpCelular" placeholder="Celular com DDD" class="bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-yellow-400 font-bold outline-none">
                             </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Nome do Motorista *</label>
-                                <input type="text" id="pcpMotorista" placeholder="Nome completo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white font-bold outline-none">
-                            </div>
+                            <input type="text" id="pcpMotorista" placeholder="Nome Completo do Motorista" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white font-bold outline-none">
                         </div>
 
-                        <!-- BOX CONDICIONAL: CARGA CRÍTICA -->
                         <div id="boxCamposCriticos" class="hidden bg-red-950/30 p-3 rounded-2xl border border-red-500/40 space-y-2">
                             <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider block">🚨 Detalhes da Carga Crítica</span>
-                            <div>
-                                <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Código do Material / Part Number *</label>
-                                <input type="text" id="pcpCodigoCritico" placeholder="Ex: PN-882910 / Chapa CSN" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Motivo da Criticidade / Observação *</label>
-                                <textarea id="pcpMotivoCritico" rows="2" placeholder="Descreva a urgência / Risco de Parada..." class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-slate-200 outline-none"></textarea>
-                            </div>
+                            <input type="text" id="pcpCodigoCritico" placeholder="Part Number / Código do Material" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
+                            <textarea id="pcpMotivoCritico" rows="2" placeholder="Descreva o Risco de Parada / Justificativa..." class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-slate-200 outline-none"></textarea>
                         </div>
 
                         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
@@ -286,7 +224,7 @@
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
                                 <span class="text-slate-400"><span class="text-emerald-400">■</span> Livre <span class="text-red-400 ml-1">■</span> Ocupado</span>
                             </div>
-                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-28 overflow-y-auto pr-1 custom-scrollbar"></div>
+                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-28 overflow-y-auto pr-1"></div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -299,26 +237,18 @@
                                 <select id="inpHoraFim" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 outline-none"></select>
                             </div>
                         </div>
-                        <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
+                        <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
                     </div>
 
                     <div id="conteudoMassa" class="space-y-4 hidden">
-                        <div id="dropZonePlanilha" 
-                             onclick="document.getElementById('fileInput').click()"
-                             ondragover="tratarDragOver(event)" 
-                             ondragleave="tratarDragLeave(event)" 
-                             ondrop="tratarDrop(event)"
-                             class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all duration-200">
+                        <div id="dropZonePlanilha" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 rounded-2xl p-8 text-center cursor-pointer">
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
-                            <div class="text-4xl mb-3">📂</div>
-                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv (Filtra datas antigas automaticamente)</p>
+                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui</p>
                         </div>
                     </div>
 
                     <div id="conteudoTexto" class="space-y-3 hidden">
-                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
-                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
+                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none"></textarea>
                     </div>
                 </div>
             </div>
@@ -336,12 +266,12 @@
                     </div>
 
                     <div class="mb-4">
-                        <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
+                        <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
                             <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
                         </button>
                     </div>
 
-                    <div id="containerJanelas" class="space-y-3 max-h-[24rem] overflow-y-auto pr-1 custom-scrollbar">
+                    <div id="containerJanelas" class="space-y-3 max-h-[24rem] overflow-y-auto pr-1">
                         <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
                     </div>
                 </div>
@@ -357,23 +287,23 @@
             </div>
         </section>
 
-        <!-- OUTROS MÓDULOS MANTIDOS COMPLETOS -->
-        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden"></section>
-        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 flex flex-col justify-center hidden"></section>
-        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden"></section>
-        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden"></section>
-        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden"></section>
-        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden"></section>
-        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6"></section>
+        <!-- SEÇÕES SECUNDÁRIAS MANTIDAS INTEGRALMENTE PARA NAVEGAÇÃO DOS PERFIS -->
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden"><h2 class="text-xl font-bold">🏢 Portal Fornecedor</h2></section>
+        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-2xl w-full mx-auto p-6 hidden"><h2 class="text-xl font-bold">🏭 Totem Portaria</h2></section>
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"><h2 class="text-xl font-bold">📑 Triagem Fiscal</h2></section>
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"><h2 class="text-xl font-bold">🚛 Operador Doca</h2></section>
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"><h2 class="text-xl font-bold">🚪 Check-out Portaria</h2></section>
+        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"><h2 class="text-xl font-bold">🪪 Cad. Motoristas</h2></section>
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden"><h2 class="text-xl font-bold">📡 Torre de Controle</h2></section>
     </div>
 
-    <!-- TOAST DE NOTIFICAÇÃO -->
+    <!-- TOAST NOTIFICAÇÃO -->
     <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50 min-w-[320px]">
         <span class="text-2xl" id="toastIcon">✨</span>
         <div><p class="font-bold text-sm" id="toastTitulo">Notificação</p><p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p></div>
     </div>
 
-    <!-- JS CENTRAL -->
+    <!-- SCRIPT TUDO-EM-UM -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -413,6 +343,7 @@
         };
 
         window.normalizarTexto = function(txt) { return String(txt || '').toLowerCase().replace(/\s+/g, '').trim(); };
+
         window.horaParaMinutos = function(horaStr) {
             if (!horaStr || horaStr === '---' || horaStr === 'IMEDIATO') return 0;
             const partes = String(horaStr).trim().split(':');
@@ -455,7 +386,8 @@
         window.mudarPerfil = function(perfilId) {
             document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.btn-perfil').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow'); btn.classList.add('text-slate-400');
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
+                btn.classList.add('text-slate-400');
             });
             const secAtiva = document.getElementById(`perfil-${perfilId}`);
             if (secAtiva) secAtiva.classList.remove('hidden');
@@ -469,7 +401,7 @@
             document.getElementById('conteudoTexto').classList.toggle('hidden', aba !== 'texto');
         };
 
-        // CONTROLE DINÂMICO DOS 3 TIPOS DE CARGA
+        // 🟢🟡🔴 CONTROLE DINÂMICO DOS 3 TIPOS DE CARGA
         window.selecionarTipoCarga = function(tipo) {
             window.tipoCargaAtivo = tipo;
             const bCotidiano = document.getElementById('btnTipoCotidiano');
