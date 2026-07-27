@@ -386,99 +386,71 @@
             </div>
         </section>
 
-        <!-- DEMAIS MÓDULOS PERMANECEM IGUAIS -->
-        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-                    <span class="text-[10px] font-bold text-emerald-400 uppercase block mb-1">🏢 SELEÇÃO DE EMPRESA / FORNECEDOR</span>
-                    <div id="boxSeletorFornecedorPortal" class="mb-3"></div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">📅 Selecionar Data</label>
-                    <input type="date" id="filtroDataFornecedor" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none cursor-pointer">
-                </div>
-
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex-1 flex flex-col">
-                    <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700 mb-3">
-                        <button type="button" id="btnAbaPendentes" onclick="alternarAbaFornecedor('pendentes')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white cursor-pointer">⏳ Pendentes</button>
-                        <button type="button" id="btnAbaConfirmadas" onclick="alternarAbaFornecedor('confirmadas')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer">✅ Confirmadas</button>
-                    </div>
-                    <div id="listaOrdensFornecedor" class="space-y-2 overflow-y-auto flex-1 max-h-[22rem]">
-                        <p class="text-xs text-slate-500 text-center py-6">Carregando ordens...</p>
-                    </div>
+        <!-- MÓDULO 4: RECEBIMENTO FISCAL (TRIAGEM) -->
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <div class="col-span-4 bg-slate-800 rounded-2xl p-4 border border-slate-700 flex flex-col">
+                <h2 class="font-bold text-sm text-white mb-3 flex items-center justify-between">
+                    <span>⌛ Fila do Pátio (Check-in Feito)</span>
+                    <span id="badgeQtdPatio" class="bg-purple-600 text-xs px-2.5 py-0.5 rounded-full">0</span>
+                </h2>
+                <div id="listaPatioFiscal" class="space-y-2 overflow-y-auto flex-1">
+                    <p class="text-xs text-slate-500 text-center py-8">Nenhum veículo no pátio.</p>
                 </div>
             </div>
 
-            <div class="col-span-12 md:col-span-8 bg-slate-800 rounded-2xl border border-slate-700 p-6 flex flex-col justify-between">
+            <div class="col-span-8 bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between">
                 <div>
                     <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
-                        <div>
-                            <span id="txtOrdemSelecionada" class="text-xs font-bold uppercase text-indigo-400">SELECIONE UMA ORDEM</span>
-                            <h2 class="text-xl font-black text-white mt-0.5">Pré-Cadastro de Carga & Motorista</h2>
-                        </div>
-                        <span id="txtStatusOrdem" class="bg-slate-700 text-slate-300 font-bold text-xs px-3 py-1 rounded-full">Aguardando Escolha</span>
+                        <h2 class="text-xl font-black text-white">Triagem Fiscal & Roteirizador de Docas</h2>
+                        <span id="txtTicketFiscalAtivo" class="bg-purple-900/60 text-purple-300 border border-purple-500 font-mono font-bold text-xs px-3 py-1 rounded-lg">Selecione um Ticket</span>
                     </div>
 
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Nota Fiscal (NF-e) *</label>
-                                <input type="text" id="fornNf" placeholder="Digite o número da NF-e..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono focus:border-indigo-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Transportadora *</label>
-                                <input type="text" id="fornTransp" placeholder="Digite a transportadora..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold focus:border-indigo-500 outline-none">
-                            </div>
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 grid grid-cols-3 gap-3 mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Motorista</p>
+                            <p id="fiscMotorista" class="text-sm font-bold text-white">-</p>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Cavalo (Trator) *</label>
-                                <input type="text" id="fornCavalo" placeholder="ABC1D23 / ABC1234" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase focus:border-indigo-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Carreta / Reboque</label>
-                                <input type="text" id="fornCarreta" placeholder="XYZ9876 (opcional)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase focus:border-indigo-500 outline-none">
-                            </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Placa Cavalo / Carreta</p>
+                            <p id="fiscPlaca" class="text-sm font-mono font-black text-yellow-400">-</p>
                         </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400">Nota Fiscal</p>
+                            <p id="fiscNf" class="text-sm font-mono font-bold text-indigo-300">-</p>
+                        </div>
+                    </div>
 
-                        <div class="bg-slate-900/60 p-4 rounded-xl border border-indigo-500/30 space-y-3">
-                            <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">👤 Cadastro Obrigatório do Motorista</h3>
-                            <div class="grid grid-cols-12 gap-3">
-                                <div class="col-span-6">
-                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">CPF (11 Dígitos) *</label>
-                                    <div class="flex gap-1.5">
-                                        <input type="text" id="fornCpf" placeholder="00000000000" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarMotoristaPorCpf();}" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-indigo-500">
-                                        <button type="button" onclick="buscarMotoristaPorCpf()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition cursor-pointer flex items-center justify-center shadow">🔍</button>
-                                    </div>
-                                </div>
-                                <div class="col-span-6">
-                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">Nome Completo *</label>
-                                    <input type="text" id="fornMotorista" placeholder="Nome completo..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold outline-none">
-                                </div>
-                                <div class="col-span-12">
-                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">Celular / Notificações (Com DDD) *</label>
-                                    <input type="text" id="fornCelular" placeholder="00900000000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold outline-none">
-                                </div>
-                            </div>
-                        </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Clique nas docas na SEQUÊNCIA desejada:</h3>
+                        <button type="button" onclick="resetarSequenciaDocas()" class="text-[10px] font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer">🔄 Limpar Rota</button>
+                    </div>
 
-                        <button type="button" onclick="salvarConfirmacaoFornecedor(event)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
-                            <span>💬</span> CONFIRMAR DADOS E LIBERAR CHECK-IN
-                        </button>
+                    <div id="gridDocasFiscal" class="grid grid-cols-2 gap-2.5 mb-4"></div>
+
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-2 mb-4">
+                        <span class="text-xs font-bold text-purple-400">ROTA SEQUENCIAL:</span>
+                        <div id="displayRotaSequencial" class="text-xs font-bold text-white flex flex-wrap gap-1">
+                            <span class="text-slate-500 italic">Nenhuma doca selecionada</span>
+                        </div>
                     </div>
                 </div>
+
+                <button type="button" onclick="liberarParaDocaFiscal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl text-xs uppercase tracking-wider shadow-lg cursor-pointer">
+                    🚀 SALVAR ROTA SEQUENCIAL E ENVIAR PARA A 1ª DOCA
+                </button>
             </div>
         </section>
 
-        <!-- DEMAIS SEÇÕES (TOTEM, FISCAL, DOCA, CHECKOUT, MOTORISTAS, TORRE) MANTIDAS IGUAIS -->
     </div>
 
-    <!-- MODAL DE SMS -->
+    <!-- MODAL DE SMS / E-MAIL -->
     <div id="modalSmsNotif" onclick="fecharModalSmsExterno(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
         <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative my-auto" onclick="event.stopPropagation()">
             <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700">
                 <div class="bg-amber-500 p-2.5 rounded-2xl text-2xl shadow-lg text-slate-900">💬</div>
                 <div>
                     <h3 class="text-base font-black text-white">Central de Mensagens & Alertas</h3>
-                    <p class="text-xs text-amber-400 font-bold" id="notifDestinoMsg">Destino: +55 (47) 99242-4703</p>
+                    <p class="text-xs text-amber-400 font-bold" id="notifDestinoMsg">Destino: fernando_junkes@whirlpool.com</p>
                 </div>
                 <button type="button" onclick="fecharModalSms()" class="ml-auto text-slate-400 hover:text-white font-black text-xl cursor-pointer p-1">✕</button>
             </div>
@@ -495,7 +467,7 @@
         </div>
     </div>
 
-    <!-- TOAST -->
+    <!-- TOAST DE NOTIFICAÇÃO -->
     <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50 min-w-[320px]">
         <span class="text-2xl" id="toastIcon">✨</span>
         <div>
@@ -504,7 +476,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL BLINDADO -->
+    <!-- SCRIPT PRINCIPAL INTEGRAÇÃO E CORREÇÕES -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -522,74 +494,49 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const listaPadrao60Fornecedores = [
-            { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
-            { empresa: "ADERE", senha: "adere@2026" },
-            { empresa: "ALEPLAST", senha: "aleplast@2026" },
-            { empresa: "CSN", senha: "csn@2026" },
-            { empresa: "USIMINAS", senha: "usiminas@2026" },
-            { empresa: "MULTILOG", senha: "multilog@2026" },
-            { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" }
-        ];
-
         window.ymsStore = {
             agendamentos: [],
             rascunhoAgendamentos: [],
-            ordemAtivaFornecedor: null,
-            abaFornecedorAtual: "pendentes",
-            ticketAtivoFiscal: null,
-            ticketAtivoCheckout: null,
-            sequenciaDocasSelecao: [],
-            baseMotoristas: [],
-            baseUsuariosCustom: [],
-            configApi: { ativo: "NAO", tipo: "whatsapp_zapi", urlEndpoint: "", authToken: "" },
-            usuarioLogado: null,
-            empresaFornecedorLogada: null,
-            perfilSolicitadoTemp: null
+            ticketAtivoFiscal: null
         };
 
-        window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
         window.tipoCargaAtivo = 'cotidiano';
 
-        // DISPARO DE EMAIL
-        window.dispararEmailCriticoEmMassa = async function(janelaItem) {
-            const destinatarios = "fernando_junkes@whirlpool.com, torre_controle@whirlpool.com";
+        // 1️⃣ DISPARO DE E-MAIL VIA MAILTO E WEBHOOK
+        window.dispararEmailCriticoEmMassa = function(janelaItem) {
+            const destinatarios = "fernando_junkes@whirlpool.com";
             const ehCritica = janelaItem.tipoOperacao === 'CRITICA';
             
             const assunto = ehCritica 
-                ? `🚨 [ALERTA MÁXIMO - TOPO DA FILA] Carga Crítica ${janelaItem.ordem} - ${janelaItem.fornecedor}`
+                ? `🚨 [ALERTA CRÍTICO - PARADA DE LINHA] Janela ${janelaItem.ordem} - ${janelaItem.fornecedor}`
                 : `🟡 [CARGA EXTRA PROGRAMADA] Janela ${janelaItem.ordem} - ${janelaItem.fornecedor}`;
 
-            const corpoEmailText = `
-📢 ALERTA AUTOMÁTICO DO SISTEMA YMS ECOSYSTEM
+            const corpoEmailText = 
+`Atencao Equipe,
 
-• CÓDIGO DA JANELA: ${janelaItem.ordem}
-• Empresa / Fornecedor: ${janelaItem.fornecedor}
-• Doca de Destino: ${janelaItem.doca}
-• Data Prevista: ${janelaItem.data}
-• Motorista: ${janelaItem.motorista || 'A definir'} (CPF: ${janelaItem.cpf || 'N/D'})
-${ehCritica ? `\n⚠️ DETALHES DO RISCO DE PARADA DE LINHA:\n• Part Number: ${janelaItem.detalhesCriticidade?.partNumber || 'N/D'}\n• Motivo: ${janelaItem.detalhesCriticidade?.motivo || 'N/D'}\n📌 STATUS: PRIORIDADE MÁXIMA (#1) NO PÁTIO!\n` : ''}
-Disparado para: ${destinatarios}
-`;
+Uma nova Carga ${ehCritica ? 'CRITICA' : 'EXTRA'} foi registrada no YMS Ecosystem:
 
+- CODIGO DA JANELA: ${janelaItem.ordem}
+- Fornecedor: ${janelaItem.fornecedor}
+- Doca: ${janelaItem.doca}
+- Data Prevista: ${janelaItem.data}
+- Motorista: ${janelaItem.motorista || 'A definir'} (CPF: ${janelaItem.cpf || 'N/D'})
+${ehCritica ? `- Part Number / Item: ${janelaItem.detalhesCriticidade?.partNumber || 'N/D'}\n- Motivo do Risco: ${janelaItem.detalhesCriticidade?.motivo || 'N/D'}\n- PRIORIDADE: CARGA CRITICA (Prioridade na Descarga)\n` : ''}
+Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
+
+            // Abre o e-mail preenchido
+            const mailtoUrl = `mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoEmailText)}`;
+            window.open(mailtoUrl, '_blank');
+
+            // Exibe modal na tela
             document.getElementById('notifDestinoMsg').textContent = `Enviado para: ${destinatarios}`;
-            document.getElementById('notifTextoCorpo').textContent = `📧 E-MAIL DISPARADO COM SUCESSO!\n\n${assunto}\n${corpoEmailText}`;
+            document.getElementById('notifTextoCorpo').textContent = `📧 E-MAIL GERADO COM SUCESSO!\n\n${assunto}\n\n${corpoEmailText}`;
             document.getElementById('modalSmsNotif').classList.remove('hidden');
 
-            window.exibirToast("E-mail Disparado!", `Notificação enviada com sucesso!`, ehCritica ? "🚨" : "🟡");
+            window.exibirToast("Alerta Criado!", "E-mail de notificação gerado.", "📧");
         };
 
-        window.limparNomeFornecedor = function(nome) {
-            return String(nome || '').trim().toUpperCase();
-        };
-
-        window.obterListaNomesFornecedores = function() {
-            const conjunto = new Set(["CSN", "USIMINAS", "MULTILOG", "ARCELORMITTAL", "5 ESTRELAS", "ADERE"]);
-            (window.ymsStore.agendamentos || []).forEach(ag => { if(ag.fornecedor) conjunto.add(ag.fornecedor); });
-            return Array.from(conjunto).sort();
-        };
-
-        // LEITURA DO FIREBASE PROTEGIDA POR TRY/CATCH
+        // LEITURA DO FIREBASE
         function inicializarEscutadoresFirebase() {
             try {
                 onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
@@ -600,17 +547,15 @@ Disparado para: ${destinatarios}
                         window.ymsStore.agendamentos = [];
                     }
                     window.renderizarGradePCP();
+                    window.renderizarModuloFiscal();
                 });
             } catch(e) {
-                console.error("Erro ao ler Firebase:", e);
-                window.renderizarGradePCP();
+                console.error("Erro no Firebase:", e);
             }
         }
 
         window.salvarAgendamentosNaMemoria = function() {
-            try {
-                set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos);
-            } catch(e) { console.error("Erro ao salvar:", e); }
+            set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos);
         };
 
         window.selecionarTipoCarga = function(tipo) {
@@ -619,9 +564,9 @@ Disparado para: ${destinatarios}
             const btnExtra = document.getElementById('btnTipoExtra');
             const btnCritica = document.getElementById('btnTipoCritica');
 
-            btnCotidiano.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-emerald-400 flex flex-col items-center gap-0.5 cursor-pointer";
-            btnExtra.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer";
-            btnCritica.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            btnCotidiano.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            btnExtra.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            btnCritica.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 flex flex-col items-center gap-0.5 cursor-pointer";
 
             document.getElementById('boxMotivoExtra').classList.add('hidden');
             document.getElementById('boxDadosMotorista').classList.add('hidden');
@@ -648,17 +593,40 @@ Disparado para: ${destinatarios}
             if (preview) preview.textContent = window.tipoCargaAtivo === 'critica' ? 'CSN-CRITICO' : 'CSN';
         };
 
+        // 2️⃣ CRIAR CARGA MANUAL COM AS FLAGS CERTAS
         window.criarJanelaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
-            const fornSel = "CSN";
             const tipoOp = window.tipoCargaAtivo;
-            let novaOrdem = tipoOp === 'critica' ? `${fornSel}-CRITICO` : `ORD-${Date.now().toString().slice(-4)}`;
+            const fornSel = "CSN";
+            
+            let novaOrdem = "", prioridade = 99, nfExibicao = "";
+
+            if (tipoOp === 'critica') {
+                novaOrdem = `${fornSel}-CRITICO`;
+                prioridade = 1;
+                nfExibicao = "🔴 CRÍTICO / PN-882910";
+            } else if (tipoOp === 'extra') {
+                novaOrdem = `${fornSel}-EX-${Math.floor(100 + Math.random() * 900)}`;
+                prioridade = 50;
+                nfExibicao = "CARGA_EXTRA";
+            } else {
+                novaOrdem = `ORD-${Date.now().toString().slice(-4)}`;
+                nfExibicao = "A CONFIRMAR";
+            }
 
             const item = {
-                ordem: novaOrdem, data: "27/07/2026", fornecedor: fornSel, doca: "Doca - (04N/06N)",
-                horaIni: "12:15", horaFim: "13:00", tipoOperacao: tipoOp.toUpperCase(),
-                prioridadeFila: tipoOp === 'critica' ? 1 : 99, status: "CONFIRMADO_FORNECEDOR",
-                motorista: "Fernando Junkes", cpf: "10847778940",
+                ordem: novaOrdem, 
+                data: "27/07/2026", 
+                fornecedor: fornSel, 
+                doca: "Doca - (04N/06N)",
+                horaIni: tipoOp === 'critica' ? "IMEDIATO" : "12:15", 
+                horaFim: tipoOp === 'critica' ? "IMEDIATO" : "13:00", 
+                tipoOperacao: tipoOp.toUpperCase(),
+                prioridadeFila: prioridade, 
+                status: "CONFIRMADO_FORNECEDOR",
+                nf: nfExibicao,
+                motorista: "Fernando Junkes", 
+                cpf: "10847778940",
                 detalhesCriticidade: { partNumber: "PN-882910", motivo: "Parada de Linha F3" }
             };
 
@@ -667,8 +635,6 @@ Disparado para: ${destinatarios}
 
             if (tipoOp === 'critica' || tipoOp === 'extra') {
                 window.dispararEmailCriticoEmMassa(item);
-            } else {
-                window.exibirToast("Janela Salva!", `Agendamento ${novaOrdem} registrado.`, "🟢");
             }
 
             window.renderizarGradePCP();
@@ -682,15 +648,10 @@ Disparado para: ${destinatarios}
             const listaExibicao = window.ymsStore.agendamentos || [];
             document.getElementById('contadorJanelas').textContent = listaExibicao.length;
 
-            if (listaExibicao.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela cadastrada no sistema.</p>`;
-                return;
-            }
-
             listaExibicao.forEach(item => {
                 let badgeTipoOp = '';
                 if (item.tipoOperacao === 'CRITICA' || (item.ordem && item.ordem.includes('CRITICO'))) {
-                    badgeTipoOp = `<span class="bg-red-600 text-white font-black text-[9px] px-2 py-0.5 rounded font-mono animate-pulse">🔴 CRÍTICA (#1 TOPO)</span>`;
+                    badgeTipoOp = `<span class="bg-red-600 text-white font-black text-[9px] px-2 py-0.5 rounded font-mono animate-pulse">🔴 CRÍTICA</span>`;
                 }
 
                 container.insertAdjacentHTML('beforeend', `
@@ -712,6 +673,43 @@ Disparado para: ${destinatarios}
             });
         };
 
+        // 3️⃣ RENDERIZAR TRIAGEM FISCAL COM BADGE "🔴 CRÍTICO"
+        window.renderizarModuloFiscal = function() {
+            const container = document.getElementById('listaPatioFiscal');
+            if (!container) return;
+            container.innerHTML = "";
+            
+            const emPatio = window.ymsStore.agendamentos.filter(i => i.status === 'CHECKIN_PATIO' || i.status === 'CONFIRMADO_FORNECEDOR');
+            document.getElementById('badgeQtdPatio').textContent = emPatio.length;
+
+            emPatio.forEach(item => {
+                const isSel = item.ticket === window.ymsStore.ticketAtivoFiscal;
+                const isCritico = item.tipoOperacao === 'CRITICA' || item.prioridadeFila === 1;
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div onclick="selecionarTicketFiscal('${item.ticket || item.ordem}')" class="${isSel ? 'bg-purple-950 border-2 border-purple-500' : 'bg-slate-900 border border-slate-700'} p-3 rounded-xl cursor-pointer transition">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="bg-purple-600 text-white font-mono text-xs px-2 py-0.5 rounded">${item.ticket || 'CHECK-IN'}</span>
+                            ${isCritico ? '<span class="bg-red-600 text-white font-black text-[9px] px-2 py-0.5 rounded uppercase font-mono animate-pulse">🔴 CRÍTICO</span>' : ''}
+                        </div>
+                        <p class="text-xs font-black text-white">${item.cavalo || 'Fernando Junkes'}</p>
+                    </div>
+                `);
+            });
+
+            const ativo = emPatio.find(i => (i.ticket || i.ordem) === window.ymsStore.ticketAtivoFiscal);
+            if (ativo) {
+                document.getElementById('fiscMotorista').textContent = ativo.motorista || '-';
+                document.getElementById('fiscPlaca').textContent = `${ativo.cavalo || '-'} / ${ativo.carreta || '-'}`;
+                document.getElementById('fiscNf').textContent = ativo.tipoOperacao === 'CRITICA' ? `🔴 CRÍTICO / ${ativo.detalhesCriticidade?.partNumber || ''}` : (ativo.nf || '-');
+            }
+        };
+
+        window.selecionarTicketFiscal = function(t) {
+            window.ymsStore.ticketAtivoFiscal = t;
+            window.renderizarModuloFiscal();
+        };
+
         window.exibirToast = function(titulo, sub, icone = "✨") {
             const toast = document.getElementById('toast');
             document.getElementById('toastIcon').textContent = icone;
@@ -721,7 +719,12 @@ Disparado para: ${destinatarios}
             setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
         };
 
-        window.mudarPerfil = function(id) {};
+        window.mudarPerfil = function(id) {
+            document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
+            const alvo = document.getElementById(`perfil-${id}`);
+            if (alvo) alvo.classList.remove('hidden');
+        };
+
         window.fecharModalSms = function() { document.getElementById('modalSmsNotif').classList.add('hidden'); };
         window.fecharModalSmsExterno = function(e) { if (e.target.id === 'modalSmsNotif') window.fecharModalSms(); };
 
