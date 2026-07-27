@@ -6,11 +6,11 @@
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (Leitura e Geração de Excel) -->
+    <!-- SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js (Gráficos Torre de Controle) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCodeJS (Ticket Impresso do Totem) -->
+    <!-- QRCodeJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         .hidden { display: none !important; }
@@ -62,7 +62,6 @@
                 <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
             </div>
 
-            <!-- GRID DE PERFIS -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <button type="button" onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
@@ -291,7 +290,7 @@
                             
                             <div>
                                 <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Código do Material / Part Number *</label>
-                                <input type="text" id="pcpCodigoCritico" value="PN-882910 / Chapa CSN" placeholder="Ex: PN-882910" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
+                                <input type="text" id="pcpCodigoCritico" value="PN-882910" placeholder="Ex: PN-882910" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
                             </div>
 
                             <div>
@@ -443,7 +442,7 @@
 
     </div>
 
-    <!-- MODAL DE SMS / E-MAIL -->
+    <!-- MODAL DE MENSAGEM / E-MAIL -->
     <div id="modalSmsNotif" onclick="fecharModalSmsExterno(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
         <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative my-auto" onclick="event.stopPropagation()">
             <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700">
@@ -467,7 +466,7 @@
         </div>
     </div>
 
-    <!-- TOAST DE NOTIFICAÇÃO -->
+    <!-- TOAST DE NOTIFICAÇÃO GLOBAL -->
     <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50 min-w-[320px]">
         <span class="text-2xl" id="toastIcon">✨</span>
         <div>
@@ -494,6 +493,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        const listaPadraoFornecedores = [
+            "5 ESTRELAS", "ADERE", "ALEPLAST", "ARAMART", "ARCELORMITTAL", "ARMACELL",
+            "ASIBRAS", "BELENUS", "BIGFER", "BRASCABOS", "BRASKEN", "CARIBOR",
+            "CISER", "COLORFIX", "CREMER", "CSN", "DENK", "DUFERCO", "FOCUS",
+            "FORMPARTS", "INJEQUALY", "INNOVA", "KLABIN", "KNAUF", "MARCEGAGLIA",
+            "METALMA", "MULTILOG", "NIDEC", "REFREX", "SCHOTT", "TERMOTECNICA",
+            "UNIPLAST", "USIMINAS", "VIPRADO", "WEG MOTORES", "WEST ROCK"
+        ];
+
         window.ymsStore = {
             agendamentos: [],
             rascunhoAgendamentos: [],
@@ -501,8 +509,9 @@
         };
 
         window.tipoCargaAtivo = 'cotidiano';
+        const listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
 
-        // 1️⃣ DISPARO DE E-MAIL VIA MAILTO E WEBHOOK
+        // DISPARO DE E-MAIL VIA MAILTO E MODAL
         window.dispararEmailCriticoEmMassa = function(janelaItem) {
             const destinatarios = "fernando_junkes@whirlpool.com";
             const ehCritica = janelaItem.tipoOperacao === 'CRITICA';
@@ -524,7 +533,7 @@ Uma nova Carga ${ehCritica ? 'CRITICA' : 'EXTRA'} foi registrada no YMS Ecosyste
 ${ehCritica ? `- Part Number / Item: ${janelaItem.detalhesCriticidade?.partNumber || 'N/D'}\n- Motivo do Risco: ${janelaItem.detalhesCriticidade?.motivo || 'N/D'}\n- PRIORIDADE: CARGA CRITICA (Prioridade na Descarga)\n` : ''}
 Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
-            // Abre o e-mail preenchido
+            // Abre o e-mail preenchido no cliente de e-mail corporativo
             const mailtoUrl = `mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoEmailText)}`;
             window.open(mailtoUrl, '_blank');
 
@@ -534,6 +543,30 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             document.getElementById('modalSmsNotif').classList.remove('hidden');
 
             window.exibirToast("Alerta Criado!", "E-mail de notificação gerado.", "📧");
+        };
+
+        // POPULAR E FILTRAR FORNECEDORES
+        window.popularSelectFornecedores = function(lista) {
+            const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
+            selForn.innerHTML = "";
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f;
+                opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+            const badge = document.getElementById('lblContadorForn');
+            if (badge) badge.textContent = `(${lista.length} CADASTRADOS)`;
+        };
+
+        window.filtrarOpcoesFornecedor = function() {
+            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
+            const filtrados = listaPadraoFornecedores.filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectFornecedores(filtrados);
+            window.atualizarPreviewJanela();
         };
 
         // LEITURA DO FIREBASE
@@ -563,6 +596,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             const btnCotidiano = document.getElementById('btnTipoCotidiano');
             const btnExtra = document.getElementById('btnTipoExtra');
             const btnCritica = document.getElementById('btnTipoCritica');
+            const btnSubmit = document.getElementById('btnSubmitFormPcp');
 
             btnCotidiano.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 flex flex-col items-center gap-0.5 cursor-pointer";
             btnExtra.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 flex flex-col items-center gap-0.5 cursor-pointer";
@@ -575,68 +609,122 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
             if (tipo === 'cotidiano') {
                 btnCotidiano.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                btnSubmit.innerHTML = `<span>➕</span> ADICIONAR À GRADE DE RASCUNHO`;
+                btnSubmit.className = "w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2";
             } else if (tipo === 'extra') {
                 btnExtra.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-500 border-amber-400 text-slate-950 shadow flex flex-col items-center gap-0.5 cursor-pointer";
                 document.getElementById('boxMotivoExtra').classList.remove('hidden');
                 document.getElementById('boxDadosMotorista').classList.remove('hidden');
+                btnSubmit.innerHTML = `<span>📧</span> LANÇAR EXTRA & DISPARAR E-MAIL`;
+                btnSubmit.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2 border-b-4 border-amber-700";
             } else if (tipo === 'critica') {
                 btnCritica.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
                 document.getElementById('boxDadosMotorista').classList.remove('hidden');
                 document.getElementById('boxCamposCriticos').classList.remove('hidden');
                 document.getElementById('boxQuadroHorarios').classList.add('hidden');
+                btnSubmit.innerHTML = `<span>🚨</span> LANÇAR CRÍTICA & DISPARAR E-MAIL`;
+                btnSubmit.className = "w-full bg-red-600 hover:bg-red-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2 border-b-4 border-red-800";
             }
             window.atualizarPreviewJanela();
         };
 
         window.atualizarPreviewJanela = function() {
+            const fornSel = document.getElementById('inpFornecedor')?.value || "CSN";
             const preview = document.getElementById('previewNumeroJanela');
-            if (preview) preview.textContent = window.tipoCargaAtivo === 'critica' ? 'CSN-CRITICO' : 'CSN';
+            if (!preview) return;
+            if (window.tipoCargaAtivo === 'critica') {
+                preview.textContent = `${fornSel}-CRITICO`;
+            } else if (window.tipoCargaAtivo === 'extra') {
+                preview.textContent = `${fornSel}-EX-101`;
+            } else {
+                preview.textContent = fornSel;
+            }
         };
 
-        // 2️⃣ CRIAR CARGA MANUAL COM AS FLAGS CERTAS
+        // CRIAR CARGA MANUAL
         window.criarJanelaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const tipoOp = window.tipoCargaAtivo;
-            const fornSel = "CSN";
-            
+            const fornSel = document.getElementById('inpFornecedor').value || "CSN";
+            const docaSel = document.getElementById('inpDoca').value || listaTodasDocas[0];
+            const dataSel = document.getElementById('inpData').value || "2026-07-27";
+            const partesData = dataSel.split('-');
+            const dataForm = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+
             let novaOrdem = "", prioridade = 99, nfExibicao = "";
+            let codPN = document.getElementById('pcpCodigoCritico').value || "PN-882910";
+            let motCritico = document.getElementById('pcpMotivoCritico').value || "Parada de Linha";
 
             if (tipoOp === 'critica') {
                 novaOrdem = `${fornSel}-CRITICO`;
                 prioridade = 1;
-                nfExibicao = "🔴 CRÍTICO / PN-882910";
+                nfExibicao = `🔴 CRÍTICO / ${codPN}`;
             } else if (tipoOp === 'extra') {
                 novaOrdem = `${fornSel}-EX-${Math.floor(100 + Math.random() * 900)}`;
                 prioridade = 50;
                 nfExibicao = "CARGA_EXTRA";
             } else {
-                novaOrdem = `ORD-${Date.now().toString().slice(-4)}`;
+                const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
+                novaOrdem = `ORD-${proxId}`;
                 nfExibicao = "A CONFIRMAR";
             }
 
             const item = {
                 ordem: novaOrdem, 
-                data: "27/07/2026", 
+                data: dataForm, 
                 fornecedor: fornSel, 
-                doca: "Doca - (04N/06N)",
-                horaIni: tipoOp === 'critica' ? "IMEDIATO" : "12:15", 
-                horaFim: tipoOp === 'critica' ? "IMEDIATO" : "13:00", 
+                doca: docaSel,
+                horaIni: tipoOp === 'critica' ? "IMEDIATO" : (document.getElementById('inpHora').value || "12:15"), 
+                horaFim: tipoOp === 'critica' ? "IMEDIATO" : (document.getElementById('inpHoraFim').value || "13:00"), 
                 tipoOperacao: tipoOp.toUpperCase(),
                 prioridadeFila: prioridade, 
-                status: "CONFIRMADO_FORNECEDOR",
+                status: tipoOp === 'cotidiano' ? "AGENDADO" : "CONFIRMADO_FORNECEDOR",
+                isRascunho: tipoOp === 'cotidiano',
                 nf: nfExibicao,
-                motorista: "Fernando Junkes", 
-                cpf: "10847778940",
-                detalhesCriticidade: { partNumber: "PN-882910", motivo: "Parada de Linha F3" }
+                motorista: document.getElementById('pcpMotorista').value || "Fernando Junkes", 
+                cpf: document.getElementById('pcpCpf').value || "10847778940",
+                celular: document.getElementById('pcpCelular').value || "47992424703",
+                detalhesCriticidade: { partNumber: codPN, motivo: motCritico }
             };
 
-            window.ymsStore.agendamentos.unshift(item);
-            window.salvarAgendamentosNaMemoria();
-
-            if (tipoOp === 'critica' || tipoOp === 'extra') {
+            if (tipoOp === 'cotidiano') {
+                window.ymsStore.rascunhoAgendamentos.push(item);
+                window.exibirToast("Adicionado ao Rascunho", `Janela ${novaOrdem} pendente de subida.`, "📝");
+            } else {
+                window.ymsStore.agendamentos.unshift(item);
+                window.salvarAgendamentosNaMemoria();
                 window.dispararEmailCriticoEmMassa(item);
             }
 
+            window.renderizarGradePCP();
+        };
+
+        window.confirmarESubirJanelas = function() {
+            if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
+            window.ymsStore.rascunhoAgendamentos.forEach(r => { delete r.isRascunho; });
+            window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos);
+            window.ymsStore.rascunhoAgendamentos = [];
+            window.salvarAgendamentosNaMemoria();
+            window.renderizarGradePCP();
+            window.exibirToast("Janelas Publicadas!", "Sincronizadas com o Firebase.", "🚀");
+        };
+
+        window.limparGradeTotal = function() {
+            window.ymsStore.rascunhoAgendamentos = [];
+            window.renderizarGradePCP();
+        };
+
+        window.limparJanelasSubidas = function() {
+            if (!confirm("Tem certeza que deseja apagar todas as janelas salvas do Firebase?")) return;
+            window.ymsStore.agendamentos = [];
+            window.salvarAgendamentosNaMemoria();
+            window.renderizarGradePCP();
+        };
+
+        window.removerJanelaIndividual = function(ordem) {
+            window.ymsStore.rascunhoAgendamentos = window.ymsStore.rascunhoAgendamentos.filter(i => i.ordem !== ordem);
+            window.ymsStore.agendamentos = window.ymsStore.agendamentos.filter(i => i.ordem !== ordem);
+            window.salvarAgendamentosNaMemoria();
             window.renderizarGradePCP();
         };
 
@@ -645,35 +733,56 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (!container) return;
             container.innerHTML = "";
 
-            const listaExibicao = window.ymsStore.agendamentos || [];
+            const listaExibicao = [...window.ymsStore.rascunhoAgendamentos, ...(window.ymsStore.agendamentos || [])];
             document.getElementById('contadorJanelas').textContent = listaExibicao.length;
 
+            if (listaExibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada.</p>`;
+                document.getElementById('painelAcaoSubir').classList.add('hidden');
+                return;
+            }
+
+            if (window.ymsStore.rascunhoAgendamentos.length > 0) {
+                document.getElementById('painelAcaoSubir').classList.remove('hidden');
+            } else {
+                document.getElementById('painelAcaoSubir').classList.add('hidden');
+            }
+
             listaExibicao.forEach(item => {
+                const ehRascunho = item.isRascunho;
                 let badgeTipoOp = '';
                 if (item.tipoOperacao === 'CRITICA' || (item.ordem && item.ordem.includes('CRITICO'))) {
                     badgeTipoOp = `<span class="bg-red-600 text-white font-black text-[9px] px-2 py-0.5 rounded font-mono animate-pulse">🔴 CRÍTICA</span>`;
+                } else if (item.tipoOperacao === 'EXTRA' || (item.ordem && item.ordem.includes('-EX-'))) {
+                    badgeTipoOp = `<span class="bg-amber-500 text-slate-950 font-bold text-[9px] px-2 py-0.5 rounded font-mono">🟡 EXTRA</span>`;
                 }
 
                 container.insertAdjacentHTML('beforeend', `
-                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-md">
+                    <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
+                                ${ehRascunho ? '<span class="text-[10px] font-bold text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded">📝 RASCUNHO</span>' : ''}
                                 ${badgeTipoOp}
                                 <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
                             </div>
                             <p class="text-sm font-black text-white">📍 ${item.doca}</p>
                         </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
-                            <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                        <div class="flex items-center gap-3">
+                            <div class="text-right">
+                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
+                                <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                            </div>
+                            <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl transition text-xs cursor-pointer">🗑️</button>
                         </div>
                     </div>
                 `);
             });
+
+            window.atualizarHorariosDisponiveis();
         };
 
-        // 3️⃣ RENDERIZAR TRIAGEM FISCAL COM BADGE "🔴 CRÍTICO"
+        // RENDERIZAR TRIAGEM FISCAL COM BADGE "🔴 CRÍTICO"
         window.renderizarModuloFiscal = function() {
             const container = document.getElementById('listaPatioFiscal');
             if (!container) return;
@@ -692,7 +801,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                             <span class="bg-purple-600 text-white font-mono text-xs px-2 py-0.5 rounded">${item.ticket || 'CHECK-IN'}</span>
                             ${isCritico ? '<span class="bg-red-600 text-white font-black text-[9px] px-2 py-0.5 rounded uppercase font-mono animate-pulse">🔴 CRÍTICO</span>' : ''}
                         </div>
-                        <p class="text-xs font-black text-white">${item.cavalo || 'Fernando Junkes'}</p>
+                        <p class="text-xs font-black text-white">${item.cavalo || item.motorista || 'Fernando Junkes'}</p>
                     </div>
                 `);
             });
@@ -708,6 +817,53 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         window.selecionarTicketFiscal = function(t) {
             window.ymsStore.ticketAtivoFiscal = t;
             window.renderizarModuloFiscal();
+        };
+
+        window.atualizarHorariosDisponiveis = function() {
+            const slots = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"];
+            const grid = document.getElementById('gridTimelineHorarios');
+            const selIni = document.getElementById('inpHora');
+            if (!grid || !selIni) return;
+
+            grid.innerHTML = "";
+            selIni.innerHTML = "";
+
+            slots.forEach(s => {
+                grid.insertAdjacentHTML('beforeend', `
+                    <div onclick="document.getElementById('inpHora').value='${s}'; atualizarHorarioFimMinimo();" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 p-1 rounded text-center text-[10px] font-mono font-bold cursor-pointer transition">${s}</div>
+                `);
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = `${s}h (Livre)`;
+                selIni.appendChild(opt);
+            });
+            window.atualizarHorarioFimMinimo();
+        };
+
+        window.atualizarHorarioFimMinimo = function() {
+            const iniVal = document.getElementById('inpHora')?.value || "08:00";
+            const selFim = document.getElementById('inpHoraFim');
+            if (!selFim) return;
+            selFim.innerHTML = "";
+            const slots = ["00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "00:00"];
+            
+            slots.forEach(s => {
+                if (s > iniVal || s === "00:00") {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = `${s}h`;
+                    selFim.appendChild(opt);
+                }
+            });
+        };
+
+        window.alternarAbaPCP = function(aba) {
+            document.getElementById('conteudoIndividual').classList.add('hidden');
+            document.getElementById('conteudoMassa').classList.add('hidden');
+            document.getElementById('conteudoTexto').classList.add('hidden');
+            if (aba === 'individual') document.getElementById('conteudoIndividual').classList.remove('hidden');
+            if (aba === 'massa') document.getElementById('conteudoMassa').classList.remove('hidden');
+            if (aba === 'texto') document.getElementById('conteudoTexto').classList.remove('hidden');
         };
 
         window.exibirToast = function(titulo, sub, icone = "✨") {
@@ -729,6 +885,20 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         window.fecharModalSmsExterno = function(e) { if (e.target.id === 'modalSmsNotif') window.fecharModalSms(); };
 
         window.addEventListener('DOMContentLoaded', () => {
+            const hojeIso = "2026-07-27";
+            if (document.getElementById('inpData')) document.getElementById('inpData').value = hojeIso;
+
+            const selDoca = document.getElementById('inpDoca');
+            if (selDoca) {
+                selDoca.innerHTML = "";
+                listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    selDoca.appendChild(opt);
+                });
+            }
+
+            window.popularSelectFornecedores(listaPadraoFornecedores);
             inicializarEscutadoresFirebase();
         });
     </script>
