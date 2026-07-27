@@ -75,7 +75,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR DE NAVEGAÇÃO -->
+    <!-- HEADER SUPERIOR DE NAVEGAÇÃO -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -125,7 +125,7 @@
                             <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
                         </div>
 
-                        <!-- 🟢🟡🔴 BOTOES PROCESSO DE SELECAO DE CARGA -->
+                        <!-- 🟢🟡🔴 BOTÕES DO PROCESSO DE SELEÇÃO DE CARGA -->
                         <div>
                             <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -240,7 +240,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
+                        <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
                             <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
                         </button>
                     </div>
@@ -261,13 +261,14 @@
             </div>
         </section>
 
-        <!-- MÓDULO 2: PORTAL DO FORNECEDOR (RESTAURADO COMPLETO) -->
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR -->
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
             <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-black text-white">🏢 Portal do Fornecedor</h2>
                     <p class="text-xs text-slate-400">Gerenciamento de Agendamentos, Confirmação de Cargas e Pré-Cadastro</p>
                 </div>
+                <span class="bg-indigo-600/20 text-indigo-400 text-xs font-bold px-3 py-1.5 rounded-xl border border-indigo-500/30">Agendamentos Ativos</span>
             </div>
             <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
                 <div class="overflow-x-auto">
@@ -289,7 +290,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 3: TOTEM PORTARIA (RESTAURADO COMPLETO) -->
+        <!-- MÓDULO 3: TOTEM PORTARIA -->
         <section id="perfil-totem" class="perfil-modulo flex-1 max-w-3xl w-full mx-auto p-6 hidden space-y-6">
             <div class="bg-slate-800/90 rounded-3xl p-8 border border-slate-700/80 shadow-2xl text-center space-y-4">
                 <span class="text-5xl inline-block">🏭</span>
@@ -306,36 +307,62 @@
 
         <!-- MÓDULO 4: TRIAGEM FISCAL -->
         <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-black text-white">📑 Triagem Fiscal & Conferência</h2>
+                    <p class="text-xs text-slate-400">Validação de Chaves de Nota Fiscal, Peso e Liberação para Doca</p>
+                </div>
+            </div>
             <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
-                <h2 class="text-xl font-black text-white">📑 Triagem Fiscal & Conferência</h2>
+                <p class="text-xs text-slate-400 text-center py-6">Fila de triagem fiscal aguardando entrada de motoristas.</p>
             </div>
         </section>
 
         <!-- MÓDULO 5: OPERADOR DOCA -->
         <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
-            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
-                <h2 class="text-xl font-black text-white">🚛 Operação de Doca</h2>
+            <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-black text-white">🚛 Operação de Doca & Carregamento</h2>
+                    <p class="text-xs text-slate-400">Início de Descarregamento, Fim de Carga e Liberação do Veículo</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-amber-400 block mb-2">📍 Doca - (04N/06N)</span>
+                    <p class="text-xs text-slate-400">Status: <span class="text-emerald-400 font-bold">LIVRE</span></p>
+                </div>
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-amber-400 block mb-2">📍 Doca - 1 F2 (7S)</span>
+                    <p class="text-xs text-slate-400">Status: <span class="text-emerald-400 font-bold">LIVRE</span></p>
+                </div>
+                <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-amber-400 block mb-2">📍 Doca - Basico F3 (CS1)</span>
+                    <p class="text-xs text-slate-400">Status: <span class="text-emerald-400 font-bold">LIVRE</span></p>
+                </div>
             </div>
         </section>
 
-        <!-- MÓDULO 6: CHECK-OUT -->
+        <!-- MÓDULO 6: CHECK-OUT PORTARIA -->
         <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
             <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
-                <h2 class="text-xl font-black text-white">🚪 Check-out de Portaria</h2>
+                <h2 class="text-xl font-black text-white mb-1">🚪 Check-out de Portaria</h2>
+                <p class="text-xs text-slate-400">Registro de saída e liberação de veículos do pátio</p>
             </div>
         </section>
 
         <!-- MÓDULO 7: CADASTRO MOTORISTAS -->
         <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
             <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
-                <h2 class="text-xl font-black text-white">🪪 Base de Motoristas</h2>
+                <h2 class="text-xl font-black text-white mb-1">🪪 Cadastros & Base de Motoristas</h2>
+                <p class="text-xs text-slate-400">Histórico de condutores e dados de contato</p>
             </div>
         </section>
 
         <!-- MÓDULO 8: TORRE DE CONTROLE -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
             <div class="bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl">
-                <h2 class="text-xl font-black text-white">📡 Torre de Controle & Indicadores</h2>
+                <h2 class="text-xl font-black text-white mb-1">📡 Torre de Controle & Indicadores YMS</h2>
+                <p class="text-xs text-slate-400">Visão geral do pátio, métricas de permanência e SLA de docas</p>
             </div>
         </section>
     </div>
@@ -346,7 +373,7 @@
         <div><p class="font-bold text-sm" id="toastTitulo">Notificação</p><p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p></div>
     </div>
 
-    <!-- SCRIPT CENTRAL E LISTA MESTRE DE FORNECEDORES -->
+    <!-- SCRIPT CENTRAL COM FIREBASE REALTIME -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -456,7 +483,7 @@
             document.getElementById('conteudoTexto').classList.toggle('hidden', aba !== 'texto');
         };
 
-        // CONTROLE DOS 3 TIPOS DE CARGA
+        // CONTROLE DOS 3 TIPOS DE CARGA (COTIDIANO / EXTRA / CRÍTICA)
         window.selecionarTipoCarga = function(tipo) {
             window.tipoCargaAtivo = tipo;
             const bCotidiano = document.getElementById('btnTipoCotidiano');
@@ -657,7 +684,7 @@
 
             const ags = window.ymsStore.agendamentos;
             if (!ags || ags.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento ativo.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento ativo no sistema.</td></tr>`;
                 return;
             }
 
