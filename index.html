@@ -6,7 +6,7 @@
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS -->
+    <!-- SheetJS (Leitura e Geração de Excel) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -92,6 +92,7 @@
                         <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
                     </div>
 
+                    <!-- ABA MANUAL -->
                     <div id="conteudoIndividual" class="space-y-3.5">
                         <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
                             <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
@@ -192,7 +193,7 @@
                             </div>
                         </div>
 
-                        <!-- QUADRO DE HORÁRIOS COM CONEXÃO REAL AOS OCUPADOS -->
+                        <!-- QUADRO DE HORÁRIOS -->
                         <div id="boxQuadroHorarios" class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px] font-bold">
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
@@ -223,14 +224,27 @@
                         </button>
                     </div>
 
+                    <!-- ABA SUBIDA DE PLANILHA (REATIVADA) -->
                     <div id="conteudoMassa" class="space-y-4 hidden">
-                        <div id="dropZonePlanilha" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 rounded-2xl p-8 text-center cursor-pointer">
-                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui</p>
+                        <div id="dropZonePlanilha" 
+                             onclick="document.getElementById('fileInput').click()" 
+                             ondragover="tratarDragOver(event)" 
+                             ondragleave="tratarDragLeave(event)" 
+                             ondrop="tratarDrop(event)"
+                             class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition">
+                            <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
+                            <div class="text-4xl mb-3">📂</div>
+                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
+                            <p class="text-[11px] text-slate-400">Suporta arquivos Excel (.xlsx, .xls e .csv)</p>
                         </div>
                     </div>
 
+                    <!-- ABA COLAR TEXTO (REATIVADA) -->
                     <div id="conteudoTexto" class="space-y-3 hidden">
-                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none"></textarea>
+                        <textarea id="txtBruto" rows="6" placeholder="Cole aqui o texto ou extrato das janelas..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
+                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">
+                            ⚡ PROCESSAR TEXTO PARA RASCUNHO
+                        </button>
                     </div>
                 </div>
             </div>
@@ -455,11 +469,9 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             const selIni = document.getElementById('inpHora');
             if (!grid || !selIni || !dataSelRaw || !docaSel) return;
 
-            // Formata data YYYY-MM-DD -> DD/MM/YYYY para comparação
             const p = dataSelRaw.split('-');
             const dataForm = `${p[2]}/${p[1]}/${p[0]}`;
 
-            // Busca todos os agendamentos ocupando essa doca no dia
             const agendadosDocaDia = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])].filter(ag => {
                 return ag.doca === docaSel && ag.data === dataForm && ag.horaIni !== 'IMEDIATO';
             });
@@ -517,6 +529,98 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     selFim.appendChild(opt);
                 }
             });
+        };
+
+        // 📂 LEITURA DE PLANILHAS E DRAG & DROP REATIVADOS
+        window.tratarDragOver = function(e) { e.preventDefault(); e.stopPropagation(); };
+        window.tratarDragLeave = function(e) { e.preventDefault(); e.stopPropagation(); };
+        window.tratarDrop = function(e) {
+            e.preventDefault(); e.stopPropagation();
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) window.processarArquivoEspecifico(files[0]);
+        };
+
+        window.lerPlanilhaExcel = function(event) {
+            const file = event.target.files[0];
+            if (file) window.processarArquivoEspecifico(file);
+        };
+
+        window.processarArquivoEspecifico = function(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                if (!json || json.length === 0) {
+                    alert("A planilha selecionada está vazia.");
+                    return;
+                }
+
+                let inseridos = 0;
+                json.forEach((row) => {
+                    let keys = Object.keys(row);
+                    let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
+                    let fornNome = kForn ? String(row[kForn]).trim().toUpperCase() : "FORNECEDOR";
+                    let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
+                    let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
+                    let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
+                    let dataTxt = kData ? String(row[kData]).trim() : "27/07/2026";
+
+                    const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
+                    window.ymsStore.rascunhoAgendamentos.push({
+                        ordem: `ORD-${proxId}`,
+                        data: dataTxt,
+                        fornecedor: fornNome,
+                        doca: docaNome,
+                        horaIni: "08:00",
+                        horaFim: "09:00",
+                        tipoOperacao: 'COTIDIANO',
+                        prioridadeFila: 99,
+                        status: "AGENDADO",
+                        isRascunho: true,
+                        nf: "A CONFIRMAR"
+                    });
+                    inseridos++;
+                });
+
+                window.renderizarGradePCP();
+                window.exibirToast("Planilha Processada!", `${inseridos} janelas lidas para rascunho.`, "📊");
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        window.processarTextoBruto = function() {
+            const txt = document.getElementById('txtBruto').value.trim();
+            if (!txt) {
+                alert("Cole o texto das janelas antes de processar.");
+                return;
+            }
+            const linhas = txt.split('\n');
+            let count = 0;
+            linhas.forEach((linha) => {
+                if (linha.trim()) {
+                    const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
+                    window.ymsStore.rascunhoAgendamentos.push({
+                        ordem: `ORD-${proxId}`,
+                        data: "27/07/2026",
+                        fornecedor: "CSN",
+                        doca: listaTodasDocas[0],
+                        horaIni: "08:00",
+                        horaFim: "09:00",
+                        tipoOperacao: 'COTIDIANO',
+                        prioridadeFila: 99,
+                        status: "AGENDADO",
+                        isRascunho: true,
+                        nf: "A CONFIRMAR"
+                    });
+                    count++;
+                }
+            });
+
+            window.renderizarGradePCP();
+            window.exibirToast("Texto Processado!", `${count} janelas geradas no rascunho.`, "📋");
         };
 
         // FIREBASE ESCUTADORES
@@ -765,12 +869,28 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         };
 
         window.alternarAbaPCP = function(aba) {
+            const btnInd = document.getElementById('tabIndividualBtn');
+            const btnMas = document.getElementById('tabMassaBtn');
+            const btnTxt = document.getElementById('tabTextoBtn');
+
+            btnInd.className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            btnMas.className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            btnTxt.className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+
             document.getElementById('conteudoIndividual').classList.add('hidden');
             document.getElementById('conteudoMassa').classList.add('hidden');
             document.getElementById('conteudoTexto').classList.add('hidden');
-            if (aba === 'individual') document.getElementById('conteudoIndividual').classList.remove('hidden');
-            if (aba === 'massa') document.getElementById('conteudoMassa').classList.remove('hidden');
-            if (aba === 'texto') document.getElementById('conteudoTexto').classList.remove('hidden');
+
+            if (aba === 'individual') {
+                btnInd.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoIndividual').classList.remove('hidden');
+            } else if (aba === 'massa') {
+                btnMas.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoMassa').classList.remove('hidden');
+            } else if (aba === 'texto') {
+                btnTxt.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoTexto').classList.remove('hidden');
+            }
         };
 
         window.exibirToast = function(titulo, sub, icone = "✨") {
