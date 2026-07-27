@@ -2027,42 +2027,92 @@
         window.tratarDrop = function(e) { e.preventDefault(); window.tratarDragLeave(e); if (e.dataTransfer.files?.length > 0) window.processarArquivoEspecifico(e.dataTransfer.files[0]); };
         window.lerPlanilhaExcel = function(e) { if (e.target.files[0]) window.processarArquivoEspecifico(e.target.files[0]); };
 
-        window.processarArquivoEspecifico = function(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: false });
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false });
-                if (!json || json.length === 0) { alert("Planilha vazia."); return; }
-                let inseridos = 0, primeiraDataValida = null;
-                json.forEach((row) => {
-                    let keys = Object.keys(row);
-                    let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
-                    let fornNome = kForn ? window.limparNomeFornecedor(row[kForn]) : "FORNECEDOR";
-                    let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
-                    let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
-                    let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
-                    let dataTxt = kData ? window.normalizarDataUniversal(row[kData]) : window.obterDataHojePtBR();
-                    if (!primeiraDataValida) primeiraDataValida = dataTxt;
-                    let kIni = keys.find(k => k.match(/entrada|inicio|início|hora.*ini|start/i));
-                    let kFim = keys.find(k => k.match(/saida|saída|fim|hora.*fim|end/i));
-                    let hIni = kIni && row[kIni] ? String(row[kIni]).trim() : "08:00";
-                    let hFim = kFim && row[kFim] ? String(row[kFim]).trim() : "09:00";
-                    const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
-                    window.ymsStore.rascunhoAgendamentos.push({
-                        ordem: `ORD-${proxId}`, data: dataTxt, fornecedor: fornNome, doca: docaNome,
-                        horaIni: hIni, horaFim: hFim, tipoOperacao: 'COTIDIANO', prioridadeFila: 99, status: "AGENDADO", isRascunho: true, nf: "A CONFIRMAR"
-                    });
-                    inseridos++;
-                });
-                if (primeiraDataValida && document.getElementById('inpData')) document.getElementById('inpData').value = window.normalizarDataParaISO(primeiraDataValida);
-                window.garantirTodosFornecedoresNaLista();
-                window.renderizarGradePCP();
-                window.exibirToast("Planilha Processada!", `${inseridos} janelas lidas.`, "📊");
-            };
-            reader.readAsArrayBuffer(file);
-        };
+       window.processarArquivoEspecifico = function(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: false });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, { raw: false });
 
+        if (!json || json.length === 0) {
+            alert("A planilha selecionada está vazia.");
+            return;
+        }
+
+        let inseridos = 0;
+        let bloqueadosDataAntiga = 0;
+        let primeiraDataValida = null;
+
+        json.forEach((row) => {
+            let keys = Object.keys(row);
+            let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
+            let dataTxt = kData ? window.normalizarDataUniversal(row[kData]) : window.obterDataHojePtBR();
+
+            // 🛑 TRAVA DE SEGURANÇA: Se a data for passada, não entra no rascunho
+            if (window.dataEhPassada(dataTxt)) {
+                bloqueadosDataAntiga++;
+                return;
+            }
+
+            let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
+            let fornNome = kForn ? window.limparNomeFornecedor(row[kForn]) : "FORNECEDOR";
+
+            let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
+            let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
+
+            if (!primeiraDataValida) primeiraDataValida = dataTxt;
+
+            let kIni = keys.find(k => k.match(/entrada|inicio|início|hora.*ini|start|de\b/i));
+            let kFim = keys.find(k => k.match(/saida|saída|fim|hora.*fim|end|até|ate/i));
+            let kGeral = keys.find(k => k.match(/hora|horário|horario|janela|slot/i));
+
+            let hIni = "08:00", hFim = "09:00";
+            if (kIni && row[kIni]) hIni = String(row[kIni]).trim();
+            if (kFim && row[kFim]) hFim = String(row[kFim]).trim();
+
+            if (kGeral && row[kGeral] && (!kIni || !kFim)) {
+                let matches = String(row[kGeral]).match(/(\d{1,2}:\d{2})\s*(?:às|as|-|a)\s*(\d{1,2}:\d{2})/i);
+                if (matches) {
+                    hIni = matches[1];
+                    hFim = matches[2];
+                }
+            }
+
+            const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
+            window.ymsStore.rascunhoAgendamentos.push({
+                ordem: `ORD-${proxId}`,
+                data: dataTxt,
+                fornecedor: fornNome,
+                doca: docaNome,
+                horaIni: hIni,
+                horaFim: hFim,
+                tipoOperacao: 'COTIDIANO',
+                prioridadeFila: 99,
+                status: "AGENDADO",
+                isRascunho: true,
+                nf: "A CONFIRMAR"
+            });
+            inseridos++;
+        });
+
+        if (primeiraDataValida) {
+            const dataIso = window.normalizarDataParaISO(primeiraDataValida);
+            const elData = document.getElementById('inpData');
+            if (elData) elData.value = dataIso;
+        }
+
+        window.garantirTodosFornecedoresNaLista();
+        window.renderizarGradePCP();
+
+        if (bloqueadosDataAntiga > 0) {
+            alert(`⚠️ ATENÇÃO:\n\n${inseridos} janelas foram importadas.\n${bloqueadosDataAntiga} janelas com DATAS PASSADAS foram bloqueadas automaticamente.`);
+        } else {
+            window.exibirToast("Planilha Processada!", `${inseridos} janelas lidas para rascunho.`, "📊");
+        }
+    };
+    reader.readAsArrayBuffer(file);
+};
         window.processarTextoBruto = function() {
             const txt = document.getElementById('txtBruto').value.trim(); if (!txt) return;
             const regex = /(\d{2}\/\d{2}\/\d{4})(.*?)(Doca\s*-\s*.*?)(?=\d{2}:\d{2})(\d{2}:\d{2})(\d{2}:\d{2})/g;
