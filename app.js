@@ -48,7 +48,7 @@ window.limparNomeFornecedor = function(nome) {
 window.normalizarDataUniversal = function(dVal) {
     if (!dVal) return window.obterDataHojePtBR();
     const num = Number(dVal);
-    if (!isNaN(num) && num > 30000) {
+    if (!isNaN(num) && num > 30000 && typeof XLSX !== 'undefined') {
         const dateObj = XLSX.SSF.parse_date_code(num);
         if (dateObj) {
             return `${String(dateObj.d).padStart(2, '0')}/${String(dateObj.m).padStart(2, '0')}/${dateObj.y}`;
@@ -130,15 +130,25 @@ function inicializarEscutadoresFirebase() {
 
 window.salvarAgendamentosNaMemoria = function() { set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos); };
 
-// 🔑 CONTROLE DE NAVEGAÇÃO E MÓDULOS
+// 🔑 CONTROLE DE ACESSO, LOGIN E PERFIS
 window.solicitarAcessoPerfil = function(perfilId) {
     window.ymsStore.perfilSolicitadoTemp = perfilId;
+    window.ymsStore.usuarioLogado = perfilId.toUpperCase();
+    const lblUser = document.getElementById('lblNomeUsuarioLogado');
+    if (lblUser) lblUser.textContent = `Sair (${perfilId.toUpperCase()})`;
+
     window.mudarPerfil(perfilId);
     const modal = document.getElementById('modalLoginGlobal');
     if (modal) modal.classList.add('hidden');
+    window.exibirToast("Acesso Concedido", `Módulo ${perfilId.toUpperCase()} ativado.`, "🔓");
 };
 
 window.mudarPerfil = function(perfilId) {
+    if (!window.ymsStore.usuarioLogado) {
+        window.abrirModalLogin();
+        return;
+    }
+
     document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.btn-perfil').forEach(btn => {
         btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
@@ -155,11 +165,111 @@ window.mudarPerfil = function(perfilId) {
     }
 };
 
-window.fazerLogoutGlobal = function() {
-    window.ymsStore.usuarioLogado = null;
+window.abrirModalLogin = function() {
     const modal = document.getElementById('modalLoginGlobal');
     if (modal) modal.classList.remove('hidden');
+};
+
+window.fazerLogoutGlobal = function() {
+    window.ymsStore.usuarioLogado = null;
+    const lblUser = document.getElementById('lblNomeUsuarioLogado');
+    if (lblUser) lblUser.textContent = "Sair";
+    window.abrirModalLogin();
     window.exibirToast("Sessão Encerrada", "Selecione um perfil para acessar.", "🔒");
+};
+
+// 📊 ALTERNÂNCIA DE ABAS NO PCP (Manual / Subida de Planilha / Colar Texto)
+window.alternarAbaPCP = function(aba) {
+    const cInd = document.getElementById('conteudoIndividual');
+    const cMas = document.getElementById('conteudoMassa');
+    const cTxt = document.getElementById('conteudoTexto');
+    const bInd = document.getElementById('tabIndividualBtn');
+    const bMas = document.getElementById('tabMassaBtn');
+    const bTxt = document.getElementById('tabTextoBtn');
+
+    [cInd, cMas, cTxt].forEach(el => el?.classList.add('hidden'));
+    [bInd, bMas, bTxt].forEach(b => {
+        if(b) b.className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+    });
+
+    if (aba === 'individual' && cInd && bInd) {
+        cInd.classList.remove('hidden');
+        bInd.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+    } else if (aba === 'massa' && cMas && bMas) {
+        cMas.classList.remove('hidden');
+        bMas.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+    } else if (aba === 'texto' && cTxt && bTxt) {
+        cTxt.classList.remove('hidden');
+        bTxt.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+    }
+};
+
+// 📁 LEITURA DE PLANILHAS (EXCEL / CSV)
+window.tratarDragOver = function(e) { e.preventDefault(); };
+window.tratarDragLeave = function(e) { e.preventDefault(); };
+window.tratarDrop = function(e) {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        window.processarArquivoPlanilha(e.dataTransfer.files[0]);
+    }
+};
+
+window.lerPlanilhaExcel = function(e) {
+    if (e.target.files && e.target.files[0]) {
+        window.processarArquivoPlanilha(e.target.files[0]);
+    }
+};
+
+window.processarArquivoPlanilha = function(file) {
+    if (typeof XLSX === 'undefined') {
+        alert("Erro: A biblioteca de leitura de Excel não carregou. Recarregue a página.");
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        try {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+            if (!jsonRows || jsonRows.length === 0) {
+                alert("A planilha importada está vazia!");
+                return;
+            }
+
+            let adicionadas = 0;
+            jsonRows.forEach((row, index) => {
+                const forn = window.limparNomeFornecedor(row.Fornecedor || row.FORNECEDOR || row.fornecedor || 'FORNECEDOR PLANILHA');
+                const doca = row.Doca || row.DOCA || row.doca || window.listaTodasDocas[0];
+                const rawData = row.Data || row.DATA || row.data || window.obterDataHojePtBR();
+                const horaIni = String(row.HoraIni || row.INICIO || row["Hora Inicio"] || row["Hora Início"] || "08:00").trim();
+                const horaFim = String(row.HoraFim || row.FIM || row["Hora Fim"] || "09:00").trim();
+
+                const novaOrdem = `ORD-EXCEL-${Date.now()}-${index}`;
+                window.ymsStore.rascunhoAgendamentos.push({
+                    ordem: novaOrdem,
+                    data: window.normalizarDataUniversal(rawData),
+                    fornecedor: forn,
+                    doca: doca,
+                    horaIni: horaIni,
+                    horaFim: horaFim,
+                    tipoOperacao: "COTIDIANO",
+                    status: "AGENDADO",
+                    isRascunho: true
+                });
+                adicionadas++;
+            });
+
+            window.renderizarGradePCP();
+            window.exibirToast("Planilha Importada!", `${adicionadas} janelas adicionadas ao Rascunho.`, "📊");
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao ler a planilha. Verifique se o formato é válido (.xlsx, .xls ou .csv).");
+        }
+    };
+    reader.readAsArrayBuffer(file);
 };
 
 window.limparJanelasSubidas = function() {
@@ -169,6 +279,12 @@ window.limparJanelasSubidas = function() {
         window.renderizarGradePCP();
         window.exibirToast("Banco Zerado!", "Todas as janelas foram excluídas.", "🗑️");
     }
+};
+
+window.limparGradeTotal = function() {
+    window.ymsStore.rascunhoAgendamentos = [];
+    window.renderizarGradePCP();
+    window.exibirToast("Rascunho Limpo", "Rascunho de janelas foi esvaziado.", "🧹");
 };
 
 window.selecionarTipoCarga = function(tipo) {
@@ -372,10 +488,11 @@ window.renderizarGradePCP = function() {
     else document.getElementById('painelAcaoSubir')?.classList.add('hidden');
 
     todas.forEach(item => {
+        const tagRascunho = item.isRascunho ? `<span class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-500/30 ml-2">📝 RASCUNHO</span>` : '';
         container.insertAdjacentHTML('beforeend', `
             <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow">
                 <div>
-                    <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
+                    <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span> ${tagRascunho}
                     <p class="text-sm font-black text-white mt-1">📍 ${item.doca}</p>
                 </div>
                 <div class="text-right">
@@ -414,6 +531,9 @@ function iniciarAplicacao() {
             const opt = document.createElement('option'); opt.value = d; opt.textContent = d; selDoca.appendChild(opt);
         });
     }
+
+    // 🔒 EXIBE O MODAL DE LOGIN IMEDIATAMENTE NA ENTRADA
+    window.abrirModalLogin();
 
     window.atualizarHorariosDisponiveis();
     inicializarEscutadoresFirebase();
