@@ -149,7 +149,7 @@
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR DE NAVEGAÇÃO -->
+    <!-- BARRA SUPERIOR -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -184,7 +184,7 @@
 
     <div class="flex-1 flex flex-col">
 
-        <!-- MÓDULO 1: PCP PROGRAMADOR -->
+        <!-- MÓDULO 1: PCP PROGRAMADOR (UNIFICADO) -->
         <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6">
             <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
@@ -202,21 +202,28 @@
                             </span>
                         </div>
 
+                        <!-- 🔀 1. SELETOR DO TIPO DE OPERAÇÃO -->
                         <div>
-                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
+                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">
+                                ⚡ SELECIONE O TIPO DE OPERAÇÃO *
+                            </label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
                                 <button type="button" id="btnTipoCotidiano" onclick="selecionarTipoCarga('cotidiano')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟢</span><span>Cotidiano</span>
+                                    <span>🟢</span>
+                                    <span>Cotidiano</span>
                                 </button>
                                 <button type="button" id="btnTipoExtra" onclick="selecionarTipoCarga('extra')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟡</span><span>Extra</span>
+                                    <span>🟡</span>
+                                    <span>Extra</span>
                                 </button>
                                 <button type="button" id="btnTipoCritica" onclick="selecionarTipoCarga('critica')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🔴</span><span>Crítica</span>
+                                    <span>🔴</span>
+                                    <span>Crítica</span>
                                 </button>
                             </div>
                         </div>
 
+                        <!-- FORNECEDOR -->
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
@@ -232,6 +239,7 @@
                             </div>
                         </div>
 
+                        <!-- DOCA E DATA -->
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Doca de Recebimento *</label>
@@ -243,8 +251,11 @@
                             </div>
                         </div>
 
+                        <!-- 🟡 MOTIVO DE PRÉ-SELEÇÃO PARA CARGA EXTRA -->
                         <div id="boxMotivoExtra" class="hidden bg-amber-950/20 p-3 rounded-2xl border border-amber-500/40 space-y-1.5">
-                            <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">📋 Motivo da Inclusão da Carga Extra *</label>
+                            <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">
+                                📋 Motivo da Inclusão da Carga Extra *
+                            </label>
                             <select id="pcpMotivoExtra" class="w-full bg-slate-900 border border-amber-500/50 rounded-xl p-2 text-xs text-white font-bold outline-none cursor-pointer">
                                 <option value="Aumento de Demanda / Pico de Produção">📈 Aumento de Demanda / Pico de Produção</option>
                                 <option value="Atraso na Entrega Anterior do Fornecedor">🚚 Atraso na Entrega Anterior do Fornecedor</option>
@@ -254,8 +265,10 @@
                             </select>
                         </div>
 
+                        <!-- 👤 CAMPOS DO MOTORISTA (PREENCHIDOS PARA EXTRA E CRÍTICA) -->
                         <div id="boxDadosMotorista" class="hidden bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
                             <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">👤 Dados do Motorista (Preenchidos pelo PCP)</span>
+                            
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[9px] font-bold text-slate-400 mb-0.5">CPF do Motorista *</label>
@@ -266,24 +279,29 @@
                                     <input type="text" id="pcpCelular" value="47992424703" placeholder="(47) 99999-0000" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-yellow-400 font-bold outline-none">
                                 </div>
                             </div>
+
                             <div>
                                 <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Nome do Motorista *</label>
                                 <input type="text" id="pcpMotorista" value="Fernando Junkes" placeholder="Nome completo..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white font-bold outline-none">
                             </div>
                         </div>
 
+                        <!-- 🔴 CAMPOS ESPECÍFICOS DE CARGA CRÍTICA -->
                         <div id="boxCamposCriticos" class="hidden bg-red-950/30 p-3 rounded-2xl border border-red-500/40 space-y-2">
                             <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider block">🚨 Detalhes da Carga Crítica (Risco de Parada)</span>
+                            
                             <div>
                                 <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Código do Material / Part Number *</label>
                                 <input type="text" id="pcpCodigoCritico" value="PN-882910 / Chapa CSN" placeholder="Ex: PN-882910" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
                             </div>
+
                             <div>
                                 <label class="block text-[9px] font-bold text-red-300 uppercase mb-0.5">Motivo da Criticidade / Observação *</label>
                                 <textarea id="pcpMotivoCritico" rows="2" placeholder="Ex: Parada de linha iminente na F3." class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-slate-200 outline-none">Estoque da linha F3 encerra em 40 minutos. Descarga prioritária na chegada.</textarea>
                             </div>
                         </div>
 
+                        <!-- 🕒 QUADRO DE DISPONIBILIDADE DE HORÁRIOS (OCULTO SE FOR CRÍTICA) -->
                         <div id="boxQuadroHorarios" class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px] font-bold">
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
@@ -303,6 +321,7 @@
                             </div>
                         </div>
 
+                        <!-- PREVIEW DO CÓDIGO DA JANELA -->
                         <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                             <span class="text-slate-400 font-bold">IDENTIFICADOR DA JANELA:</span>
                             <span id="previewNumeroJanela" class="font-mono font-black text-emerald-400 bg-slate-900 px-2.5 py-0.5 rounded border border-emerald-500/30">CSN</span>
@@ -336,6 +355,7 @@
 
             <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
+                    <!-- CABEÇALHO DA GRADE COM CONTADOR -->
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
                         <div>
                             <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
@@ -346,6 +366,7 @@
                         </div>
                     </div>
 
+                    <!-- BOTÃO EM DESTAQUE PARA LIMPAR O BANCO COMPLETO DO FIREBASE -->
                     <div class="mb-4">
                         <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
                             <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
@@ -373,7 +394,10 @@
             <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
                 <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
                     <span class="text-[10px] font-bold text-emerald-400 uppercase block mb-1">🏢 SELEÇÃO DE EMPRESA / FORNECEDOR</span>
-                    <div id="boxSeletorFornecedorPortal" class="mb-3"></div>
+                    
+                    <div id="boxSeletorFornecedorPortal" class="mb-3">
+                    </div>
+
                     <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">📅 Selecionar Data</label>
                     <input type="date" id="filtroDataFornecedor" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono font-bold text-white outline-none cursor-pointer">
                 </div>
@@ -641,7 +665,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 7: GESTÃO DE MOTORISTAS -->
+        <!-- MÓDULO GESTÃO DE MOTORISTAS -->
         <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
             <div class="col-span-12 lg:col-span-4 bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div>
@@ -716,7 +740,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 8: TORRE DE CONTROLE / ADMIN -->
+        <!-- MÓDULO TORRE DE CONTROLE / ADMIN -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
@@ -974,7 +998,7 @@
                 <div class="bg-amber-500 p-2.5 rounded-2xl text-2xl shadow-lg text-slate-900">💬</div>
                 <div>
                     <h3 class="text-base font-black text-white">Central de Mensagens & Alertas</h3>
-                    <p class="text-xs text-amber-400 font-bold" id="notifDestinoMsg">Destino: fernando_junkes@whirlpool.com</p>
+                    <p class="text-xs text-amber-400 font-bold" id="notifDestinoMsg">Destino: +55 (47) 99242-4703</p>
                 </div>
                 <button type="button" onclick="fecharModalSms()" class="ml-auto text-slate-400 hover:text-white font-black text-xl cursor-pointer p-1">✕</button>
             </div>
@@ -1032,11 +1056,12 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
+    <!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE E RESTAURAÇÃO DE MÓDULOS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // Configuração do projeto Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCljoMUprqBfj9k8y0w7dE3MW7bWdjZlgA",
             authDomain: "yms-patio-6ba8c.firebaseapp.com",
@@ -1047,9 +1072,11 @@
             appId: "1:789675229632:web:b209d3dc57b702c8710825"
         };
 
+        // Inicialização
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // LISTA MESTRE DOS 60 FORNECEDORES PADRÃO
         const listaPadrao60Fornecedores = [
             { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
             { empresa: "ADERE", senha: "adere@2026" },
@@ -1113,6 +1140,7 @@
             { empresa: "WEST ROCK", senha: "westrock@2026" }
         ];
 
+        // Estado da Aplicação
         window.ymsStore = {
             agendamentos: [],
             rascunhoAgendamentos: [],
@@ -1132,23 +1160,24 @@
         window.mapaCredenciaisFornecedores = [];
         window.tipoCargaAtivo = 'cotidiano';
 
-        // 🛠️ PARSER DE DATA UNIVERSAL DEFINITIVO (CORRIGE DATAS AMERICANAS, ISO E NUMERAIS DO EXCEL)
+        // 🛠️ PARSER DE DATA UNIVERSAL (CORRIGE DATAS AMERICANAS "7/20/26" E EXCEL "46223")
         window.normalizarDataUniversal = function(dVal) {
-            if (!dVal) return "20/07/2026";
+            if (!dVal) return window.obterDataHojePtBR();
 
-            // Case 1: Numeral Serial do Excel (ex: 46223)
+            // Numeral Serial do Excel (ex: 46223)
             const num = Number(dVal);
             if (!isNaN(num) && num > 30000) {
-                const dateObj = new Date((num - 25569) * 86400 * 1000);
-                const dia = String(dateObj.getUTCDate()).padStart(2, '0');
-                const mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
-                const ano = dateObj.getUTCFullYear();
-                return `${dia}/${mes}/${ano}`;
+                const dateObj = XLSX.SSF.parse_date_code(num);
+                if (dateObj) {
+                    const dia = String(dateObj.d).padStart(2, '0');
+                    const mes = String(dateObj.m).padStart(2, '0');
+                    return `${dia}/${mes}/${dateObj.y}`;
+                }
             }
 
             let dStr = String(dVal).trim();
 
-            // Case 2: ISO YYYY-MM-DD
+            // ISO YYYY-MM-DD
             if (dStr.includes('-')) {
                 const p = dStr.split('T')[0].split('-');
                 if (p.length === 3) {
@@ -1158,13 +1187,13 @@
                 }
             }
 
-            // Case 3: Formatos com Barra ("7/20/26", "20/07/2026")
+            // Formatos com barras ("7/20/26" -> "20/07/2026")
             if (dStr.includes('/')) {
                 const p = dStr.split('/');
                 if (p.length === 3) {
                     let n1 = parseInt(p[0], 10);
                     let n2 = parseInt(p[1], 10);
-                    let y = p[2];
+                    let y = p[2].trim();
                     if (y.length === 2) y = "20" + y;
 
                     if (n1 <= 12 && n2 > 12) {
@@ -1182,7 +1211,7 @@
             const br = window.normalizarDataUniversal(dVal);
             const p = br.split('/');
             if (p.length === 3) return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-            return "2026-07-20";
+            return window.obterDataHojeISO();
         };
 
         window.limparNomeFornecedor = function(nome) {
@@ -1200,12 +1229,14 @@
                 const limpo = window.limparNomeFornecedor(item.empresa);
                 if (limpo) conjuntoUnico.add(limpo);
             });
+
             if (Array.isArray(window.mapaCredenciaisFornecedores)) {
                 window.mapaCredenciaisFornecedores.forEach(item => {
                     const limpo = window.limparNomeFornecedor(item.empresa);
                     if (limpo) conjuntoUnico.add(limpo);
                 });
             }
+
             const todos = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
             todos.forEach(ag => {
                 if (ag && ag.fornecedor) {
@@ -1213,6 +1244,7 @@
                     if (limpo) conjuntoUnico.add(limpo);
                 }
             });
+
             return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         };
 
@@ -1234,7 +1266,14 @@
 
             onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
                 const data = snapshot.val();
-                window.ymsStore.baseMotoristas = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                if (data) {
+                    window.ymsStore.baseMotoristas = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.ymsStore.baseMotoristas = [
+                        { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
+                        { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
+                    ];
+                }
                 window.renderizarTabelaMotoristas();
             });
 
@@ -1247,7 +1286,15 @@
 
             onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
                 const data = snapshot.val();
-                window.ymsStore.baseUsuariosCustom = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                if (data) {
+                    window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.ymsStore.baseUsuariosCustom = [
+                        { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
+                        { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
+                    ];
+                }
                 window.sincronizarTodosModulos();
             });
 
@@ -1261,7 +1308,10 @@
         }
 
         window.garantirTodosFornecedoresNaLista = function() {
-            if (!Array.isArray(window.mapaCredenciaisFornecedores)) window.mapaCredenciaisFornecedores = [];
+            if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
+                window.mapaCredenciaisFornecedores = [];
+            }
+
             let alterou = false;
             window.obterListaNomesFornecedores().forEach(nomeForn => {
                 if (!window.mapaCredenciaisFornecedores.some(f => window.limparNomeFornecedor(f.empresa) === nomeForn)) {
@@ -1272,6 +1322,7 @@
                     alterou = true;
                 }
             });
+
             if (alterou) {
                 window.salvarCredenciaisFornecedoresNaMemoria();
                 window.atualizarTodasListasFornecedores();
@@ -1283,59 +1334,427 @@
         window.salvarUsuariosCustomizadosNaMemoria = function() { set(ref(db, 'yms_usuarios_customizados'), window.ymsStore.baseUsuariosCustom); };
         window.salvarBaseMotoristasNaMemoria = function() { set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas); };
 
-        window.dispararEmailCriticoEmMassa = function(janelaItem) {
-            const destinatarios = "fernando_junkes@whirlpool.com";
-            const ehCritica = janelaItem.tipoOperacao === 'CRITICA';
-            
-            const assunto = ehCritica 
-                ? `🚨 [ALERTA CRÍTICO - PARADA DE LINHA] Janela ${janelaItem.ordem} - ${janelaItem.fornecedor}`
-                : `🟡 [CARGA EXTRA PROGRAMADA] Janela ${janelaItem.ordem} - ${janelaItem.fornecedor}`;
+        window.salvarConfiguracaoApi = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const config = {
+                ativo: document.getElementById('apiStatusAtivo').value,
+                tipo: document.getElementById('apiTipoProvedor').value,
+                urlEndpoint: document.getElementById('apiUrlEndpoint').value.trim(),
+                authToken: document.getElementById('apiAuthToken').value.trim()
+            };
+            window.ymsStore.configApi = config;
+            set(ref(db, 'yms_config_api'), config);
+            window.exibirToast("API Salva!", "Configuração de mensagens atualizada no Firebase.", "📲");
+        };
 
-            const corpoEmailText = 
-`Atencao Equipe,
+        window.preencherFormularioConfigApi = function() {
+            const cfg = window.ymsStore.configApi;
+            if (!cfg) return;
+            if (document.getElementById('apiStatusAtivo')) document.getElementById('apiStatusAtivo').value = cfg.ativo || "NAO";
+            if (document.getElementById('apiTipoProvedor')) document.getElementById('apiTipoProvedor').value = cfg.tipo || "whatsapp_zapi";
+            if (document.getElementById('apiUrlEndpoint')) document.getElementById('apiUrlEndpoint').value = cfg.urlEndpoint || "";
+            if (document.getElementById('apiAuthToken')) document.getElementById('apiAuthToken').value = cfg.authToken || "";
+        };
 
-Uma nova Carga ${ehCritica ? 'CRITICA' : 'EXTRA'} foi registrada no YMS Ecosystem:
+        window.enviarMensagemApiReal = async function(numeroTelefone, textoMensagem) {
+            const cfg = window.ymsStore.configApi;
+            if (!cfg || cfg.ativo !== 'SIM' || !cfg.urlEndpoint) return false;
 
-- CODIGO DA JANELA: ${janelaItem.ordem}
-- Fornecedor: ${janelaItem.fornecedor}
-- Doca: ${janelaItem.doca}
-- Data Prevista: ${window.normalizarDataUniversal(janelaItem.data)}
-- Motorista: ${janelaItem.motorista || 'A definir'} (CPF: ${janelaItem.cpf || 'N/D'})
-${ehCritica ? `- Part Number / Item: ${janelaItem.detalhesCriticidade?.partNumber || 'N/D'}\n- Motivo do Risco: ${janelaItem.detalhesCriticidade?.motivo || 'N/D'}\n- PRIORIDADE: CARGA CRITICA (Prioridade na Descarga)\n` : ''}
-Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
+            let numFormatado = String(numeroTelefone).replace(/\D/g, '');
+            if (!numFormatado.startsWith('55') && numFormatado.length <= 11) numFormatado = '55' + numFormatado;
 
-            const mailtoUrl = `mailto:${destinatarios}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoEmailText)}`;
-            window.open(mailtoUrl, '_blank');
+            try {
+                let payload = {};
+                let headers = { "Content-Type": "application/json" };
+                if (cfg.authToken) {
+                    headers["Client-Token"] = cfg.authToken;
+                    headers["Authorization"] = `Bearer ${cfg.authToken}`;
+                }
 
-            document.getElementById('notifDestinoMsg').textContent = `Enviado para: ${destinatarios}`;
-            document.getElementById('notifTextoCorpo').textContent = `📧 E-MAIL GERADO COM SUCESSO!\n\n${assunto}\n\n${corpoEmailText}`;
-            document.getElementById('modalSmsNotif').classList.remove('hidden');
+                if (cfg.tipo === 'whatsapp_zapi' || cfg.tipo === 'webhook_custom') {
+                    payload = { phone: numFormatado, number: numFormatado, message: textoMensagem };
+                } else if (cfg.tipo === 'twilio_sms') {
+                    payload = { To: `+${numFormatado}`, Body: textoMensagem };
+                } else if (cfg.tipo === 'zenvia_sms') {
+                    payload = { from: "YMS SYSTEM", to: numFormatado, contents: [{ type: "text", text: textoMensagem }] };
+                }
 
-            window.exibirToast("Alerta Criado!", "E-mail de notificação gerado.", "📧");
+                const response = await fetch(cfg.urlEndpoint, { method: 'POST', headers: headers, body: JSON.stringify(payload) });
+                if (response.ok) {
+                    window.exibirToast("Mensagem Enviada!", `Enviada para +${numFormatado}`, "📲");
+                    return true;
+                }
+            } catch (err) { console.error("Falha de conexão com a API:", err); }
+            return false;
+        };
+
+        window.testarEnvioMensagemApi = function() {
+            const numTest = document.getElementById('inputTestNum').value.trim();
+            if (!numTest) { alert("Digite o número de telefone com DDD para o teste."); return; }
+            window.enviarMensagemApiReal(numTest, "YMS ECOSYSTEM: Teste de integração de API de mensagens bem-sucedido! 🚚🏭");
+        };
+
+        window.atualizarRelogioDigital = function() {
+            const relogio = document.getElementById('relogioGlobal');
+            if (relogio) relogio.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
+        };
+
+        window.dataEhPassada = function(dataStr) {
+            if (!dataStr) return false;
+            let ano, mes, dia;
+            if (dataStr.includes('/')) {
+                const partes = dataStr.split('/');
+                dia = parseInt(partes[0], 10); mes = parseInt(partes[1], 10) - 1; ano = parseInt(partes[2], 10);
+            } else if (dataStr.includes('-')) {
+                const partes = dataStr.split('-');
+                ano = parseInt(partes[0], 10); mes = parseInt(partes[1], 10) - 1; dia = parseInt(partes[2], 10);
+            } else return false;
+
+            const dataAgendada = new Date(ano, mes, dia);
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+            return dataAgendada < hoje;
+        };
+
+        const configPerfisAcesso = {
+            'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
+            'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
+            'totem': { nome: "Totem Autoatendimento", precisaSenha: false, modulos: ['totem'] },
+            'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, modulos: ['fiscal'] },
+            'doca': { nome: "Operador de Doca", precisaSenha: true, modulos: ['doca'] },
+            'checkout': { nome: "Check-out Portaria", precisaSenha: true, modulos: ['checkout'] },
+            'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, modulos: ['motoristas'] },
+            'admin': { nome: "Torre / Administrador", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
+        };
+
+        window.solicitarAcessoPerfil = function(keyPerfil) {
+            window.ymsStore.perfilSolicitadoTemp = keyPerfil;
+            const cfg = configPerfisAcesso[keyPerfil];
+            if (!cfg) return;
+
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+
+            if (cfg.eFornecedor) {
+                if (document.getElementById('filtroLoginForn')) document.getElementById('filtroLoginForn').value = '';
+                window.popularSelectLoginEmpresas();
+                document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
+            } else if (!cfg.precisaSenha) {
+                window.concluirLoginPerfil(keyPerfil, cfg.nome, cfg.modulos);
+            } else {
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = `AUTENTICAÇÃO: ${cfg.nome.toUpperCase()}`;
+                document.getElementById('boxSenhaLogin').classList.remove('hidden');
+                document.getElementById('inputUserLogin').focus();
+            }
+        };
+
+        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
+            const sel = document.getElementById('selEmpresaFornecedorLogin');
+            if (!sel) return;
+            sel.innerHTML = "";
+            const lista = listaParaExibir || window.obterListaNomesFornecedores();
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
+                if (idx === 0) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        };
+
+        window.filtrarLoginEmpresas = function() {
+            const termo = document.getElementById('filtroLoginForn').value.toLowerCase().trim();
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectLoginEmpresas(filtrados);
+        };
+
+        window.popularSelectCadastroEmpresasUsr = function() {
+            const sel = document.getElementById('selUsrEmpresa');
+            if (!sel) return;
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
+            window.obterListaNomesFornecedores().forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = f;
+                sel.appendChild(opt);
+            });
+        };
+
+        window.popularSelectFornecedores = function(lista) {
+            const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
+            selForn.innerHTML = "";
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
+        };
+
+        window.filtrarOpcoesFornecedor = function() {
+            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectFornecedores(filtrados);
+            window.atualizarPreviewJanela();
+        };
+
+        window.atualizarTodasListasFornecedores = function() {
+            const fornecedoresLimpos = window.obterListaNomesFornecedores();
+            window.popularSelectFornecedores(fornecedoresLimpos);
+            window.popularSelectLoginEmpresas(fornecedoresLimpos);
+            window.popularSelectCadastroEmpresasUsr();
+            window.renderizarTabelaFornecedores();
+            window.renderizarTabelaMotoristas();
+            window.renderizarTabelaUsuariosCustom();
+            const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
+            if (badgeTotal) badgeTotal.textContent = `${fornecedoresLimpos.length} Empresas`;
+            window.atualizarPreviewJanela();
+        };
+
+        window.renderizarTabelaFornecedores = function() {
+            const tbody = document.getElementById('tblCorpoFornecedores');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            const termo = (document.getElementById('filtroFornTabela')?.value || '').toLowerCase().trim();
+            const fornecedoresUnicos = window.obterListaNomesFornecedores();
+            const filtrados = fornecedoresUnicos.filter(item => item.toLowerCase().includes(termo));
+
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-500 italic">Nenhum fornecedor encontrado.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(empresaNome => {
+                const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === empresaNome);
+                const senhaExibicao = cadForn ? cadForn.senha : `${empresaNome.toLowerCase().replace(/\s+/g, '')}@2026`;
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white uppercase">${empresaNome}</td>
+                        <td class="p-2.5 font-mono text-yellow-300">${senhaExibicao}</td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="excluirFornecedorDinamico('${empresaNome}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        };
+
+        window.renderizarTabelaUsuariosCustom = function() {
+            const tbody = document.getElementById('tblCorpoUsuariosCustom');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (window.ymsStore.baseUsuariosCustom.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-500 italic">Nenhum usuário cadastrado.</td></tr>`;
+                document.getElementById('badgeQtdUsuarios').textContent = `0 Cadastrados`;
+                return;
+            }
+
+            window.ymsStore.baseUsuariosCustom.forEach(u => {
+                const modulosBadges = u.modulos.map(m => `<span class="bg-purple-950 text-purple-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-purple-800 mr-1">${m.toUpperCase()}</span>`).join('');
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white">${u.nome}</td>
+                        <td class="p-2.5 font-mono text-indigo-300">${u.login}</td>
+                        <td class="p-2.5 flex flex-wrap gap-1">${modulosBadges}</td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs cursor-pointer">🗑️</button>
+                        </td>
+                    </tr>
+                `);
+            });
+            document.getElementById('badgeQtdUsuarios').textContent = `${window.ymsStore.baseUsuariosCustom.length} Cadastrados`;
+        };
+
+        window.salvarUsuarioCustomizado = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const nome = document.getElementById('usrNome').value.trim();
+            const login = document.getElementById('usrLogin').value.trim();
+            const senha = document.getElementById('usrSenha').value.trim();
+            const empresa = document.getElementById('selUsrEmpresa').value || null;
+
+            const modulosSelecionados = [];
+            document.querySelectorAll('.chk-modulo-usr:checked').forEach(chk => modulosSelecionados.push(chk.value));
+
+            if (!nome || !login || !senha) { alert("Preencha Nome, Login e Senha."); return; }
+            if (modulosSelecionados.length === 0) { alert("Selecione pelo menos um módulo permitido!"); return; }
+
+            window.ymsStore.baseUsuariosCustom.push({ id: `usr_${Date.now()}`, nome, login, senha, modulos: modulosSelecionados, fornecedorEmpresa: empresa });
+            window.salvarUsuariosCustomizadosNaMemoria();
+
+            document.getElementById('usrNome').value = ""; document.getElementById('usrLogin').value = ""; document.getElementById('usrSenha').value = "";
+            document.querySelectorAll('.chk-modulo-usr').forEach(chk => chk.checked = false);
+
+            window.renderizarTabelaUsuariosCustom();
+            window.exibirToast("Usuário Salvo!", `${nome} cadastrado com sucesso.`, "🔑");
+        };
+
+        window.excluirUsuarioCustom = function(id) {
+            if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+            window.ymsStore.baseUsuariosCustom = window.ymsStore.baseUsuariosCustom.filter(u => u.id !== id);
+            window.salvarUsuariosCustomizadosNaMemoria();
+            window.renderizarTabelaUsuariosCustom();
+            window.exibirToast("Usuário Removido", "Operador excluído do sistema.", "🗑️");
+        };
+
+        window.salvarNovoFornecedorDinamico = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const nomeForn = window.limparNomeFornecedor(document.getElementById('cadFornNome').value);
+            let senhaForn = document.getElementById('cadFornSenha').value.trim();
+            if (!nomeForn) return;
+            if (!senhaForn) senhaForn = `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`;
+
+            const jaExiste = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === nomeForn);
+            if (jaExiste) jaExiste.senha = senhaForn;
+            else window.mapaCredenciaisFornecedores.push({ empresa: nomeForn, senha: senhaForn });
+
+            window.salvarCredenciaisFornecedoresNaMemoria();
+            document.getElementById('cadFornNome').value = ""; document.getElementById('cadFornSenha').value = "";
+            window.exibirToast("Fornecedor Salvo!", `Empresa ${nomeForn} atualizada.`, "🏢");
+        };
+
+        window.excluirFornecedorDinamico = function(empresa) {
+            if (!confirm(`Excluir a empresa "${empresa}" da base?`)) return;
+            window.mapaCredenciaisFornecedores = window.mapaCredenciaisFornecedores.filter(f => window.limparNomeFornecedor(f.empresa) !== window.limparNomeFornecedor(empresa));
+            window.salvarCredenciaisFornecedoresNaMemoria();
+        };
+
+        window.confirmarLoginFornecedorEmpresa = function() {
+            const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
+            if (!empSel) { alert("Selecione a sua empresa na lista."); return; }
+            const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
+            const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
+
+            if (senhaForn === (cadForn ? cadForn.senha : "123") || senhaForn === "admin" || senhaForn === "1234") {
+                window.ymsStore.empresaFornecedorLogada = empSel;
+                localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
+                window.concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
+            } else alert("Senha incorreta!");
+        };
+
+        window.confirmarLoginComSenha = function() {
+            const userDig = document.getElementById('inputUserLogin').value.trim();
+            const pinDig = document.getElementById('inputPinLogin').value.trim();
+            const perfilSel = window.ymsStore.perfilSolicitadoTemp;
+
+            if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
+                window.concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
+                return;
+            }
+
+            const usrEncontrado = window.ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
+            if (usrEncontrado) {
+                if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
+                    alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
+                    return;
+                }
+                window.concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
+            } else alert("Usuário ou Senha incorretos!");
+        };
+
+        window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos, abaParaAbrir = null) {
+            const targetAba = abaParaAbrir || modulosPermitidos[0];
+            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos, abaAtiva: targetAba };
+            window.ymsStore.usuarioLogado = sessaoData;
+            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessaoData));
+
+            document.getElementById('modalLoginGlobal').classList.add('hidden');
+            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
+
+            const navBar = document.getElementById('navBarPerfis');
+            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
+                if (navBar) navBar.classList.add('hidden');
+            } else {
+                if (navBar) navBar.classList.remove('hidden');
+                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
+                    const moduloBtn = btn.getAttribute('data-modulo');
+                    if (modulosPermitidos.includes(moduloBtn)) btn.classList.remove('hidden');
+                    else btn.classList.add('hidden');
+                });
+            }
+            window.mudarPerfil(targetAba);
+        };
+
+        window.restaurarSessaoLocal = function() {
+            try {
+                const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
+                const empForSalva = localStorage.getItem('yms_empresa_fornecedor_logada');
+                if (empForSalva) window.ymsStore.empresaFornecedorLogada = empForSalva;
+                if (sessaoSalva) {
+                    const parsed = JSON.parse(sessaoSalva);
+                    if (parsed && parsed.key && parsed.modulosCustom) {
+                        window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom, parsed.abaAtiva || parsed.modulosCustom[0]);
+                        return true;
+                    }
+                }
+            } catch(e) { console.error("Erro ao restaurar sessão:", e); }
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            return false;
+        };
+
+        window.fazerLogoutGlobal = function() {
+            window.ymsStore.usuarioLogado = null;
+            window.ymsStore.empresaFornecedorLogada = null;
+            localStorage.removeItem('yms_sessao_usuario');
+            localStorage.removeItem('yms_empresa_fornecedor_logada');
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+            const navBar = document.getElementById('navBarPerfis');
+            if (navBar) navBar.classList.remove('hidden');
+            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
+        };
+
+        window.obterDataHojeISO = function() {
+            const hoje = new Date();
+            return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+        };
+
+        window.obterDataHojePtBR = function() {
+            const hoje = new Date();
+            return `${String(hoje.getDate()).padStart(2, '0')}/${String(hoje.getMonth() + 1).padStart(2, '0')}/${hoje.getFullYear()}`;
+        };
+
+        const listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
+        const slotsDia24h = [];
+        for (let h = 0; h < 24; h++) {
+            for (let m of [0, 30]) {
+                slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+            }
+        }
+
+        let instanceChartCheckin = null, instanceChartDocas = null, instanceChartMediaTempo = null;
+
+        window.normalizarTexto = function(txt) {
+            return String(txt || '').toLowerCase().replace(/\s+/g, '').trim();
         };
 
         window.mudarPerfil = function(perfilId) {
+            if (window.ymsStore.usuarioLogado && !window.ymsStore.usuarioLogado.modulosCustom.includes(perfilId)) {
+                alert("Acesso negado a este módulo!");
+                return;
+            }
+            if (window.ymsStore.usuarioLogado) {
+                window.ymsStore.usuarioLogado.abaAtiva = perfilId;
+                localStorage.setItem('yms_sessao_usuario', JSON.stringify(window.ymsStore.usuarioLogado));
+            }
+
             document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
             document.querySelectorAll('.btn-perfil').forEach(btn => {
                 btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
             });
 
-            const moduloAlvo = document.getElementById(`perfil-${perfilId}`);
-            if (moduloAlvo) moduloAlvo.classList.remove('hidden');
+            const targetMod = document.getElementById(`perfil-${perfilId}`);
+            if (targetMod) targetMod.classList.remove('hidden');
 
             const btnAtivo = document.getElementById(`btn-${perfilId}`);
             if (btnAtivo) btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow";
 
             window.sincronizarTodosModulos();
-        };
-
-        window.solicitarAcessoPerfil = function(keyPerfil) {
-            window.mudarPerfil(keyPerfil);
-            document.getElementById('modalLoginGlobal').classList.add('hidden');
-        };
-
-        window.fazerLogoutGlobal = function() {
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            if (perfilId === 'torre') window.carregarGraficosTorre();
+            if (perfilId === 'motoristas') window.renderizarTabelaMotoristas();
         };
 
         window.sincronizarTodosModulos = function() {
@@ -1349,240 +1768,294 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.carregarGraficosTorre();
         };
 
-        // --- PCP PROGRAMADOR ---
+        // --- MÓDULO PCP ---
         window.selecionarTipoCarga = function(tipo) {
             window.tipoCargaAtivo = tipo;
             const btnCotidiano = document.getElementById('btnTipoCotidiano');
             const btnExtra = document.getElementById('btnTipoExtra');
             const btnCritica = document.getElementById('btnTipoCritica');
+            const badgeTipo = document.getElementById('badgeTipoJanela');
+            const boxMotivoExtra = document.getElementById('boxMotivoExtra');
+            const boxMotorista = document.getElementById('boxDadosMotorista');
+            const boxCritica = document.getElementById('boxCamposCriticos');
+            const boxHorarios = document.getElementById('boxQuadroHorarios');
+            const btnSubmit = document.getElementById('btnSubmitFormPcp');
 
             btnCotidiano.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-emerald-400 flex flex-col items-center gap-0.5 cursor-pointer";
             btnExtra.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer";
             btnCritica.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer";
 
-            document.getElementById('boxMotivoExtra').classList.add('hidden');
-            document.getElementById('boxDadosMotorista').classList.add('hidden');
-            document.getElementById('boxCamposCriticos').classList.add('hidden');
-            document.getElementById('boxQuadroHorarios').classList.remove('hidden');
-
             if (tipo === 'cotidiano') {
                 btnCotidiano.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                badgeTipo.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                badgeTipo.textContent = "🟢 Cotidiano";
+                boxMotivoExtra.classList.add('hidden'); boxMotorista.classList.add('hidden'); boxCritica.classList.add('hidden'); boxHorarios.classList.remove('hidden');
+                btnSubmit.className = "w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg transition cursor-pointer flex items-center justify-center gap-2";
+                btnSubmit.innerHTML = `<span>➕</span> ADICIONAR À GRADE DE RASCUNHO`;
             } else if (tipo === 'extra') {
                 btnExtra.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-500 border-amber-400 text-slate-950 shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                document.getElementById('boxMotivoExtra').classList.remove('hidden');
-                document.getElementById('boxDadosMotorista').classList.remove('hidden');
+                badgeTipo.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                badgeTipo.textContent = "🟡 Carga Extra";
+                boxMotivoExtra.classList.remove('hidden'); boxMotorista.classList.remove('hidden'); boxCritica.classList.add('hidden'); boxHorarios.classList.remove('hidden');
+                btnSubmit.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg transition cursor-pointer flex items-center justify-center gap-2 border-b-4 border-amber-700";
+                btnSubmit.innerHTML = `<span>📧</span> GERAR CARGA EXTRA & ALERTA`;
             } else if (tipo === 'critica') {
                 btnCritica.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                document.getElementById('boxDadosMotorista').classList.remove('hidden');
-                document.getElementById('boxCamposCriticos').classList.remove('hidden');
-                document.getElementById('boxQuadroHorarios').classList.add('hidden');
+                badgeTipo.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase animate-pulse";
+                badgeTipo.textContent = "🔴 Carga Crítica (Topo da Fila)";
+                boxMotivoExtra.classList.add('hidden'); boxMotorista.classList.remove('hidden'); boxCritica.classList.remove('hidden'); boxHorarios.classList.add('hidden');
+                btnSubmit.className = "w-full bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg transition cursor-pointer flex items-center justify-center gap-2 border-b-4 border-red-800";
+                btnSubmit.innerHTML = `<span>🚨</span> REGISTRAR CRÍTICA & ALERTA EM MASSA`;
             }
             window.atualizarPreviewJanela();
         };
 
         window.atualizarPreviewJanela = function() {
-            const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor')?.value);
+            const inpSel = document.getElementById('inpFornecedor');
+            const fornBruto = inpSel ? inpSel.value : '';
+            const fornSigla = window.limparNomeFornecedor(fornBruto) || "FORNECEDOR";
             const preview = document.getElementById('previewNumeroJanela');
             if (!preview) return;
-            if (window.tipoCargaAtivo === 'critica') preview.textContent = `${fornSel}-CRITICO`;
-            else if (window.tipoCargaAtivo === 'extra') preview.textContent = `${fornSel}-EX-101`;
-            else preview.textContent = fornSel;
+
+            if (window.tipoCargaAtivo === 'cotidiano') {
+                preview.textContent = fornSigla; preview.className = "font-mono font-black text-emerald-400 bg-slate-900 px-2.5 py-0.5 rounded border border-emerald-500/30";
+            } else if (window.tipoCargaAtivo === 'extra') {
+                preview.textContent = `${fornSigla}-EX-101`; preview.className = "font-mono font-black text-amber-400 bg-slate-900 px-2.5 py-0.5 rounded border border-amber-500/30";
+            } else if (window.tipoCargaAtivo === 'critica') {
+                preview.textContent = `${fornSigla}-CRITICO`; preview.className = "font-mono font-black text-red-400 bg-red-950 px-2.5 py-0.5 rounded border border-red-500/50 animate-pulse";
+            }
         };
 
         window.alternarAbaPCP = function(aba) {
+            document.getElementById('tabIndividualBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            document.getElementById('tabMassaBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            document.getElementById('tabTextoBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+
             document.getElementById('conteudoIndividual').classList.add('hidden');
             document.getElementById('conteudoMassa').classList.add('hidden');
             document.getElementById('conteudoTexto').classList.add('hidden');
-            if (aba === 'individual') document.getElementById('conteudoIndividual').classList.remove('hidden');
-            if (aba === 'massa') document.getElementById('conteudoMassa').classList.remove('hidden');
-            if (aba === 'texto') document.getElementById('conteudoTexto').classList.remove('hidden');
+
+            if (aba === 'individual') {
+                document.getElementById('tabIndividualBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoIndividual').classList.remove('hidden');
+            } else if (aba === 'massa') {
+                document.getElementById('tabMassaBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoMassa').classList.remove('hidden');
+            } else {
+                document.getElementById('tabTextoBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoTexto').classList.remove('hidden');
+            }
+        };
+
+        window.horaParaMinutos = function(horaStr) {
+            if (!horaStr || horaStr === '---' || horaStr === 'IMEDIATO') return 0;
+            const partes = String(horaStr).trim().split(':');
+            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
+        };
+
+        window.formatarHoraExcel = function(val) {
+            if (val === undefined || val === null || val === '') return '08:00';
+            if (typeof val === 'number') {
+                let totalMinutos = Math.round(val * 24 * 60);
+                let horas = Math.floor(totalMinutos / 60) % 24;
+                let minutos = totalMinutos % 60;
+                return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+            }
+            let str = String(val).trim();
+            if (str.includes(':')) {
+                let partes = str.split(':');
+                return `${String(partes[0]).padStart(2, '0')}:${String(partes[1]).padStart(2, '0')}`;
+            }
+            return str;
         };
 
         window.atualizarHorariosDisponiveis = function() {
             const docaSel = document.getElementById('inpDoca')?.value;
-            let dataSelRaw = document.getElementById('inpData')?.value;
-            const grid = document.getElementById('gridTimelineHorarios');
-            const selIni = document.getElementById('inpHora');
-            if (!grid || !selIni || !docaSel) return;
+            let rawData = document.getElementById('inpData')?.value;
+            if (!docaSel) return;
 
-            if (!dataSelRaw) {
+            if (!rawData) {
                 const listaTotal = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
-                dataSelRaw = listaTotal.length > 0 && listaTotal[0].data ? window.normalizarDataParaISO(listaTotal[0].data) : "2026-07-20";
-                const elData = document.getElementById('inpData');
-                if (elData) elData.value = dataSelRaw;
+                if (listaTotal.length > 0 && listaTotal[0].data) {
+                    rawData = window.normalizarDataParaISO(listaTotal[0].data);
+                    const elData = document.getElementById('inpData');
+                    if (elData) elData.value = rawData;
+                } else {
+                    rawData = window.obterDataHojeISO();
+                    const elData = document.getElementById('inpData');
+                    if (elData) elData.value = rawData;
+                }
             }
 
-            const dataFormBusca = window.normalizarDataUniversal(dataSelRaw);
+            const dataFormatada = window.normalizarDataUniversal(rawData);
+            const docaNorm = window.normalizarTexto(docaSel);
+            const dataNorm = window.normalizarTexto(dataFormatada);
 
-            const agendadosDocaDia = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])].filter(ag => {
-                const dataAgBr = window.normalizarDataUniversal(ag.data);
-                return ag.doca === docaSel && dataAgBr === dataFormBusca && ag.horaIni !== 'IMEDIATO';
+            const ocupados = [];
+            [...window.ymsStore.agendamentos, ...window.ymsStore.rascunhoAgendamentos].forEach(item => {
+                const dataItemNorm = window.normalizarTexto(window.normalizarDataUniversal(item.data));
+                if (dataItemNorm === dataNorm && window.normalizarTexto(item.doca) === docaNorm && item.horaIni !== 'IMEDIATO') {
+                    let minIni = window.horaParaMinutos(item.horaIni);
+                    let minFim = window.horaParaMinutos(item.horaFim);
+                    if (minFim <= minIni) minFim = minIni + 60;
+
+                    ocupados.push({
+                        ini: minIni,
+                        fim: minFim,
+                        ordem: item.ordem,
+                        fornecedor: item.fornecedor
+                    });
+                }
             });
 
-            const slots = [];
-            for (let h = 0; h < 24; h++) {
-                for (let m of [0, 30]) {
-                    slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+            const selIni = document.getElementById('inpHora');
+            if (selIni) selIni.innerHTML = "";
+            slotsDia24h.forEach(slot => {
+                const minSlot = window.horaParaMinutos(slot);
+                let colide = false;
+                for (let oc of ocupados) {
+                    if (minSlot >= oc.ini && minSlot < oc.fim) { colide = true; break; }
                 }
-            }
-
-            grid.innerHTML = "";
-            selIni.innerHTML = "";
-
-            slots.forEach(s => {
-                const slotMin = window.horaParaMinutos(s);
-                let ocupado = false;
-                let agOcupante = null;
-
-                for (let ag of agendadosDocaDia) {
-                    const iniMin = window.horaParaMinutos(ag.horaIni);
-                    let fimMin = window.horaParaMinutos(ag.horaFim);
-                    if (fimMin <= iniMin) fimMin = iniMin + 60;
-
-                    if (slotMin >= iniMin && slotMin < fimMin) {
-                        ocupado = true;
-                        agOcupante = ag;
-                        break;
-                    }
-                }
-
-                if (ocupado) {
-                    grid.insertAdjacentHTML('beforeend', `
-                        <div title="Ocupado por ${agOcupante.ordem} - ${agOcupante.fornecedor}" class="bg-red-950/80 border border-red-500/80 text-red-300 p-1 rounded text-center text-[10px] font-mono font-bold cursor-not-allowed">${s}</div>
-                    `);
-                } else {
-                    grid.insertAdjacentHTML('beforeend', `
-                        <div onclick="document.getElementById('inpHora').value='${s}'; atualizarHorarioFimMinimo();" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 p-1 rounded text-center text-[10px] font-mono font-bold cursor-pointer transition">${s}</div>
-                    `);
+                if (!colide && selIni) {
                     const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = `${s}h (Livre)`;
+                    opt.value = slot; opt.textContent = `${slot}h (Livre)`;
                     selIni.appendChild(opt);
                 }
             });
 
+            const gridTimeline = document.getElementById('gridTimelineHorarios');
+            if (gridTimeline) {
+                gridTimeline.innerHTML = "";
+                slotsDia24h.forEach(slot => {
+                    const minSlot = window.horaParaMinutos(slot);
+                    let agOcupante = null;
+
+                    for (let oc of ocupados) {
+                        if (minSlot >= oc.ini && minSlot < oc.fim) {
+                            agOcupante = oc;
+                            break;
+                        }
+                    }
+
+                    if (agOcupante) {
+                        const btnBox = `
+                            <div title="${agOcupante.ordem} - ${agOcupante.fornecedor}" class="bg-red-500/30 border border-red-500/60 text-red-200 p-1 rounded text-center text-[10px] font-mono font-bold cursor-not-allowed">
+                                ${slot}
+                            </div>
+                        `;
+                        gridTimeline.insertAdjacentHTML('beforeend', btnBox);
+                    } else {
+                        const btnBox = `
+                            <div onclick="selecionarHorarioPelaGrade('${slot}')" title="Clique para selecionar ${slot}" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 p-1 rounded text-center text-[10px] font-mono font-bold cursor-pointer transition">
+                                ${slot}
+                            </div>
+                        `;
+                        gridTimeline.insertAdjacentHTML('beforeend', btnBox);
+                    }
+                });
+            }
+
             window.atualizarHorarioFimMinimo();
         };
 
-        window.atualizarHorarioFimMinimo = function() {
-            const iniVal = document.getElementById('inpHora')?.value || "08:00";
-            const selFim = document.getElementById('inpHoraFim');
-            if (!selFim) return;
-            selFim.innerHTML = "";
-
-            const minIni = window.horaParaMinutos(iniVal);
-            for (let h = 0; h < 24; h++) {
-                for (let m of [0, 30]) {
-                    let slot = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-                    if (window.horaParaMinutos(slot) > minIni) {
-                        const opt = document.createElement('option');
-                        opt.value = slot; opt.textContent = `${slot}h`;
-                        selFim.appendChild(opt);
-                    }
-                }
+        window.selecionarHorarioPelaGrade = function(slot) {
+            const selIni = document.getElementById('inpHora');
+            if (selIni && selIni.querySelector(`option[value="${slot}"]`)) {
+                selIni.value = slot;
+                window.atualizarHorarioFimMinimo();
+                window.exibirToast("Horário Selecionado!", `Início definido para ${slot}h.`, "🕒");
+            } else {
+                alert(`O horário ${slot}h não está disponível.`);
             }
+        };
+
+        window.atualizarHorarioFimMinimo = function() {
+            const selIni = document.getElementById('inpHora');
+            const selFim = document.getElementById('inpHoraFim');
+            if (!selIni || !selFim) return;
+            selFim.innerHTML = "";
+            if (!selIni.value) return;
+
+            const minIni = window.horaParaMinutos(selIni.value);
+            slotsDia24h.forEach(slot => {
+                if (window.horaParaMinutos(slot) > minIni) {
+                    const opt = document.createElement('option');
+                    opt.value = slot; opt.textContent = `${slot}h`;
+                    selFim.appendChild(opt);
+                }
+            });
         };
 
         window.criarJanelaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
+            const rawData = document.getElementById('inpData').value;
+
+            if (window.dataEhPassada(rawData)) {
+                alert("🚫 OPERAÇÃO BLOQUEADA!\n\nVocê não pode ofertar janelas para DATAS RETROATIVAS (passadas).");
+                return;
+            }
+
+            const dataForm = window.normalizarDataUniversal(rawData);
+            const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor').value);
+            if (!fornSel) { alert("Selecione um fornecedor."); return; }
+
             const tipoOp = window.tipoCargaAtivo;
-            const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor')?.value);
-            const docaSel = document.getElementById('inpDoca')?.value || listaTodasDocas[0];
-            const dataSel = document.getElementById('inpData')?.value || "2026-07-20";
-            const dataForm = window.normalizarDataUniversal(dataSel);
+            let novaOrdem = "", prioridade = 99, cpfMot = null, celMot = null, nomeMot = null;
+            let motivoExtra = "", codMaterial = "", motivoCritico = "", horaIni = "08:00", horaFim = "09:00", statusAg = "AGENDADO";
 
-            let novaOrdem = "", prioridade = 99, nfExibicao = "";
-            let codPN = document.getElementById('pcpCodigoCritico').value || "PN-882910";
-            let motCritico = document.getElementById('pcpMotivoCritico').value || "Parada de Linha";
-
-            if (tipoOp === 'critica') {
-                novaOrdem = `${fornSel}-CRITICO`;
-                prioridade = 1;
-                nfExibicao = `🔴 CRÍTICO / ${codPN}`;
+            if (tipoOp === 'cotidiano') {
+                const proximoId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
+                novaOrdem = `ORD-${proximoId}`;
+                horaIni = document.getElementById('inpHora').value;
+                horaFim = document.getElementById('inpHoraFim').value;
             } else if (tipoOp === 'extra') {
+                cpfMot = document.getElementById('pcpCpf').value.replace(/\D/g, '').trim();
+                celMot = document.getElementById('pcpCelular').value.trim();
+                nomeMot = document.getElementById('pcpMotorista').value.trim();
+                motivoExtra = document.getElementById('pcpMotivoExtra').value;
+                if (!cpfMot || !nomeMot) { alert("Preencha CPF e Nome do Motorista para Carga Extra!"); return; }
+
                 novaOrdem = `${fornSel}-EX-${Math.floor(100 + Math.random() * 900)}`;
-                prioridade = 50;
-                nfExibicao = "CARGA_EXTRA";
-            } else {
-                const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
-                novaOrdem = `ORD-${proxId}`;
-                nfExibicao = "A CONFIRMAR";
+                horaIni = document.getElementById('inpHora').value;
+                horaFim = document.getElementById('inpHoraFim').value;
+                prioridade = 50; statusAg = "CONFIRMADO_FORNECEDOR";
+            } else if (tipoOp === 'critica') {
+                cpfMot = document.getElementById('pcpCpf').value.replace(/\D/g, '').trim();
+                celMot = document.getElementById('pcpCelular').value.trim();
+                nomeMot = document.getElementById('pcpMotorista').value.trim();
+                codMaterial = document.getElementById('pcpCodigoCritico').value.trim();
+                motivoCritico = document.getElementById('pcpMotivoCritico').value.trim();
+                if (!cpfMot || !nomeMot || !codMaterial) { alert("Informe Motorista, Part Number e Motivo!"); return; }
+
+                novaOrdem = `${fornSel}-CRITICO`;
+                horaIni = "IMEDIATO"; horaFim = "IMEDIATO";
+                prioridade = 1; statusAg = "CONFIRMADO_FORNECEDOR";
             }
 
             const item = {
-                ordem: novaOrdem, 
-                data: dataForm, 
-                fornecedor: fornSel, 
-                doca: docaSel,
-                horaIni: tipoOp === 'critica' ? "IMEDIATO" : (document.getElementById('inpHora').value || "12:15"), 
-                horaFim: tipoOp === 'critica' ? "IMEDIATO" : (document.getElementById('inpHoraFim').value || "13:00"), 
-                tipoOperacao: tipoOp.toUpperCase(),
-                prioridadeFila: prioridade, 
-                status: tipoOp === 'cotidiano' ? "AGENDADO" : "CONFIRMADO_FORNECEDOR",
-                isRascunho: tipoOp === 'cotidiano',
-                nf: nfExibicao,
-                motorista: document.getElementById('pcpMotorista').value || "Fernando Junkes", 
-                cpf: document.getElementById('pcpCpf').value || "10847778940",
-                celular: document.getElementById('pcpCelular').value || "47992424703",
-                detalhesCriticidade: { partNumber: codPN, motivo: motCritico }
+                ordem: novaOrdem, data: dataForm, fornecedor: fornSel,
+                doca: document.getElementById('inpDoca').value, horaIni: horaIni, horaFim: horaFim,
+                tipoOperacao: tipoOp.toUpperCase(), prioridadeFila: prioridade, status: statusAg,
+                isRascunho: true, nf: tipoOp === 'critica' ? `🔴 CRÍTICO / ${codMaterial}` : (tipoOp === 'extra' ? 'CARGA_EXTRA' : null),
+                transp: fornSel, cavalo: null, carreta: null, motorista: nomeMot, cpf: cpfMot, celular: celMot,
+                motivoInclusaoExtra: motivoExtra, detalhesCriticidade: { partNumber: codMaterial, motivo: motivoCritico },
+                ticket: null, docasSequencia: [], indexDocaAtual: 0
             };
 
-            if (tipoOp === 'cotidiano') {
-                window.ymsStore.rascunhoAgendamentos.push(item);
-                window.exibirToast("Adicionado ao Rascunho", `Janela ${novaOrdem} pendente de subida.`, "📝");
-            } else {
-                window.ymsStore.agendamentos.unshift(item);
-                window.salvarAgendamentosNaMemoria();
+            window.ymsStore.rascunhoAgendamentos.push(item);
+
+            if (tipoOp === 'critica' || tipoOp === 'extra') {
                 window.dispararEmailCriticoEmMassa(item);
             }
 
             window.renderizarGradePCP();
-        };
-
-        window.confirmarESubirJanelas = function() {
-            if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
-            window.ymsStore.rascunhoAgendamentos.forEach(r => { 
-                delete r.isRascunho; 
-                r.data = window.normalizarDataUniversal(r.data);
-            });
-            window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos);
-            window.ymsStore.rascunhoAgendamentos = [];
-            window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-            window.exibirToast("Janelas Publicadas!", "Sincronizadas com o Firebase.", "🚀");
-        };
-
-        window.limparGradeTotal = function() {
-            window.ymsStore.rascunhoAgendamentos = [];
-            window.renderizarGradePCP();
-        };
-
-        window.limparJanelasSubidas = function() {
-            if (!confirm("Tem certeza que deseja apagar todas as janelas salvas do Firebase?")) return;
-            window.ymsStore.agendamentos = [];
-            window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-        };
-
-        window.removerJanelaIndividual = function(ordem) {
-            window.ymsStore.rascunhoAgendamentos = window.ymsStore.rascunhoAgendamentos.filter(i => i.ordem !== ordem);
-            window.ymsStore.agendamentos = window.ymsStore.agendamentos.filter(i => i.ordem !== ordem);
-            window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
+            window.exibirToast("Adicionado ao Rascunho!", `Janela ${novaOrdem} no rascunho.`, "📝");
         };
 
         window.tratarDragOver = function(e) { e.preventDefault(); e.stopPropagation(); };
         window.tratarDragLeave = function(e) { e.preventDefault(); e.stopPropagation(); };
-        window.tratarDrop = function(e) {
-            e.preventDefault(); e.stopPropagation();
-            const files = e.dataTransfer.files;
-            if (files && files.length > 0) window.processarArquivoEspecifico(files[0]);
-        };
-
-        window.lerPlanilhaExcel = function(event) {
-            const file = event.target.files[0];
-            if (file) window.processarArquivoEspecifico(file);
-        };
+        window.tratarDrop = function(e) { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer.files?.length > 0) window.processarArquivoEspecifico(e.dataTransfer.files[0]); };
+        window.lerPlanilhaExcel = function(event) { if (event.target.files[0]) window.processarArquivoEspecifico(event.target.files[0]); };
 
         window.processarArquivoEspecifico = function(file) {
             const reader = new FileReader();
@@ -1592,10 +2065,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 const json = XLSX.utils.sheet_to_json(sheet, { raw: false });
 
-                if (!json || json.length === 0) {
-                    alert("A planilha selecionada está vazia.");
-                    return;
-                }
+                if (!json || json.length === 0) { alert("A planilha selecionada está vazia."); return; }
 
                 let inseridos = 0;
                 let primeiraDataValida = null;
@@ -1609,7 +2079,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
 
                     let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
-                    let dataTxt = kData ? window.normalizarDataUniversal(row[kData]) : "20/07/2026";
+                    let dataTxt = kData ? window.normalizarDataUniversal(row[kData]) : window.obterDataHojePtBR();
 
                     if (!primeiraDataValida) primeiraDataValida = dataTxt;
 
@@ -1618,31 +2088,18 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     let kGeral = keys.find(k => k.match(/hora|horário|horario|janela|slot/i));
 
                     let hIni = "08:00", hFim = "09:00";
-
                     if (kIni && row[kIni]) hIni = String(row[kIni]).trim();
                     if (kFim && row[kFim]) hFim = String(row[kFim]).trim();
 
                     if (kGeral && row[kGeral] && (!kIni || !kFim)) {
                         let matches = String(row[kGeral]).match(/(\d{1,2}:\d{2})\s*(?:às|as|-|a)\s*(\d{1,2}:\d{2})/i);
-                        if (matches) {
-                            hIni = matches[1];
-                            hFim = matches[2];
-                        }
+                        if (matches) { hIni = matches[1]; hFim = matches[2]; }
                     }
 
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                     window.ymsStore.rascunhoAgendamentos.push({
-                        ordem: `ORD-${proxId}`,
-                        data: dataTxt,
-                        fornecedor: fornNome,
-                        doca: docaNome,
-                        horaIni: hIni,
-                        horaFim: hFim,
-                        tipoOperacao: 'COTIDIANO',
-                        prioridadeFila: 99,
-                        status: "AGENDADO",
-                        isRascunho: true,
-                        nf: "A CONFIRMAR"
+                        ordem: `ORD-${proxId}`, data: dataTxt, fornecedor: fornNome, doca: docaNome,
+                        horaIni: hIni, horaFim: hFim, tipoOperacao: 'COTIDIANO', prioridadeFila: 99, status: "AGENDADO", isRascunho: true, nf: "A CONFIRMAR"
                     });
                     inseridos++;
                 });
@@ -1661,41 +2118,34 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
         window.processarTextoBruto = function() {
             const txt = document.getElementById('txtBruto').value.trim();
-            if (!txt) {
-                alert("Cole o texto das janelas antes de processar.");
-                return;
+            if (!txt) return;
+            const regex = /(\d{2}\/\d{2}\/\d{4})(.*?)(Doca\s*-\s*.*?)(?=\d{2}:\d{2})(\d{2}:\d{2})(\d{2}:\d{2})/g;
+            let match, count = 0;
+
+            while ((match = regex.exec(txt)) !== null) {
+                count++;
+                const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
+                window.ymsStore.rascunhoAgendamentos.push({
+                    ordem: `ORD-${proxId}`, data: window.normalizarDataUniversal(match[1]),
+                    fornecedor: window.limparNomeFornecedor(match[2]), doca: match[3].trim(),
+                    horaIni: match[4], horaFim: match[5], tipoOperacao: 'COTIDIANO', prioridadeFila: 99, status: "AGENDADO", isRascunho: true
+                });
             }
-            const linhas = txt.split('\n');
-            let count = 0;
-            linhas.forEach((linha) => {
-                if (linha.trim()) {
-                    let matches = linha.match(/(\d{1,2}:\d{2})\s*(?:às|as|-|a)\s*(\d{1,2}:\d{2})/i);
-                    let hIni = "08:00", hFim = "09:00";
-                    if (matches) {
-                        hIni = matches[1];
-                        hFim = matches[2];
-                    }
-
-                    const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
-                    window.ymsStore.rascunhoAgendamentos.push({
-                        ordem: `ORD-${proxId}`,
-                        data: "20/07/2026",
-                        fornecedor: "CSN",
-                        doca: listaTodasDocas[0],
-                        horaIni: hIni,
-                        horaFim: hFim,
-                        tipoOperacao: 'COTIDIANO',
-                        prioridadeFila: 99,
-                        status: "AGENDADO",
-                        isRascunho: true,
-                        nf: "A CONFIRMAR"
-                    });
-                    count++;
-                }
-            });
-
             window.renderizarGradePCP();
             window.exibirToast("Texto Processado!", `${count} janelas geradas no rascunho.`, "📋");
+        };
+
+        window.removerJanelaIndividual = function(ordem) {
+            window.ymsStore.rascunhoAgendamentos = window.ymsStore.rascunhoAgendamentos.filter(i => i.ordem !== ordem);
+            window.ymsStore.agendamentos = window.ymsStore.agendamentos.filter(i => i.ordem !== ordem);
+            window.salvarAgendamentosNaMemoria();
+            window.renderizarGradePCP();
+        };
+
+        window.limparGradeTotal = function() { window.ymsStore.rascunhoAgendamentos = []; window.renderizarGradePCP(); };
+        window.limparJanelasSubidas = function() {
+            if (!confirm("Tem certeza que deseja apagar todas as janelas do Firebase?")) return;
+            window.ymsStore.agendamentos = []; window.salvarAgendamentosNaMemoria(); window.renderizarGradePCP();
         };
 
         window.renderizarGradePCP = function() {
@@ -1703,28 +2153,25 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (!container) return;
             container.innerHTML = "";
 
-            window.ymsStore.rascunhoAgendamentos.forEach(r => {
-                r.data = window.normalizarDataUniversal(r.data);
-            });
+            const todasJanelasExibicao = [...window.ymsStore.rascunhoAgendamentos, ...window.ymsStore.agendamentos];
+            document.getElementById('contadorJanelas').textContent = todasJanelasExibicao.length;
 
-            const listaExibicao = [...window.ymsStore.rascunhoAgendamentos, ...(window.ymsStore.agendamentos || [])];
-            document.getElementById('contadorJanelas').textContent = listaExibicao.length;
-
-            if (listaExibicao.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada.</p>`;
+            if (todasJanelasExibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no sistema.</p>`;
                 document.getElementById('painelAcaoSubir').classList.add('hidden');
                 window.atualizarHorariosDisponiveis();
                 return;
             }
 
-            if (window.ymsStore.rascunhoAgendamentos.length > 0) {
-                document.getElementById('painelAcaoSubir').classList.remove('hidden');
-            } else {
-                document.getElementById('painelAcaoSubir').classList.add('hidden');
-            }
+            if (window.ymsStore.rascunhoAgendamentos.length > 0) document.getElementById('painelAcaoSubir').classList.remove('hidden');
+            else document.getElementById('painelAcaoSubir').classList.add('hidden');
 
-            listaExibicao.forEach(item => {
-                const ehRascunho = item.isRascunho;
+            todasJanelasExibicao.forEach(item => {
+                const ehRascunho = item.isRascunho || window.ymsStore.rascunhoAgendamentos.some(r => r.ordem === item.ordem);
+                let badgeTag = ehRascunho 
+                    ? `<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-500/50 px-2 py-0.5 rounded">📝 RASCUNHO</span>` 
+                    : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status}</span>`;
+
                 let badgeTipoOp = '';
                 if (item.tipoOperacao === 'CRITICA' || (item.ordem && item.ordem.includes('CRITICO'))) {
                     badgeTipoOp = `<span class="bg-red-600 text-white font-black text-[9px] px-2 py-0.5 rounded font-mono animate-pulse">🔴 CRÍTICA</span>`;
@@ -1732,14 +2179,12 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     badgeTipoOp = `<span class="bg-amber-500 text-slate-950 font-bold text-[9px] px-2 py-0.5 rounded font-mono">🟡 EXTRA</span>`;
                 }
 
-                const dataExibicao = window.normalizarDataUniversal(item.data);
-
                 container.insertAdjacentHTML('beforeend', `
                     <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
-                                ${ehRascunho ? '<span class="text-[10px] font-bold text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded">📝 RASCUNHO</span>' : ''}
+                                ${badgeTag}
                                 ${badgeTipoOp}
                                 <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
                             </div>
@@ -1747,10 +2192,10 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="text-right">
-                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${dataExibicao}</span>
+                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${window.normalizarDataUniversal(item.data)}</span>
                                 <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
                             </div>
-                            <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl transition text-xs cursor-pointer">🗑️</button>
+                            <button type="button" onclick="removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl transition text-xs cursor-pointer ml-1">🗑️</button>
                         </div>
                     </div>
                 `);
@@ -1759,14 +2204,155 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.atualizarHorariosDisponiveis();
         };
 
-        // --- DEMAIS MÓDULOS ---
-        window.renderizarModuloFornecedor = function() {};
+        window.confirmarESubirJanelas = function() {
+            if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
+            window.ymsStore.rascunhoAgendamentos.forEach(r => { delete r.isRascunho; r.data = window.normalizarDataUniversal(r.data); });
+            window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos);
+            window.ymsStore.rascunhoAgendamentos = [];
+            window.salvarAgendamentosNaMemoria();
+            window.renderizarGradePCP();
+            window.exibirToast("Janelas Publicadas!", "Sincronizadas no YMS.", "🚀");
+        };
+
+        // --- PORTAL FORNECEDOR ---
+        window.alternarAbaFornecedor = function(aba) {
+            window.ymsStore.abaFornecedorAtual = aba;
+            document.getElementById('btnAbaPendentes').className = aba === 'pendentes' ? "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white shadow cursor-pointer" : "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer";
+            document.getElementById('btnAbaConfirmadas').className = aba === 'confirmadas' ? "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-emerald-600 text-white shadow cursor-pointer" : "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer";
+            window.renderizarModuloFornecedor();
+        };
+
+        window.buscarMotoristaPorCpf = function() {
+            const cpfDigitado = document.getElementById('fornCpf').value.replace(/\D/g, '').trim();
+            if (!cpfDigitado) return;
+            const encontrado = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfDigitado);
+            if (encontrado) {
+                if (encontrado.status === 'BLOQUEADO') { alert(`🚫 MOTORISTA BLOQUEADO!\n\nMotivo: ${encontrado.obs || 'Bloqueado'}`); return; }
+                document.getElementById('fornMotorista').value = encontrado.nome;
+                document.getElementById('fornCelular').value = encontrado.celular || '';
+            }
+        };
+
+        window.renderizarModuloFornecedor = function() {
+            const containerBoxSeletor = document.getElementById('boxSeletorFornecedorPortal');
+            const container = document.getElementById('listaOrdensFornecedor');
+            if (!container) return;
+            container.innerHTML = "";
+
+            let empresaFiltroAlvo = window.ymsStore.empresaFornecedorLogada ? window.limparNomeFornecedor(window.ymsStore.empresaFornecedorLogada) : "";
+            if (containerBoxSeletor) {
+                if (empresaFiltroAlvo) {
+                    containerBoxSeletor.innerHTML = `<div class="bg-slate-900 text-white font-black text-xs p-2.5 rounded-xl border border-emerald-500/40 flex justify-between items-center"><span class="truncate">${empresaFiltroAlvo}</span><span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">🔒 AUTENTICADO</span></div>`;
+                } else {
+                    let selHtml = `<select id="selFornFiltroPortal" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-xl p-2 text-xs font-black text-amber-300 outline-none cursor-pointer">`;
+                    window.obterListaNomesFornecedores().forEach(f => { selHtml += `<option value="${f}">${f}</option>`; });
+                    selHtml += `</select>`;
+                    containerBoxSeletor.innerHTML = selHtml;
+                    empresaFiltroAlvo = document.getElementById('selFornFiltroPortal')?.value || "";
+                }
+            }
+
+            const rawDataSel = document.getElementById('filtroDataFornecedor')?.value;
+            const dataFiltroFormatted = window.normalizarDataUniversal(rawDataSel);
+
+            const ordens = window.ymsStore.agendamentos.filter(i => {
+                const bateData = window.normalizarDataUniversal(i.data) === dataFiltroFormatted;
+                const bateForn = !empresaFiltroAlvo || window.normalizarTexto(i.fornecedor).includes(window.normalizarTexto(empresaFiltroAlvo));
+                return bateData && bateForn;
+            });
+
+            const exibicao = window.ymsStore.abaFornecedorAtual === 'pendentes' ? ordens.filter(i => i.status === 'AGENDADO') : ordens.filter(i => i.status !== 'AGENDADO');
+
+            if (exibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem para exibição.</p>`;
+                return;
+            }
+
+            if (!window.ymsStore.ordemAtivaFornecedor) window.ymsStore.ordemAtivaFornecedor = exibicao[0].ordem;
+
+            exibicao.forEach(item => {
+                const isSel = item.ordem === window.ymsStore.ordemAtivaFornecedor;
+                container.insertAdjacentHTML('beforeend', `
+                    <div onclick="selecionarOrdemFornecedor('${item.ordem}')" class="${isSel ? 'bg-indigo-950 border-2 border-indigo-500' : 'bg-slate-900 border border-slate-700'} p-3 rounded-xl cursor-pointer transition">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="bg-indigo-600 text-white font-mono text-[10px] px-2 py-0.5 rounded">${item.ordem}</span>
+                            <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">${item.status}</span>
+                        </div>
+                        <p class="text-xs font-black text-white mt-1">${item.fornecedor}</p>
+                        <p class="text-[11px] text-indigo-300">🕒 ${item.horaIni} às ${item.horaFim}</p>
+                    </div>
+                `);
+            });
+
+            const ativa = window.ymsStore.agendamentos.find(i => i.ordem === window.ymsStore.ordemAtivaFornecedor);
+            if (ativa) {
+                document.getElementById('txtOrdemSelecionada').textContent = `ORDEM: ${ativa.ordem}`;
+                document.getElementById('txtStatusOrdem').textContent = ativa.status;
+                document.getElementById('fornNf').value = ativa.nf || '';
+                document.getElementById('fornTransp').value = ativa.transp || '';
+                document.getElementById('fornCavalo').value = ativa.cavalo || '';
+                document.getElementById('fornCarreta').value = ativa.carreta || '';
+                document.getElementById('fornMotorista').value = ativa.motorista || '';
+                document.getElementById('fornCpf').value = ativa.cpf || '';
+                document.getElementById('fornCelular').value = ativa.celular || '';
+            }
+        };
+
+        window.selecionarOrdemFornecedor = function(ordem) { window.ymsStore.ordemAtivaFornecedor = ordem; window.renderizarModuloFornecedor(); };
+
+        window.salvarConfirmacaoFornecedor = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const ativa = window.ymsStore.agendamentos.find(i => i.ordem === window.ymsStore.ordemAtivaFornecedor);
+            if (!ativa) return;
+
+            ativa.nf = document.getElementById('fornNf').value;
+            ativa.transp = document.getElementById('fornTransp').value;
+            ativa.cavalo = document.getElementById('fornCavalo').value;
+            ativa.carreta = document.getElementById('fornCarreta').value;
+            ativa.motorista = document.getElementById('fornMotorista').value;
+            ativa.cpf = document.getElementById('fornCpf').value;
+            ativa.celular = document.getElementById('fornCelular').value;
+            ativa.status = "CONFIRMADO_FORNECEDOR";
+
+            window.salvarAgendamentosNaMemoria();
+            window.exibirToast("Confirmado!", "Aguardando Check-in no Totem.", "✅");
+        };
+
+        // --- TOTEM AUTOATENDIMENTO ---
+        window.digitarTotem = function(n) { const input = document.getElementById('displayTotem'); if (input.value.length < 20) input.value += n; };
+        window.limparTotem = function() { document.getElementById('displayTotem').value = ''; };
+        window.apagarTotem = function() { const input = document.getElementById('displayTotem'); input.value = input.value.slice(0, -1); };
+
+        window.finalizarCheckinTotem = function() {
+            const entradaTotem = document.getElementById('displayTotem').value.trim().toUpperCase();
+            if (!entradaTotem) return;
+            const inputLimpoNum = entradaTotem.replace(/\D/g, '');
+
+            const ag = window.ymsStore.agendamentos.find(i => (inputLimpoNum && i.cpf && String(i.cpf).replace(/\D/g, '') === inputLimpoNum) || (i.ordem && window.normalizarTexto(i.ordem) === window.normalizarTexto(entradaTotem)));
+            if (!ag) { alert("Nenhum agendamento ativo encontrado."); return; }
+
+            ag.ticket = `T-${Math.floor(100 + Math.random() * 900)}`;
+            ag.status = "CHECKIN_PATIO";
+            ag.timeCheckin = new Date().toISOString();
+
+            document.getElementById('ticketImpressaoId').textContent = ag.ticket;
+            document.getElementById('ticketImpressaoNome').textContent = ag.motorista || 'Motorista';
+            document.getElementById('qrcodeTicket').innerHTML = "";
+            new QRCode(document.getElementById("qrcodeTicket"), { text: `${ag.ticket}|CPF:${ag.cpf || ''}`, width: 100, height: 100 });
+
+            setTimeout(() => window.print(), 300);
+            window.limparTotem();
+            window.salvarAgendamentosNaMemoria();
+        };
+
+        // --- RECEBIMENTO FISCAL ---
         window.renderizarModuloFiscal = function() {
             const container = document.getElementById('listaPatioFiscal');
             if (!container) return;
             container.innerHTML = "";
             const emPatio = window.ymsStore.agendamentos.filter(i => i.status === 'CHECKIN_PATIO' || i.status === 'CONFIRMADO_FORNECEDOR');
-            
+            document.getElementById('badgeQtdPatio').textContent = emPatio.length;
+
             emPatio.forEach(item => {
                 const isSel = item.ticket === window.ymsStore.ticketAtivoFiscal;
                 const isCritico = item.tipoOperacao === 'CRITICA' || item.prioridadeFila === 1;
@@ -1784,20 +2370,83 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
             const ativo = emPatio.find(i => (i.ticket || i.ordem) === window.ymsStore.ticketAtivoFiscal);
             if (ativo) {
+                document.getElementById('fiscMotorista').textContent = ativo.motorista || '-';
+                document.getElementById('fiscPlaca').textContent = `${ativo.cavalo || '-'} / ${ativo.carreta || '-'}`;
                 document.getElementById('fiscNf').textContent = ativo.tipoOperacao === 'CRITICA' ? `🔴 CRÍTICO / ${ativo.detalhesCriticidade?.partNumber || ''}` : (ativo.nf || '-');
+            }
+
+            const gridDocas = document.getElementById('gridDocasFiscal');
+            if (gridDocas) {
+                gridDocas.innerHTML = "";
+                listaTodasDocas.forEach(doca => {
+                    const indexNaSeq = window.ymsStore.sequenciaDocasSelecao.indexOf(doca);
+                    const selecionada = indexNaSeq !== -1;
+                    gridDocas.insertAdjacentHTML('beforeend', `
+                        <div onclick="alternarDocaNaSequencia('${doca}')" class="bg-slate-900 p-3.5 rounded-xl flex items-center justify-between border ${selecionada ? 'border-amber-400 bg-amber-950/20' : 'border-slate-700'} cursor-pointer hover:border-purple-500 transition select-none">
+                            <span class="text-xs font-bold ${selecionada ? 'text-amber-300' : 'text-white'}">${doca}</span>
+                            ${selecionada ? `<span class="bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full">${indexNaSeq + 1}ª Doca</span>` : `<span class="text-[10px] text-slate-500">+ Adicionar</span>`}
+                        </div>
+                    `);
+                });
             }
         };
 
-        window.selecionarTicketFiscal = function(t) {
-            window.ymsStore.ticketAtivoFiscal = t;
+        window.alternarDocaNaSequencia = function(doca) {
+            const idx = window.ymsStore.sequenciaDocasSelecao.indexOf(doca);
+            if (idx === -1) window.ymsStore.sequenciaDocasSelecao.push(doca);
+            else window.ymsStore.sequenciaDocasSelecao.splice(idx, 1);
             window.renderizarModuloFiscal();
         };
 
+        window.resetarSequenciaDocas = function() { window.ymsStore.sequenciaDocasSelecao = []; window.renderizarModuloFiscal(); };
+        window.selecionarTicketFiscal = function(t) { window.ymsStore.ticketAtivoFiscal = t; window.renderizarModuloFiscal(); };
+
+        window.liberarParaDocaFiscal = function() {
+            if (!window.ymsStore.ticketAtivoFiscal || window.ymsStore.sequenciaDocasSelecao.length === 0) return;
+            const item = window.ymsStore.agendamentos.find(i => (i.ticket || i.ordem) === window.ymsStore.ticketAtivoFiscal);
+            if (!item) return;
+            item.docasSequencia = [...window.ymsStore.sequenciaDocasSelecao];
+            item.indexDocaAtual = 0;
+            item.status = "TRIAGEM_FISCAL";
+            window.salvarAgendamentosNaMemoria();
+            window.exibirToast("Rota Salva!", "Veículo liberado para a Doca.", "🚀");
+        };
+
+        // --- OPERADOR DE DOCA ---
+        window.atualizarPainelDoca = function() {
+            const docaSel = document.getElementById('selDocaOperador')?.value;
+            const containerFila = document.getElementById('listaFilaDoca');
+            if (!docaSel || !containerFila) return;
+            containerFila.innerHTML = "";
+
+            const naFila = window.ymsStore.agendamentos.filter(i => i.status === 'TRIAGEM_FISCAL' && i.docasSequencia && i.docasSequencia[i.indexDocaAtual] === docaSel);
+            document.getElementById('badgeQtdDocaFila').textContent = naFila.length;
+
+            naFila.forEach((item, idx) => {
+                containerFila.insertAdjacentHTML('beforeend', `
+                    <div class="bg-slate-900 p-3 rounded-xl border-l-4 border-emerald-500 flex justify-between items-center">
+                        <p class="text-xs font-black text-white">${idx + 1}º - ${item.ticket || item.ordem} (${item.cavalo || 'Sem Placa'})</p>
+                    </div>
+                `);
+            });
+        };
+
+        window.chamarProximoSms = function() {};
+        window.finalizarDescargaDoca = function() {};
+
+        // --- CHECK-OUT PORTARIA ---
         window.renderizarModuloCheckout = function() {};
+        window.selecionarTicketCheckout = function(t) {};
+        window.confirmarSaidaPortaria = function() {};
+
+        // --- CADASTRO DE MOTORISTAS ---
         window.renderizarTabelaMotoristas = function() {};
-        window.atualizarPainelDoca = function() {};
+        window.salvarMotoristaManual = function() {};
+        window.alternarStatusMotorista = function() {};
+
+        // --- TORRE DE CONTROLE ---
         window.carregarGraficosTorre = function() {};
-        window.preencherFormularioConfigApi = function() {};
+        window.exportarRelatorioExcelFormatado = function() {};
 
         window.exibirToast = function(titulo, sub, icone = "✨") {
             const toast = document.getElementById('toast');
@@ -1815,7 +2464,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             setInterval(window.atualizarRelogioDigital, 1000);
             window.atualizarRelogioDigital();
 
-            const hojeIso = "2026-07-20";
+            const hojeIso = window.obterDataHojeISO();
             if (document.getElementById('inpData')) document.getElementById('inpData').value = hojeIso;
 
             const selDoca = document.getElementById('inpDoca');
@@ -1828,8 +2477,18 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                 });
             }
 
-            window.popularSelectFornecedores(listaPadrao60Fornecedores);
-            window.atualizarPreviewJanela();
+            const selDocaOp = document.getElementById('selDocaOperador');
+            if (selDocaOp) {
+                selDocaOp.innerHTML = "";
+                listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    selDocaOp.appendChild(opt);
+                });
+            }
+
+            window.popularSelectFornecedores(listaPadrao60Fornecedores.map(f => f.empresa));
+            window.restaurarSessaoLocal();
             inicializarEscutadoresFirebase();
         });
     </script>
