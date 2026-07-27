@@ -141,8 +141,24 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fornecedor *</label>
-                            <input type="text" id="inpFornecedor" placeholder="Digite o nome do fornecedor..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white font-bold outline-none">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
+                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(6 CADASTRADOS)</span>
+                            </div>
+                            <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
+                                <div class="p-2 border-b border-slate-800 bg-slate-900 flex items-center gap-2">
+                                    <span class="text-xs">🔍</span>
+                                    <input type="text" id="filtroForn" placeholder="Filtrar fornecedor..." oninput="filtrarOpcoesFornecedor()" class="w-full bg-transparent text-xs text-slate-200 outline-none font-bold">
+                                </div>
+                                <select id="inpFornecedor" size="3" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1">
+                                    <option value="CSN">CSN</option>
+                                    <option value="ARCELORMITTAL">ARCELORMITTAL</option>
+                                    <option value="MULTILOG">MULTILOG</option>
+                                    <option value="GERDAU">GERDAU</option>
+                                    <option value="USIMINAS">USIMINAS</option>
+                                    <option value="TUPY">TUPY</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -161,7 +177,7 @@
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
                                 <span class="text-slate-400"><span class="text-emerald-400">■</span> Livre <span class="text-red-400 ml-1">■</span> Ocupado</span>
                             </div>
-                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-24 overflow-y-auto pr-1"></div>
+                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-24 overflow-y-auto pr-1 custom-scrollbar"></div>
 
                             <div class="grid grid-cols-2 gap-3 pt-1">
                                 <div>
@@ -212,7 +228,7 @@
                     </div>
 
                     <div id="containerJanelas" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1 custom-scrollbar">
-                        <p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada.</p>
+                        <p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada no sistema.</p>
                     </div>
                 </div>
 
@@ -249,7 +265,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabelaFornecedorAgendamentos" class="divide-y divide-slate-700/50">
-                            <tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento carregado no sistema.</td></tr>
+                            <tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum agendamento no sistema.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -374,11 +390,6 @@
             return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
         };
 
-        window.limparNomeFornecedor = function(nome) {
-            let str = String(nome || '').trim().toUpperCase();
-            return str || 'FORNECEDOR';
-        };
-
         window.normalizarDataUniversal = function(dVal) {
             if (!dVal) return window.obterDataHojePtBR();
             let dStr = String(dVal).trim();
@@ -463,9 +474,54 @@
         };
 
         window.alternarAbaPCP = function(aba) {
+            const bInd = document.getElementById('tabIndividualBtn');
+            const bMas = document.getElementById('tabMassaBtn');
+            const bTxt = document.getElementById('tabTextoBtn');
+
             document.getElementById('conteudoIndividual').classList.toggle('hidden', aba !== 'individual');
             document.getElementById('conteudoMassa').classList.toggle('hidden', aba !== 'massa');
             document.getElementById('conteudoTexto').classList.toggle('hidden', aba !== 'texto');
+
+            if (bInd && bMas && bTxt) {
+                bInd.className = aba === 'individual' ? "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow" : "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+                bMas.className = aba === 'massa' ? "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow" : "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+                bTxt.className = aba === 'texto' ? "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow" : "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            }
+        };
+
+        window.selecionarTipoCarga = function(tipo) {
+            window.tipoCargaAtivo = tipo;
+            const bCotidiano = document.getElementById('btnTipoCotidiano');
+            const bExtra = document.getElementById('btnTipoExtra');
+            const bCritica = document.getElementById('btnTipoCritica');
+            const badge = document.getElementById('badgeTipoJanela');
+
+            [bCotidiano, bExtra, bCritica].forEach(b => {
+                if(b) b.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            });
+
+            if (tipo === 'cotidiano' && bCotidiano) {
+                bCotidiano.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                if(badge) { badge.textContent = "🟢 Cotidiano"; badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; }
+            } else if (tipo === 'extra' && bExtra) {
+                bExtra.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-600 border-amber-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                if(badge) { badge.textContent = "🟡 Extra"; badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; }
+            } else if (tipo === 'critica' && bCritica) {
+                bCritica.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                if(badge) { badge.textContent = "🔴 Crítica"; badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; }
+            }
+        };
+
+        window.filtrarOpcoesFornecedor = function() {
+            const termo = document.getElementById('filtroForn').value.toLowerCase();
+            const select = document.getElementById('inpFornecedor');
+            let visiveis = 0;
+            Array.from(select.options).forEach(opt => {
+                const combina = opt.text.toLowerCase().includes(termo);
+                opt.style.display = combina ? '' : 'none';
+                if (combina) visiveis++;
+            });
+            document.getElementById('lblContadorForn').textContent = `(${visiveis} CADASTRADOS)`;
         };
 
         window.atualizarHorariosDisponiveis = function() {
