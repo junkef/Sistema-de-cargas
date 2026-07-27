@@ -130,6 +130,26 @@ function inicializarEscutadoresFirebase() {
 
 window.salvarAgendamentosNaMemoria = function() { set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos); };
 
+// 🔴 FUNÇÃO PARA ZERAR/LIMPAR TODAS AS JANELAS DO FIREBASE
+window.limparJanelasSubidas = function() {
+    if (confirm("⚠️ ATENÇÃO!\n\nTem certeza de que deseja ZERAR/APAGAR TODAS as 9219+ janelas do Firebase?\nEsta ação não poderá ser desfeita.")) {
+        window.ymsStore.agendamentos = [];
+        window.salvarAgendamentosNaMemoria();
+        window.renderizarGradePCP();
+        window.exibirToast("Banco Zerado!", "Todas as janelas foram excluídas do Firebase.", "🗑️");
+    }
+};
+
+// 🔴 FUNÇÃO PARA SAIR/LOGOUT
+window.fazerLogoutGlobal = function() {
+    if (confirm("Deseja realmente sair e voltar para a tela de login?")) {
+        window.ymsStore.usuarioLogado = null;
+        const modal = document.getElementById('modalLoginGlobal');
+        if (modal) modal.classList.remove('hidden');
+        window.exibirToast("Sessão Encerrada", "Você saiu do sistema.", "🔒");
+    }
+};
+
 window.atualizarHorariosDisponiveis = function() {
     const elDoca = document.getElementById('inpDoca');
     if (!elDoca || !elDoca.value) return;
@@ -161,7 +181,6 @@ window.atualizarHorariosDisponiveis = function() {
         const minSlot = window.horaParaMinutos(slot);
         let colide = ocupados.some(oc => minSlot >= oc.ini && minSlot < oc.fim);
         
-        // Oculta/bloqueia horários passados se a data selecionada for hoje
         if (rawData === hojeIso && minSlot < minAtuais) {
             colide = true;
         }
