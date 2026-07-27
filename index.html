@@ -377,7 +377,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO COM CONVERSOR SERIAL DE DATA DO EXCEL -->
+    <!-- SCRIPT CORRIGIDO COM EXTRATOR DINÂMICO DE HORÁRIOS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -425,11 +425,10 @@
             return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
         };
 
-        // 🛠️ CONVERSOR UNIVERSAL DE DATAS (CONVERTE NUMERAL SERIAL DO EXCEL COMO 46223 PARA "27/07/2026")
+        // 🛠️ CONVERSOR UNIVERSAL DE DATAS
         window.normalizarDataParaBR = function(dVal) {
             if (!dVal) return "27/07/2026";
             
-            // Trata números ordinais do Excel (ex: 46223 ou "46223")
             const num = Number(dVal);
             if (!isNaN(num) && num > 30000) {
                 const dateObj = new Date((num - 25569) * 86400 * 1000);
@@ -444,6 +443,79 @@
             const p = dStr.split('-');
             if (p.length === 3) return `${p[2]}/${p[1]}/${p[0]}`;
             return dStr;
+        };
+
+        // 🕒 EXTRATOR INTELIGENTE DE HORÁRIOS DA PLANILHA DO EXCEL
+        window.extrairHorarios = function(row) {
+            let keys = Object.keys(row);
+            
+            let kIni = keys.find(k => k.match(/ini|início|inicio|de\b|start/i));
+            let kFim = keys.find(k => k.match(/fim|término|termino|até|ate|end/i));
+            let kGeral = keys.find(k => k.match(/hora|horário|horario|janela|slot/i));
+
+            let rawIni = kIni ? row[kIni] : null;
+            let rawFim = kFim ? row[kFim] : null;
+            let rawGeral = kGeral ? row[kGeral] : null;
+
+            let hIni = "08:00";
+            let hFim = "09:00";
+
+            function formatarHoraVal(val) {
+                if (val === null || val === undefined || val === '') return null;
+                if (typeof val === 'number') {
+                    if (val > 0 && val < 1) {
+                        let totalMinutos = Math.round(val * 24 * 60);
+                        let h = Math.floor(totalMinutos / 60) % 24;
+                        let m = totalMinutos % 60;
+                        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                    } else if (val >= 1 && val <= 24) {
+                        return `${String(Math.floor(val)).padStart(2, '0')}:00`;
+                    }
+                }
+                let str = String(val).trim();
+                let match = str.match(/(\d{1,2})[:hH](\d{2})/);
+                if (match) {
+                    return `${String(match[1]).padStart(2, '0')}:${String(match[2]).padStart(2, '0')}`;
+                }
+                let matchApenasHora = str.match(/^(\d{1,2})$/);
+                if (matchApenasHora) {
+                    return `${String(matchApenasHora[1]).padStart(2, '0')}:00`;
+                }
+                return null;
+            }
+
+            if (rawIni !== null && rawIni !== undefined) {
+                let p = formatarHoraVal(rawIni);
+                if (p) hIni = p;
+            }
+            if (rawFim !== null && rawFim !== undefined) {
+                let p = formatarHoraVal(rawFim);
+                if (p) hFim = p;
+            }
+
+            if (rawGeral !== null && rawGeral !== undefined && (!kIni || !kFim)) {
+                let strGeral = String(rawGeral).trim();
+                let matches = strGeral.match(/(\d{1,2})[:hH]?(\d{2})?\s*(?:a|às|as|-|ate|até|to|\s)\s*(\d{1,2})[:hH]?(\d{2})?/i);
+                if (matches) {
+                    let h1 = String(matches[1]).padStart(2, '0');
+                    let m1 = matches[2] ? String(matches[2]).padStart(2, '0') : "00";
+                    let h2 = String(matches[3]).padStart(2, '0');
+                    let m2 = matches[4] ? String(matches[4]).padStart(2, '0') : "00";
+                    hIni = `${h1}:${m1}`;
+                    hFim = `${h2}:${m2}`;
+                } else {
+                    let single = formatarHoraVal(rawGeral);
+                    if (single) {
+                        hIni = single;
+                        let min = window.horaParaMinutos(hIni) + 60;
+                        let hF = Math.floor(min / 60) % 24;
+                        let mF = min % 60;
+                        hFim = `${String(hF).padStart(2, '0')}:${String(mF).padStart(2, '0')}`;
+                    }
+                }
+            }
+
+            return { horaIni: hIni, horaFim: hFim };
         };
 
         window.dispararEmailCriticoEmMassa = function(janelaItem) {
@@ -522,7 +594,7 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             window.atualizarPreviewJanela();
         };
 
-        // 📊 MONTA TIMELINE E CRUZA AS DATAS COM PERFEIÇÃO
+        // 📊 MONTA TIMELINE E IDENTIFICA OS HORÁRIOS OCUPADOS
         window.atualizarHorariosDisponiveis = function() {
             const docaSel = document.getElementById('inpDoca')?.value;
             const dataSelRaw = document.getElementById('inpData')?.value;
@@ -532,7 +604,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
             const dataFormBusca = window.normalizarDataParaBR(dataSelRaw);
 
-            // Sanitiza os dados e busca os agendamentos daquela doca e data
             const agendadosDocaDia = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])].filter(ag => {
                 const dataAgBr = window.normalizarDataParaBR(ag.data);
                 return ag.doca === docaSel && dataAgBr === dataFormBusca && ag.horaIni !== 'IMEDIATO';
@@ -629,14 +700,17 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
                     let dataTxt = kData ? window.normalizarDataParaBR(row[kData]) : "27/07/2026";
 
+                    // Extração dinâmica de horários
+                    let hor = window.extrairHorarios(row);
+
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                     window.ymsStore.rascunhoAgendamentos.push({
                         ordem: `ORD-${proxId}`,
                         data: dataTxt,
                         fornecedor: fornNome,
                         doca: docaNome,
-                        horaIni: "08:00",
-                        horaFim: "09:00",
+                        horaIni: hor.horaIni,
+                        horaFim: hor.horaFim,
                         tipoOperacao: 'COTIDIANO',
                         prioridadeFila: 99,
                         status: "AGENDADO",
@@ -662,14 +736,25 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             let count = 0;
             linhas.forEach((linha) => {
                 if (linha.trim()) {
+                    let matches = linha.match(/(\d{1,2})[:hH](\d{2})?\s*(?:a|às|as|-|ate|até|to|\s)\s*(\d{1,2})[:hH](\d{2})?/i);
+                    let hIni = "08:00", hFim = "09:00";
+                    if (matches) {
+                        let h1 = String(matches[1]).padStart(2, '0');
+                        let m1 = matches[2] ? String(matches[2]).padStart(2, '0') : "00";
+                        let h2 = String(matches[3]).padStart(2, '0');
+                        let m2 = matches[4] ? String(matches[4]).padStart(2, '0') : "00";
+                        hIni = `${h1}:${m1}`;
+                        hFim = `${h2}:${m2}`;
+                    }
+
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
                     window.ymsStore.rascunhoAgendamentos.push({
                         ordem: `ORD-${proxId}`,
                         data: "27/07/2026",
                         fornecedor: "CSN",
                         doca: listaTodasDocas[0],
-                        horaIni: "08:00",
-                        horaFim: "09:00",
+                        horaIni: hIni,
+                        horaFim: hFim,
                         tipoOperacao: 'COTIDIANO',
                         prioridadeFila: 99,
                         status: "AGENDADO",
@@ -690,7 +775,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     const data = snapshot.val();
                     if (data) {
                         const listaBruta = Array.isArray(data) ? data : Object.values(data);
-                        // Normaliza todas as datas vindas do Firebase
                         window.ymsStore.agendamentos = listaBruta.map(item => ({
                             ...item,
                             data: window.normalizarDataParaBR(item.data)
@@ -850,7 +934,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (!container) return;
             container.innerHTML = "";
 
-            // Garante sanitização de datas no rascunho
             window.ymsStore.rascunhoAgendamentos.forEach(r => {
                 r.data = window.normalizarDataParaBR(r.data);
             });
