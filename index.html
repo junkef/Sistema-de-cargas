@@ -3,7 +3,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 📌 1. UTILITÁRIOS BASE
+        // 📌 1. CONSTANTES E UTILITÁRIOS BASE (DECLARADOS NO INÍCIO)
+        window.listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
+
+        window.slotsDia24h = [];
+        for (let h = 0; h < 24; h++) {
+            for (let m of [0, 30]) {
+                window.slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+            }
+        }
+
         window.obterDataHojePtBR = function() {
             const hoje = new Date();
             const dia = String(hoje.getDate()).padStart(2, '0');
@@ -85,13 +94,7 @@
             return window.obterDataHojeISO();
         };
 
-        window.slotsDia24h = [];
-        for (let h = 0; h < 24; h++) {
-            for (let m of [0, 30]) {
-                window.slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-            }
-        }
-
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCljoMUprqBfj9k8y0w7dE3MW7bWdjZlgA",
             authDomain: "yms-patio-6ba8c.firebaseapp.com",
@@ -966,7 +969,7 @@
                     let kForn = keys.find(k => k.match(/fornec|nome|empresa|cliente|razao|vendor/i));
                     let fornNome = kForn ? window.limparNomeFornecedor(row[kForn]) : "FORNECEDOR";
                     let kDoca = keys.find(k => k.match(/doca|local|gate|destino/i));
-                    let docaNome = kDoca ? String(row[kDoca]).trim() : listaTodasDocas[0];
+                    let docaNome = kDoca ? String(row[kDoca]).trim() : window.listaTodasDocas[0];
                     let kData = keys.find(k => k.match(/dia|data|date|agendamento/i));
                     let dataTxt = kData ? window.normalizarDataUniversal(row[kData]) : window.obterDataHojePtBR();
                     if (!primeiraDataValida) primeiraDataValida = dataTxt;
@@ -1069,7 +1072,6 @@
 
         window.confirmarESubirJanelas = function() {
             if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
-            
             const pendentesValidos = [];
             let qtdBloqueados = 0;
 
@@ -1084,7 +1086,7 @@
             });
 
             if (qtdBloqueados > 0) {
-                alert(`🚫 OPERAÇÃO INTERROMPIDA!\n\nForam encontradas ${qtdBloqueados} janelas no rascunho com DATAS PASSADAS.\nElas foram removidas.`);
+                alert(`🚫 OPERAÇÃO INTERROMPIDA!\n\nForam encontradas ${qtdBloqueados} janelas com DATAS PASSADAS.\nElas foram removidas do rascunho.`);
                 window.ymsStore.rascunhoAgendamentos = pendentesValidos;
                 window.renderizarGradePCP();
                 return;
@@ -1097,12 +1099,8 @@
             window.exibirToast("Janelas Publicadas!", "Sincronizado com sucesso.", "🚀");
         };
 
-        // --- MÓDULO PORTAL FORNECEDOR ---
-        window.alternarAbaFornecedor = function(aba) {
-            window.ymsStore.abaFornecedorAtual = aba;
-            window.renderizarModuloFornecedor();
-        };
-
+        // MÓDULOS DE INTERFACE
+        window.alternarAbaFornecedor = function(aba) { window.ymsStore.abaFornecedorAtual = aba; window.renderizarModuloFornecedor(); };
         window.buscarMotoristaPorCpf = function() {
             const cpfDigitado = document.getElementById('fornCpf').value.replace(/\D/g, '').trim();
             if (!cpfDigitado) return;
@@ -1205,7 +1203,6 @@
             window.dispararSmsEtapa(ativa, 'CONFIRMADO_FORNECEDOR');
         };
 
-        // --- MÓDULO TOTEM AUTOATENDIMENTO ---
         window.digitarTotem = function(n) { const input = document.getElementById('displayTotem'); if (input.value.length < 20) input.value += n; };
         window.limparTotem = function() { document.getElementById('displayTotem').value = ''; };
         window.apagarTotem = function() { const input = document.getElementById('displayTotem'); input.value = input.value.slice(0, -1); };
@@ -1225,7 +1222,6 @@
             window.dispararSmsEtapa(ag, 'CHECKIN_PATIO');
         };
 
-        // --- MÓDULO TRIAGEM FISCAL ---
         window.renderizarModuloFiscal = function() {
             const container = document.getElementById('listaPatioFiscal'); if (!container) return; container.innerHTML = "";
             const emPatio = window.ymsStore.agendamentos.filter(i => i.status === 'CHECKIN_PATIO');
@@ -1241,7 +1237,7 @@
             const gridDocas = document.getElementById('gridDocasFiscal');
             if (gridDocas) {
                 gridDocas.innerHTML = "";
-                listaTodasDocas.forEach(doca => {
+                window.listaTodasDocas.forEach(doca => {
                     gridDocas.insertAdjacentHTML('beforeend', `<div onclick="alternarDocaNaSequencia('${doca}')" class="bg-slate-900 p-3 rounded-xl border border-slate-700 cursor-pointer"><span class="text-xs font-bold text-white">${doca}</span></div>`);
                 });
             }
@@ -1266,7 +1262,6 @@
             window.dispararSmsEtapa(item, 'TRIAGEM_FISCAL');
         };
 
-        // --- MÓDULO OPERADOR DE DOCA ---
         window.atualizarPainelDoca = function() {
             const docaSel = document.getElementById('selDocaOperador')?.value; if (!docaSel) return;
             const containerFila = document.getElementById('listaFilaDoca'); if (containerFila) containerFila.innerHTML = "";
@@ -1299,7 +1294,6 @@
             }
         };
 
-        // --- OUTRAS FUNÇÕES ---
         window.renderizarModuloCheckout = function() {};
         window.confirmarSaidaPortaria = function() {};
         window.renderizarTabelaMotoristas = function() {};
@@ -1317,7 +1311,8 @@
             setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
         };
 
-        window.addEventListener('DOMContentLoaded', () => {
+        // 🚀 INICIALIZAÇÃO SEGURA (COMPATÍVEL COM MÓDULOS DE NAVEGADOR)
+        function iniciarAplicacao() {
             setInterval(() => {
                 const r = document.getElementById('relogioGlobal');
                 if (r) r.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
@@ -1328,13 +1323,34 @@
             if (document.getElementById('filtroDataFornecedor')) document.getElementById('filtroDataFornecedor').value = hojeIso;
 
             const selDoca = document.getElementById('inpDoca');
-            if (selDoca) { selDoca.innerHTML = ""; listaTodasDocas.forEach(d => { const opt = document.createElement('option'); opt.value = d; opt.textContent = d; selDoca.appendChild(opt); }); }
+            if (selDoca) {
+                selDoca.innerHTML = "";
+                window.listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    selDoca.appendChild(opt);
+                });
+            }
+
             const selDocaOp = document.getElementById('selDocaOperador');
-            if (selDocaOp) { selDocaOp.innerHTML = ""; listaTodasDocas.forEach(d => { const opt = document.createElement('option'); opt.value = d; opt.textContent = d; selDocaOp.appendChild(opt); }); }
+            if (selDocaOp) {
+                selDocaOp.innerHTML = "";
+                window.listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    selDocaOp.appendChild(opt);
+                });
+            }
 
             window.popularSelectFornecedores(listaPadrao60Fornecedores.map(f => f.empresa));
             window.atualizarHorariosDisponiveis();
             window.restaurarSessaoLocal();
             inicializarEscutadoresFirebase();
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', iniciarAplicacao);
+        } else {
+            iniciarAplicacao();
+        }
     </script>
