@@ -377,7 +377,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO -->
+    <!-- SCRIPT COM SUPORTE A DATAS AMERICANAS M/D/YY -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -425,10 +425,11 @@
             return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
         };
 
-        // 🛠️ CONVERSOR DE DATAS
+        // 🛠️ PARSER UNIVERSAL DE DATA BR / ISO / SERIAL EXCEL / AMERICANO (7/20/26)
         window.normalizarDataParaBR = function(dVal) {
             if (!dVal) return "20/07/2026";
             
+            // 1. Número Serial do Excel (ex: 46223)
             const num = Number(dVal);
             if (!isNaN(num) && num > 30000) {
                 const dateObj = new Date((num - 25569) * 86400 * 1000);
@@ -438,18 +439,49 @@
                 return `${dia}/${mes}/${ano}`;
             }
 
-            const dStr = String(dVal).trim();
-            if (dStr.includes('/')) return dStr;
-            const p = dStr.split('-');
-            if (p.length === 3) return `${p[2]}/${p[1]}/${p[0]}`;
+            let dStr = String(dVal).trim();
+
+            // 2. Formato ISO (YYYY-MM-DD)
+            if (dStr.includes('-')) {
+                const p = dStr.split('-');
+                if (p.length === 3) {
+                    let y = p[0], m = p[1], d = p[2];
+                    if (y.length === 2) y = "20" + y;
+                    return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+                }
+            }
+
+            // 3. Formato com barras: "7/20/26", "20/07/2026", "07/20/2026"
+            if (dStr.includes('/')) {
+                const p = dStr.split('/');
+                if (p.length === 3) {
+                    let n1 = parseInt(p[0], 10);
+                    let n2 = parseInt(p[1], 10);
+                    let y = p[2];
+                    if (y.length === 2) y = "20" + y;
+
+                    // Se n1 <= 12 e n2 > 12 -> Formato Americano M/D/YYYY (ex: 7/20/26)
+                    if (n1 <= 12 && n2 > 12) {
+                        let dia = String(n2).padStart(2, '0');
+                        let mes = String(n1).padStart(2, '0');
+                        return `${dia}/${mes}/${y}`;
+                    }
+
+                    let dia = String(n1).padStart(2, '0');
+                    let mes = String(n2).padStart(2, '0');
+                    return `${dia}/${mes}/${y}`;
+                }
+            }
+
             return dStr;
         };
 
-        // CONVERTE DATA "DD/MM/YYYY" PARA "YYYY-MM-DD"
-        window.normalizarDataParaISO = function(dStrBr) {
-            if (!dStrBr || !dStrBr.includes('/')) return "2026-07-20";
-            const p = dStrBr.split('/');
-            if (p.length === 3) return `${p[2]}-${p[1]}-${p[0]}`;
+        window.normalizarDataParaISO = function(dVal) {
+            const br = window.normalizarDataParaBR(dVal);
+            const p = br.split('/');
+            if (p.length === 3) {
+                return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+            }
             return "2026-07-20";
         };
 
@@ -502,7 +534,6 @@
                 }
             }
 
-            // BUSCA PROFUNDA EM TODAS AS COLUNAS DA LINHA
             if (!hIni || !hFim) {
                 let colunasHoras = [];
                 for (let k of keys) {
@@ -613,10 +644,24 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
         // 📊 MONTA TIMELINE E IDENTIFICA OS HORÁRIOS OCUPADOS
         window.atualizarHorariosDisponiveis = function() {
             const docaSel = document.getElementById('inpDoca')?.value;
-            const dataSelRaw = document.getElementById('inpData')?.value;
+            let dataSelRaw = document.getElementById('inpData')?.value;
             const grid = document.getElementById('gridTimelineHorarios');
             const selIni = document.getElementById('inpHora');
-            if (!grid || !selIni || !dataSelRaw || !docaSel) return;
+            if (!grid || !selIni) return;
+
+            // Se o campo Data estiver vazio (dd/mm/aaaa), autopreenche com a data da lista
+            if (!dataSelRaw) {
+                const todos = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
+                if (todos.length > 0 && todos[0].data) {
+                    dataSelRaw = window.normalizarDataParaISO(todos[0].data);
+                    const elData = document.getElementById('inpData');
+                    if (elData) elData.value = dataSelRaw;
+                } else {
+                    dataSelRaw = "2026-07-20";
+                    const elData = document.getElementById('inpData');
+                    if (elData) elData.value = dataSelRaw;
+                }
+            }
 
             const dataFormBusca = window.normalizarDataParaBR(dataSelRaw);
 
@@ -693,12 +738,10 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
             if (file) window.processarArquivoEspecifico(file);
         };
 
-        // 📂 PROCESSADOR DE PLANILHAS COM FORMATADOR FORMATO TEXTO (raw: false)
         window.processarArquivoEspecifico = function(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
-                // raw: false faz o SheetJS entregar a string exata exibida na planilha (ex: "01:00")
                 const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: false });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 const json = XLSX.utils.sheet_to_json(sheet, { raw: false });
@@ -722,7 +765,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
 
                     if (!primeiraDataValida) primeiraDataValida = dataTxt;
 
-                    // Extração inteligente e precisa do horário
                     let hor = window.extrairHorarios(row);
 
                     const proxId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
@@ -742,7 +784,6 @@ Mensagem gerada pelo modulo PCP do YMS Ecosystem.`;
                     inseridos++;
                 });
 
-                // Sincroniza o seletor de data da tela com a data importada da planilha
                 if (primeiraDataValida) {
                     const dataIso = window.normalizarDataParaISO(primeiraDataValida);
                     const elData = document.getElementById('inpData');
