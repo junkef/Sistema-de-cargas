@@ -1160,7 +1160,7 @@
             return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         };
 
-        // --- MÉTODOS DE SINCRONIZAÇÃO EM TEMPO REAL COM FIREBASE ---
+     // --- MÉTODOS DE SINCRONIZAÇÃO EM TEMPO REAL COM FIREBASE ---
         function inicializarEscutadoresFirebase() {
             // Escuta Agendamentos Oficiais
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
@@ -1170,45 +1170,49 @@
                 window.sincronizarTodosModulos();
             });
 
-            // Escuta Base de Motoristas
+            // Escuta Base de Motoristas (Com Fallback Padrão para não sumir)
             onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
+                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
                     window.ymsStore.baseMotoristas = Array.isArray(data) ? data : Object.values(data);
                 } else {
                     window.ymsStore.baseMotoristas = [
                         { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
                         { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
                     ];
+                    window.salvarBaseMotoristasNaMemoria();
                 }
-                window.renderizarTabelaMotoristas();
+                if(window.renderizarTabelaMotoristas) window.renderizarTabelaMotoristas();
             });
 
-            // Escuta Credenciais de Fornecedores
+            // Escuta Credenciais de Fornecedores (Com Restauração dos 60)
             onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
+                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
                     window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
                 } else {
                     window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
+                    window.salvarCredenciaisFornecedoresNaMemoria();
                 }
                 window.garantirTodosFornecedoresNaLista();
-                window.atualizarTodasListasFornecedores();
+                if(window.atualizarTodasListasFornecedores) window.atualizarTodasListasFornecedores();
             });
 
             // Escuta Usuários Customizados
             onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
+                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
                     window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
                 } else {
-                    window.ymsStore.baseUsuariosCustom = [
+                    const usuariosPadrao = [
                         { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
                         { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
-                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
+                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca", "torre"], fornecedorEmpresa: null }
                     ];
+                    window.ymsStore.baseUsuariosCustom = usuariosPadrao;
+                    window.salvarUsuariosCustomizadosNaMemoria();
                 }
-                window.sincronizarTodosModulos();
+                if(window.renderizarTabelaUsuariosCustom) window.renderizarTabelaUsuariosCustom();
             });
 
             // Escuta Configurações da API de Mensagens
@@ -1216,7 +1220,7 @@
                 const data = snapshot.val();
                 if (data) {
                     window.ymsStore.configApi = data;
-                    window.preencherFormularioConfigApi();
+                    if(window.preencherFormularioConfigApi) window.preencherFormularioConfigApi();
                 }
             });
         }
@@ -1241,7 +1245,7 @@
 
             if (alterou) {
                 window.salvarCredenciaisFornecedoresNaMemoria();
-                window.atualizarTodasListasFornecedores();
+                if(window.atualizarTodasListasFornecedores) window.atualizarTodasListasFornecedores();
             }
         };
 
@@ -1333,7 +1337,7 @@
 
                 if (response.ok) {
                     console.log("📲 Mensagem enviada com sucesso pela API!");
-                    window.exibirToast("Mensagem Enviada!", `Enviada para +${numFormatado}`, "📲");
+                    if(window.exibirToast) window.exibirToast("Mensagem Enviada!", `Enviada para +${numFormatado}`, "📲");
                     return true;
                 } else {
                     console.error("Erro na API de Mensagens:", response.status, await response.text());
@@ -1728,15 +1732,11 @@
             localStorage.removeItem('yms_sessao_usuario');
             localStorage.removeItem('yms_empresa_fornecedor_logada');
 
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
-            document.getElementById('boxSenhaLogin').classList.add('hidden');
-            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
-            
-            const navBar = document.getElementById('navBarPerfis');
-            if (navBar) navBar.classList.remove('hidden');
-            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
+            // Força a página a recarregar limpa no Login
+            window.location.reload();
         };
 
+      
         window.obterDataHojeISO = function() {
             const hoje = new Date();
             const ano = hoje.getFullYear();
