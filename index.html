@@ -96,56 +96,10 @@
                     <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
             </div>
-
-            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
-                <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
-                    <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
-                    <span class="text-[10px] text-amber-400 font-mono font-bold">🔒 Senhas Exclusivas</span>
-                </div>
-                <div class="space-y-2.5">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa</label>
-                        <div class="bg-slate-900 border border-indigo-500/60 rounded-xl overflow-hidden focus-within:border-indigo-400 transition">
-                            <div class="p-2 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
-                                <span class="text-xs">🔍</span>
-                                <input type="text" id="filtroLoginForn" placeholder="Digite para filtrar a empresa..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-white outline-none font-bold placeholder-slate-500">
-                            </div>
-                            <select id="selEmpresaFornecedorLogin" size="5" class="w-full bg-slate-900 text-xs text-slate-100 font-bold outline-none cursor-pointer custom-scrollbar p-1">
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
-                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
-                        🔑 AUTENTICAR E ACESSAR PORTAL
-                    </button>
-                </div>
-            </div>
-
-            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
-                </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
-                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
-                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
-                        🔓 ENTRAR NO SISTEMA
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR DE NAVEGAÇÃO -->
+    <!-- HEADER SUPERIOR -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -189,13 +143,14 @@
                         <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
                     </div>
 
+                    <!-- FORMULÁRIO MANUAL -->
                     <div id="conteudoIndividual" class="space-y-3.5">
                         <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
                             <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
                             <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
                         </div>
 
-                        <!-- 🟢🟡🔴 BOTÕES DO PROCESSO DE SELEÇÃO DE CARGA -->
+                        <!-- 🟢🟡🔴 SELEÇÃO DE TIPO DE CARGA -->
                         <div>
                             <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -284,19 +239,25 @@
                         <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
                     </div>
 
+                    <!-- UPLOAD DE PLANILHA -->
                     <div id="conteudoMassa" class="space-y-4 hidden">
-                        <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 rounded-2xl p-8 text-center cursor-pointer">
+                        <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all">
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
-                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para carregar</p>
+                            <div class="text-4xl mb-2">📂</div>
+                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
+                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv</p>
                         </div>
                     </div>
 
+                    <!-- COLAR TEXTO -->
                     <div id="conteudoTexto" class="space-y-3 hidden">
                         <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none"></textarea>
+                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
                     </div>
                 </div>
             </div>
 
+            <!-- GRADE DE JANELAS PROCESSADAS -->
             <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
@@ -648,7 +609,7 @@
         <div><p class="font-bold text-sm" id="toastTitulo">Notificação</p><p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p></div>
     </div>
 
-    <!-- SCRIPT CENTRAL SANITIZADO PARA FIREBASE -->
+    <!-- SCRIPT CENTRAL DEFINITIVO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -701,6 +662,7 @@
         };
 
         window.normalizarTexto = function(txt) { return String(txt || '').toLowerCase().replace(/\s+/g, '').trim(); };
+        
         window.horaParaMinutos = function(horaStr) {
             if (!horaStr || horaStr === '---' || horaStr === 'IMEDIATO') return 0;
             const partes = String(horaStr).trim().split(':');
@@ -730,7 +692,7 @@
             return dt < hoje;
         };
 
-        // SANITIZADOR PARA EVITAR UNDEFINED NO FIREBASE
+        // EVITA VALORES UNDEFINED AO GRAVAR NO FIREBASE
         function sanitizarItemParaFirebase(item) {
             const limpo = {};
             Object.keys(item).forEach(k => {
@@ -738,6 +700,14 @@
             });
             return limpo;
         }
+
+        window.obterListaNomesFornecedores = function() {
+            const setUnico = new Set(listaPadrao60Fornecedores);
+            (window.ymsStore.agendamentos || []).forEach(a => {
+                if (a.fornecedor) setUnico.add(a.fornecedor);
+            });
+            return Array.from(setUnico).sort();
+        };
 
         function inicializarEscutadoresFirebase() {
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
@@ -760,10 +730,6 @@
             set(ref(db, 'yms_agendamentos_oficiais'), limpos);
         };
 
-        window.salvarBaseMotoristasNaMemoria = function() {
-            set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
-        };
-
         window.mudarPerfil = function(perfilId) {
             document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.btn-perfil').forEach(btn => {
@@ -776,12 +742,39 @@
 
             if (perfilId === 'torre') window.carregarGraficosTorre();
             if (perfilId === 'motoristas') window.renderizarTabelaMotoristas();
+            if (perfilId === 'fornecedor') window.renderizarModuloFornecedor();
         };
 
+        // MUDANÇA DE ABAS PCP (MANUAL / PLANILHA / TEXTO)
         window.alternarAbaPCP = function(aba) {
-            document.getElementById('conteudoIndividual').classList.toggle('hidden', aba !== 'individual');
-            document.getElementById('conteudoMassa').classList.toggle('hidden', aba !== 'massa');
-            document.getElementById('conteudoTexto').classList.toggle('hidden', aba !== 'texto');
+            const ind = document.getElementById('conteudoIndividual');
+            const mas = document.getElementById('conteudoMassa');
+            const txt = document.getElementById('conteudoTexto');
+
+            const btnInd = document.getElementById('tabIndividualBtn');
+            const btnMas = document.getElementById('tabMassaBtn');
+            const btnTxt = document.getElementById('tabTextoBtn');
+
+            [btnInd, btnMas, btnTxt].forEach(b => {
+                if (b) b.className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            });
+
+            if (aba === 'individual') {
+                if (ind) ind.classList.remove('hidden');
+                if (mas) mas.classList.add('hidden');
+                if (txt) txt.classList.add('hidden');
+                if (btnInd) btnInd.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+            } else if (aba === 'massa') {
+                if (ind) ind.classList.add('hidden');
+                if (mas) mas.classList.remove('hidden');
+                if (txt) txt.classList.add('hidden');
+                if (btnMas) btnMas.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+            } else {
+                if (ind) ind.classList.add('hidden');
+                if (mas) mas.classList.add('hidden');
+                if (txt) txt.classList.remove('hidden');
+                if (btnTxt) btnTxt.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+            }
         };
 
         window.selecionarTipoCarga = function(tipo) {
@@ -834,7 +827,7 @@
 
         window.filtrarOpcoesFornecedor = function() {
             const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = listaPadrao60Fornecedores.filter(f => f.toLowerCase().includes(termo));
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
             window.popularSelectFornecedores(filtrados);
         };
 
@@ -950,7 +943,76 @@
             window.exibirToast("Adicionado ao Rascunho!", `Janela ${item.ordem} criada.`, "📝");
         };
 
-        // 🚀 SUBIDA DAS JANELAS CORRIGIDA E TRATADA PARA FIREBASE
+        // UPLOAD DE PLANILHA EXCEL
+        window.lerPlanilhaExcel = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(firstSheet);
+
+                let inseridos = 0;
+                rows.forEach(r => {
+                    const keys = Object.keys(r);
+                    const kForn = keys.find(k => k.match(/fornec|nome|empresa|razao/i));
+                    const kData = keys.find(k => k.match(/data|dia|agendamento/i));
+                    const kDoca = keys.find(k => k.match(/doca|gate|local/i));
+                    const kIni = keys.find(k => k.match(/inicio|entrada|start/i));
+                    const kFim = keys.find(k => k.match(/fim|saida|end/i));
+
+                    if (r[kForn]) {
+                        window.ymsStore.rascunhoAgendamentos.push({
+                            ordem: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+                            data: r[kData] ? window.normalizarDataUniversal(r[kData]) : window.obterDataHojePtBR(),
+                            fornecedor: String(r[kForn]).trim().toUpperCase(),
+                            doca: r[kDoca] || 'Doca - (04N/06N)',
+                            horaIni: r[kIni] || '08:00',
+                            horaFim: r[kFim] || '09:00',
+                            tipoOperacao: 'COTIDIANO',
+                            status: "AGENDADO",
+                            isRascunho: true
+                        });
+                        inseridos++;
+                    }
+                });
+
+                window.renderizarGradePCP();
+                window.exibirToast("Planilha Carregada!", `${inseridos} janelas adicionadas ao rascunho.`, "📊");
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        // COLAR TEXTO
+        window.processarTextoBruto = function() {
+            const txt = document.getElementById('txtBruto').value.trim();
+            if (!txt) return;
+            const linhas = txt.split('\n');
+            let count = 0;
+            linhas.forEach(l => {
+                if (l.trim().length > 3) {
+                    window.ymsStore.rascunhoAgendamentos.push({
+                        ordem: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+                        data: window.obterDataHojePtBR(),
+                        fornecedor: l.trim().toUpperCase(),
+                        doca: 'Doca - (04N/06N)',
+                        horaIni: '08:00',
+                        horaFim: '09:00',
+                        tipoOperacao: 'COTIDIANO',
+                        status: "AGENDADO",
+                        isRascunho: true
+                    });
+                    count++;
+                }
+            });
+            document.getElementById('txtBruto').value = "";
+            window.renderizarGradePCP();
+            window.exibirToast("Texto Processado!", `${count} itens importados.`, "📋");
+        };
+
+        // 🚀 CONFIRMAR E SUBIR PARA O FIREBASE
         window.confirmarESubirJanelas = function() {
             if (window.ymsStore.rascunhoAgendamentos.length === 0) {
                 alert("Nenhuma janela no rascunho para subir.");
@@ -968,11 +1030,11 @@
 
             window.salvarAgendamentosNaMemoria();
             window.renderizarGradePCP();
-            window.exibirToast("Janelas Publicadas!", "Todas as janelas foram enviadas ao banco de dados com sucesso.", "🚀");
+            window.exibirToast("Janelas Publicadas!", "Todas as janelas foram enviadas ao banco de dados.", "🚀");
         };
 
         window.limparJanelasSubidas = function() {
-            if (confirm("⚠️ ATENÇÃO: Tem certeza de que deseja ZERAR/APAGAR TODAS as janelas do Firebase?")) {
+            if (confirm("⚠️ ATENÇÃO: Tem certeza de que deseja ZERAR TODAS as janelas do Firebase?")) {
                 window.ymsStore.agendamentos = [];
                 window.salvarAgendamentosNaMemoria();
             }
@@ -984,6 +1046,7 @@
         };
 
         window.sincronizarTodosModulos = function() {
+            window.popularSelectFornecedores(window.obterListaNomesFornecedores());
             window.renderizarGradePCP();
             window.renderizarModuloFornecedor();
             window.renderizarModuloFiscal();
@@ -1036,8 +1099,18 @@
         };
 
         window.renderizarModuloFornecedor = function() {
+            const containerBox = document.getElementById('boxSeletorFornecedorPortal');
             const container = document.getElementById('listaOrdensFornecedor');
             if (!container) return; container.innerHTML = "";
+
+            const listaForn = window.obterListaNomesFornecedores();
+            if (containerBox && !containerBox.children.length) {
+                let selHtml = `<select id="selFornFiltroPortal" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-xl p-2 text-xs font-black text-amber-300 outline-none">`;
+                listaForn.forEach(f => selHtml += `<option value="${f}">${f}</option>`);
+                selHtml += `</select>`;
+                containerBox.innerHTML = selHtml;
+            }
+
             const ags = window.ymsStore.agendamentos || [];
             if (ags.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem para exibição.</p>`; return;
@@ -1179,6 +1252,7 @@
 
             window.popularSelectFornecedores(listaPadrao60Fornecedores);
             window.mudarPerfil('pcp');
+            window.alternarAbaPCP('individual');
             window.selecionarTipoCarga('cotidiano');
             window.atualizarHorariosDisponiveis();
             inicializarEscutadoresFirebase();
