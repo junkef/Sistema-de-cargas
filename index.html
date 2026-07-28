@@ -1161,66 +1161,24 @@
         };
 
         // --- MÉTODOS DE SINCRONIZAÇÃO EM TEMPO REAL COM FIREBASE ---
-        function inicializarEscutadoresFirebase() {
-            // Escuta Agendamentos Oficiais
-            onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
-                const data = snapshot.val();
-                window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                window.garantirTodosFornecedoresNaLista();
-                window.sincronizarTodosModulos();
-            });
-
-            // Escuta Base de Motoristas
-            onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.ymsStore.baseMotoristas = Array.isArray(data) ? data : Object.values(data);
-                } else {
-                    window.ymsStore.baseMotoristas = [
-                        { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
-                        { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
-                    ];
-                }
-                window.renderizarTabelaMotoristas();
-            });
-
-            // Escuta Credenciais de Fornecedores
-            onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
-                } else {
-                    window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
-                }
-                window.garantirTodosFornecedoresNaLista();
-                window.atualizarTodasListasFornecedores();
-            });
-
-            // Escuta Usuários Customizados
-            onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
-                } else {
-                    window.ymsStore.baseUsuariosCustom = [
-                        { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
-                        { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
-                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
-                    ];
-                }
-                window.sincronizarTodosModulos();
-            });
-
-            // Escuta Configurações da API de Mensagens
-            onValue(ref(db, 'yms_config_api'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.ymsStore.configApi = data;
-                    window.preencherFormularioConfigApi();
-                }
-            });
-        }
-
+// Escuta Usuários Customizados
+onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
+    const data = snapshot.val();
+    if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
+        window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
+    } else {
+        // Se estiver vazio no Firebase, carrega os padrões E GRAVA no Firebase para fixar
+        const usuariosPadrao = [
+            { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
+            { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+            { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca", "torre"], fornecedorEmpresa: null }
+        ];
+        window.ymsStore.baseUsuariosCustom = usuariosPadrao;
+        window.salvarUsuariosCustomizadosNaMemoria(); // Envia para o Firebase na hora
+    }
+    window.renderizarTabelaUsuariosCustom();
+    window.sincronizarTodosModulos();
+});
         window.garantirTodosFornecedoresNaLista = function() {
             if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
                 window.mapaCredenciaisFornecedores = [];
@@ -1720,22 +1678,17 @@
             return false;
         };
 
-        window.fazerLogoutGlobal = function() {
-            window.ymsStore.usuarioLogado = null;
-            window.ymsStore.empresaFornecedorLogada = null;
-            
-            // Limpa dados de sessão do navegador
-            localStorage.removeItem('yms_sessao_usuario');
-            localStorage.removeItem('yms_empresa_fornecedor_logada');
+       window.fazerLogoutGlobal = function() {
+    window.ymsStore.usuarioLogado = null;
+    window.ymsStore.empresaFornecedorLogada = null;
+    
+    // Limpa a sessão do navegador
+    localStorage.removeItem('yms_sessao_usuario');
+    localStorage.removeItem('yms_empresa_fornecedor_logada');
 
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
-            document.getElementById('boxSenhaLogin').classList.add('hidden');
-            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
-            
-            const navBar = document.getElementById('navBarPerfis');
-            if (navBar) navBar.classList.remove('hidden');
-            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
-        };
+    // Força o recarregamento limpo da página para voltar à tela inicial Zerada
+    window.location.reload();
+};
 
         window.obterDataHojeISO = function() {
             const hoje = new Date();
