@@ -1220,13 +1220,16 @@
             window.sincronizarTodosModulos();
         };
 
-        window.sincronizarTodosModulos = function() {
+       window.sincronizarTodosModulos = function() {
             window.garantirTodosFornecedoresNaLista();
+            window.renderizarGradePCP();
+            window.renderizarModuloFornecedor();
+            window.renderizarModuloFiscal();
+            window.renderizarModuloCheckout();
             window.renderizarTabelaMotoristas();
-            window.renderizarTabelaUsuariosCustom();
-            window.atualizarTodasListasFornecedores();
+            window.atualizarPainelDoca();
+            window.carregarGraficosTorre();
         };
-
         window.popularSelectFornecedores = function(lista) {
             const selForn = document.getElementById('inpFornecedor');
             if (!selForn) return;
