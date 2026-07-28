@@ -385,7 +385,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             window.popularSelectLoginEmpresas(filtrados);
         };
 
-        window.renderizarTabelaMotoristas = function() {
+       window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
             tbody.innerHTML = "";
@@ -434,7 +434,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             window.ymsStore.baseMotoristas = window.ymsStore.baseMotoristas.filter(m => String(m.cpf).replace(/\D/g, '') !== cpfLimpo);
             window.salvarBaseMotoristasNaMemoria();
             window.renderizarTabelaMotoristas();
-            window.exibirToast("Motorista Removido", `${mot.nome} foi excluído da base.`, "🗑️");
+            if(window.exibirToast) window.exibirToast("Motorista Removido", `${mot.nome} foi excluído da base.`, "🗑️");
         };
 
         window.alternarStatusMotorista = function(cpf) {
