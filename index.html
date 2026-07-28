@@ -150,7 +150,7 @@
                             <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
                         </div>
 
-                        <!-- 🟢🟡🔴 SELEÇÃO DE TIPO DE CARGA -->
+                        <!-- 🟢🟡🔴 BOTÕES DO TIPO DE OPERAÇÃO -->
                         <div>
                             <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -239,7 +239,7 @@
                         <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
                     </div>
 
-                    <!-- UPLOAD DE PLANILHA -->
+                    <!-- UPLOAD PLANILHA -->
                     <div id="conteudoMassa" class="space-y-4 hidden">
                         <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all">
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
@@ -257,7 +257,7 @@
                 </div>
             </div>
 
-            <!-- GRADE DE JANELAS PROCESSADAS -->
+            <!-- GRADE DE JANELAS -->
             <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
@@ -486,9 +486,9 @@
                     </div>
                 </div>
 
-                <button type="button" onclick="chamarProximoSms()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-5 rounded-xl text-xl flex flex-col items-center gap-1 shadow-lg border-b-4 border-amber-700 cursor-pointer">
-                    <span>💬</span>
-                    <span class="text-sm uppercase">CHAMAR PRÓXIMO (DISPARAR SMS / ALERTA)</span>
+                <button type="button" onclick="chamarProximoSistema()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-5 rounded-xl text-xl flex flex-col items-center gap-1 shadow-lg border-b-4 border-amber-700 cursor-pointer">
+                    <span>🔔</span>
+                    <span class="text-sm uppercase">CHAMAR PRÓXIMO VEÍCULO DA FILA</span>
                 </button>
             </div>
         </section>
@@ -609,7 +609,7 @@
         <div><p class="font-bold text-sm" id="toastTitulo">Notificação</p><p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p></div>
     </div>
 
-    <!-- SCRIPT CENTRAL DEFINITIVO -->
+    <!-- SCRIPT CENTRAL E RESTAURADO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -662,7 +662,6 @@
         };
 
         window.normalizarTexto = function(txt) { return String(txt || '').toLowerCase().replace(/\s+/g, '').trim(); };
-        
         window.horaParaMinutos = function(horaStr) {
             if (!horaStr || horaStr === '---' || horaStr === 'IMEDIATO') return 0;
             const partes = String(horaStr).trim().split(':');
@@ -692,7 +691,6 @@
             return dt < hoje;
         };
 
-        // EVITA VALORES UNDEFINED AO GRAVAR NO FIREBASE
         function sanitizarItemParaFirebase(item) {
             const limpo = {};
             Object.keys(item).forEach(k => {
@@ -730,6 +728,8 @@
             set(ref(db, 'yms_agendamentos_oficiais'), limpos);
         };
 
+        window.salvarBaseMotoristasNaMemoria = function() { set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas); };
+
         window.mudarPerfil = function(perfilId) {
             document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.btn-perfil').forEach(btn => {
@@ -745,7 +745,6 @@
             if (perfilId === 'fornecedor') window.renderizarModuloFornecedor();
         };
 
-        // MUDANÇA DE ABAS PCP (MANUAL / PLANILHA / TEXTO)
         window.alternarAbaPCP = function(aba) {
             const ind = document.getElementById('conteudoIndividual');
             const mas = document.getElementById('conteudoMassa');
@@ -943,7 +942,6 @@
             window.exibirToast("Adicionado ao Rascunho!", `Janela ${item.ordem} criada.`, "📝");
         };
 
-        // UPLOAD DE PLANILHA EXCEL
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -980,19 +978,18 @@
                 });
 
                 window.renderizarGradePCP();
-                window.exibirToast("Planilha Carregada!", `${inseridos} janelas adicionadas ao rascunho.`, "📊");
+                window.exibirToast("Planilha Carregada!", `${inseridos} janelas em rascunho.`, "📊");
             };
             reader.readAsArrayBuffer(file);
         };
 
-        // COLAR TEXTO
         window.processarTextoBruto = function() {
             const txt = document.getElementById('txtBruto').value.trim();
             if (!txt) return;
             const linhas = txt.split('\n');
             let count = 0;
             linhas.forEach(l => {
-                if (l.trim().length > 3) {
+                if (l.trim().length > 2) {
                     window.ymsStore.rascunhoAgendamentos.push({
                         ordem: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
                         data: window.obterDataHojePtBR(),
@@ -1012,7 +1009,7 @@
             window.exibirToast("Texto Processado!", `${count} itens importados.`, "📋");
         };
 
-        // 🚀 CONFIRMAR E SUBIR PARA O FIREBASE
+        // 🚀 CONFIRMAR E SUBIR PARA FIREBASE
         window.confirmarESubirJanelas = function() {
             if (window.ymsStore.rascunhoAgendamentos.length === 0) {
                 alert("Nenhuma janela no rascunho para subir.");
@@ -1148,6 +1145,10 @@
             naFila.forEach((item, idx) => {
                 containerFila.insertAdjacentHTML('beforeend', `<div class="bg-slate-900 p-3 rounded-xl border-l-4 border-emerald-500"><p class="text-sm font-black text-white">${idx + 1}º - ${item.fornecedor}</p></div>`);
             });
+        };
+
+        window.chamarProximoSistema = function() {
+            window.exibirToast("Motorista Chamado!", "Aviso exibido nos painéis do pátio.", "🔔");
         };
 
         window.renderizarModuloCheckout = function() {
