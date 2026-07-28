@@ -145,7 +145,7 @@
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR DE NAVEGAÇÃO -->
+    <!-- HEADER SUPERIOR -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -285,9 +285,9 @@
                     </div>
 
                     <div id="conteudoMassa" class="space-y-4 hidden">
-                        <div id="dropZonePlanilha" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 rounded-2xl p-8 text-center cursor-pointer">
+                        <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 rounded-2xl p-8 text-center cursor-pointer">
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
-                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui</p>
+                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para carregar</p>
                         </div>
                     </div>
 
@@ -331,7 +331,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 2: PORTAL DO FORNECEDOR (MANTIDO COMPLETO ORIGINAL) -->
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR -->
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
             <div class="col-span-12 md:col-span-4 flex flex-col gap-4">
                 <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
@@ -648,7 +648,7 @@
         <div><p class="font-bold text-sm" id="toastTitulo">Notificação</p><p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p></div>
     </div>
 
-    <!-- SCRIPT CENTRAL E RESTAURADO -->
+    <!-- SCRIPT CENTRAL SANGUE-FRIO E SANITIZADO PARA FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -730,6 +730,15 @@
             return dt < hoje;
         };
 
+        // SANITIZADOR PARA EVITAR UNDEFINED NO FIREBASE
+        function sanitizarItemParaFirebase(item) {
+            const limpo = {};
+            Object.keys(item).forEach(k => {
+                limpo[k] = item[k] === undefined ? null : item[k];
+            });
+            return limpo;
+        }
+
         function inicializarEscutadoresFirebase() {
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                 const data = snapshot.val();
@@ -746,8 +755,14 @@
             });
         }
 
-        window.salvarAgendamentosNaMemoria = function() { set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos); };
-        window.salvarBaseMotoristasNaMemoria = function() { set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas); };
+        window.salvarAgendamentosNaMemoria = function() {
+            const limpos = window.ymsStore.agendamentos.map(sanitizarItemParaFirebase);
+            set(ref(db, 'yms_agendamentos_oficiais'), limpos);
+        };
+
+        window.salvarBaseMotoristasNaMemoria = function() {
+            set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
+        };
 
         window.mudarPerfil = function(perfilId) {
             document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
@@ -769,7 +784,6 @@
             document.getElementById('conteudoTexto').classList.toggle('hidden', aba !== 'texto');
         };
 
-        // 🟢🟡🔴 CONTROLE DINÂMICO DOS 3 TIPOS DE CARGA
         window.selecionarTipoCarga = function(tipo) {
             window.tipoCargaAtivo = tipo;
             const bCotidiano = document.getElementById('btnTipoCotidiano');
@@ -909,21 +923,21 @@
             let motivoExtraVal = null, motoristaVal = null, cpfVal = null, celVal = null, codigoCriticoVal = null, motivoCriticoVal = null;
 
             if (tipoOp === 'extra') {
-                motivoExtraVal = document.getElementById('pcpMotivoExtra')?.value;
-                motoristaVal = document.getElementById('pcpMotorista')?.value.trim();
-                cpfVal = document.getElementById('pcpCpf')?.value.trim();
-                celVal = document.getElementById('pcpCelular')?.value.trim();
+                motivoExtraVal = document.getElementById('pcpMotivoExtra')?.value || null;
+                motoristaVal = document.getElementById('pcpMotorista')?.value.trim() || null;
+                cpfVal = document.getElementById('pcpCpf')?.value.trim() || null;
+                celVal = document.getElementById('pcpCelular')?.value.trim() || null;
             } else if (tipoOp === 'critica') {
-                codigoCriticoVal = document.getElementById('pcpCodigoCritico')?.value.trim();
-                motivoCriticoVal = document.getElementById('pcpMotivoCritico')?.value.trim();
+                codigoCriticoVal = document.getElementById('pcpCodigoCritico')?.value.trim() || null;
+                motivoCriticoVal = document.getElementById('pcpMotivoCritico')?.value.trim() || null;
             }
 
             const item = {
                 ordem: `ORD-${Date.now().toString().slice(-5)}`,
                 data: window.normalizarDataUniversal(rawData),
                 fornecedor: document.getElementById('inpFornecedor')?.value || 'FORNECEDOR',
-                doca: document.getElementById('inpDoca')?.value,
-                horaIni: document.getElementById('inpHora')?.value,
+                doca: document.getElementById('inpDoca')?.value || 'Doca - (04N/06N)',
+                horaIni: document.getElementById('inpHora')?.value || '08:00',
                 horaFim: document.getElementById('inpHoraFim')?.value || "09:00",
                 tipoOperacao: tipoOp.toUpperCase(),
                 motivoExtra: motivoExtraVal, motorista: motoristaVal, cpf: cpfVal, celular: celVal,
@@ -936,12 +950,25 @@
             window.exibirToast("Adicionado ao Rascunho!", `Janela ${item.ordem} criada.`, "📝");
         };
 
+        // 🚀 SUBIDA DAS JANELAS CORRIGIDA E TRATADA PARA FIREBASE
         window.confirmarESubirJanelas = function() {
-            if (window.ymsStore.rascunhoAgendamentos.length === 0) return;
-            window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos.map(i => { delete i.isRascunho; return i; }));
+            if (window.ymsStore.rascunhoAgendamentos.length === 0) {
+                alert("Nenhuma janela no rascunho para subir.");
+                return;
+            }
+
+            const novascopia = window.ymsStore.rascunhoAgendamentos.map(item => {
+                const copia = { ...item };
+                delete copia.isRascunho;
+                return sanitizarItemParaFirebase(copia);
+            });
+
+            window.ymsStore.agendamentos.push(...novascopia);
             window.ymsStore.rascunhoAgendamentos = [];
+
             window.salvarAgendamentosNaMemoria();
-            window.exibirToast("Janelas Publicadas!", "Janelas salvas no Firebase com sucesso.", "🚀");
+            window.renderizarGradePCP();
+            window.exibirToast("Janelas Publicadas!", "Todas as janelas foram enviadas ao banco de dados com sucesso.", "🚀");
         };
 
         window.limparJanelasSubidas = function() {
@@ -1070,7 +1097,6 @@
             });
         };
 
-        // 📊 RESTAURAÇÃO COMPLETA DOS GRÁFICOS DA TORRE DE CONTROLE (CHART.JS)
         window.carregarGraficosTorre = function() {
             setTimeout(() => {
                 const totalAg = window.ymsStore.agendamentos.length;
