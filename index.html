@@ -96,10 +96,58 @@
                     <span class="text-xs txt-purple">Torre / Admin</span>
                 </button>
             </div>
+
+            <!-- LOGIN FORNECEDOR -->
+            <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
+                <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
+                    <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
+                    <span class="text-[10px] text-amber-400 font-mono font-bold">🔒 Senhas Exclusivas</span>
+                </div>
+                <div class="space-y-2.5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione a sua Empresa</label>
+                        <div class="bg-slate-900 border border-indigo-500/60 rounded-xl overflow-hidden focus-within:border-indigo-400 transition">
+                            <div class="p-2 border-b border-slate-800 bg-slate-950 flex items-center gap-2">
+                                <span class="text-xs">🔍</span>
+                                <input type="text" id="filtroLoginForn" placeholder="Digite para filtrar a empresa..." oninput="filtrarLoginEmpresas()" class="w-full bg-transparent text-xs text-white outline-none font-bold placeholder-slate-500">
+                            </div>
+                            <select id="selEmpresaFornecedorLogin" size="5" class="w-full bg-slate-900 text-xs text-slate-100 font-bold outline-none cursor-pointer custom-scrollbar p-1">
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha Exclusiva da Empresa *</label>
+                        <input type="password" id="inputSenhaFornecedor" placeholder="Digite a senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginFornecedorEmpresa();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="button" onclick="confirmarLoginFornecedorEmpresa()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow transition cursor-pointer">
+                        🔑 AUTENTICAR E ACESSAR PORTAL
+                    </button>
+                </div>
+            </div>
+
+            <!-- LOGIN OPERADOR -->
+            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
+                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
+                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="button" onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
+                        🔓 ENTRAR NO SISTEMA
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR -->
+    <!-- HEADER SUPERIOR DE NAVEGAÇÃO -->
     <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
@@ -143,14 +191,14 @@
                         <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
                     </div>
 
-                    <!-- FORMULÁRIO MANUAL -->
+                    <!-- FORMULÁRIO MANUAL PCP -->
                     <div id="conteudoIndividual" class="space-y-3.5">
                         <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
                             <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
                             <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
                         </div>
 
-                        <!-- 🟢🟡🔴 BOTÕES DO TIPO DE OPERAÇÃO -->
+                        <!-- 🟢🟡🔴 BOTÕES DO TIPO DE CARGA -->
                         <div>
                             <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -239,25 +287,30 @@
                         <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
                     </div>
 
-                    <!-- UPLOAD PLANILHA -->
+                    <!-- UPLOAD DE PLANILHA EXCEL -->
                     <div id="conteudoMassa" class="space-y-4 hidden">
-                        <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all">
+                        <div id="dropZonePlanilha" 
+                             onclick="document.getElementById('fileInput').click()"
+                             ondragover="tratarDragOver(event)" 
+                             ondragleave="tratarDragLeave(event)" 
+                             ondrop="tratarDrop(event)"
+                             class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all">
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
                             <div class="text-4xl mb-2">📂</div>
                             <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv</p>
+                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv (Datas antigas são ignoradas automaticamente)</p>
                         </div>
                     </div>
 
-                    <!-- COLAR TEXTO -->
+                    <!-- COLAR TEXTO BRUTO -->
                     <div id="conteudoTexto" class="space-y-3 hidden">
-                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none"></textarea>
+                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
                         <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
                     </div>
                 </div>
             </div>
 
-            <!-- GRADE DE JANELAS -->
+            <!-- GRADE DE JANELAS PROCESSADAS -->
             <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
@@ -328,47 +381,47 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Nota Fiscal (NF-e) *</label>
-                                <input type="text" id="fornNf" placeholder="Digite a NF-e..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono outline-none">
+                                <input type="text" id="fornNf" placeholder="Digite o número da NF-e..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono focus:border-indigo-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Transportadora *</label>
-                                <input type="text" id="fornTransp" placeholder="Transportadora..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold outline-none">
+                                <input type="text" id="fornTransp" placeholder="Digite a transportadora..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold focus:border-indigo-500 outline-none">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Cavalo *</label>
-                                <input type="text" id="fornCavalo" placeholder="ABC1234" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase outline-none">
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Cavalo (Trator) *</label>
+                                <input type="text" id="fornCavalo" placeholder="ABC1D23 / ABC1234" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase focus:border-indigo-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Carreta</label>
-                                <input type="text" id="fornCarreta" placeholder="XYZ9876" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase outline-none">
+                                <label class="block text-xs font-bold text-slate-400 mb-1">Placa Carreta / Reboque</label>
+                                <input type="text" id="fornCarreta" placeholder="XYZ9876 (opcional)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold uppercase focus:border-indigo-500 outline-none">
                             </div>
                         </div>
 
                         <div class="bg-slate-900/60 p-4 rounded-xl border border-indigo-500/30 space-y-3">
-                            <h3 class="text-xs font-bold text-indigo-300 uppercase">👤 Cadastro do Motorista</h3>
+                            <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">👤 Cadastro Obrigatório do Motorista</h3>
                             <div class="grid grid-cols-12 gap-3">
                                 <div class="col-span-6">
-                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">CPF *</label>
+                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">CPF (11 Dígitos) *</label>
                                     <div class="flex gap-1.5">
                                         <input type="text" id="fornCpf" placeholder="00000000000" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none">
-                                        <button type="button" onclick="buscarMotoristaPorCpf()" class="bg-indigo-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow">🔍</button>
+                                        <button type="button" onclick="buscarMotoristaPorCpf()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition shadow">🔍</button>
                                     </div>
                                 </div>
                                 <div class="col-span-6">
                                     <label class="block text-[11px] font-bold text-slate-400 mb-1">Nome Completo *</label>
-                                    <input type="text" id="fornMotorista" placeholder="Nome..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold outline-none">
+                                    <input type="text" id="fornMotorista" placeholder="Nome completo..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-bold outline-none">
                                 </div>
                                 <div class="col-span-12">
-                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">Celular *</label>
+                                    <label class="block text-[11px] font-bold text-slate-400 mb-1">Celular / WhatsApp *</label>
                                     <input type="text" id="fornCelular" placeholder="00900000000" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-yellow-400 font-mono font-bold outline-none">
                                 </div>
                             </div>
                         </div>
 
-                        <button type="button" onclick="salvarConfirmacaoFornecedor(event)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition cursor-pointer">
-                            💬 CONFIRMAR DADOS E LIBERAR CHECK-IN
+                        <button type="button" onclick="salvarConfirmacaoFornecedor(event)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                            <span>💬</span> CONFIRMAR DADOS E LIBERAR CHECK-IN
                         </button>
                     </div>
                 </div>
@@ -533,7 +586,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 7: GESTÃO DE MOTORISTAS -->
+        <!-- MÓDULO 7: GESTÃO DE MOTORISTAS (COM BLOQUEIO RESTAURADO) -->
         <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
             <div class="col-span-12 lg:col-span-4 bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div>
@@ -549,12 +602,12 @@
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Situação / Status *</label>
                             <select id="cadMotStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs font-bold text-white outline-none cursor-pointer">
-                                <option value="ATIVO">🟢 ATIVO / LIBERADO</option>
-                                <option value="BLOQUEADO">🔴 BLOQUEADO</option>
+                                <option value="ATIVO">🟢 ATIVO / LIBERADO (Acessa Totem)</option>
+                                <option value="BLOQUEADO">🔴 BLOQUEADO (Acesso Proibido)</option>
                             </select>
                         </div>
                         <div><label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Motivo do Bloqueio</label><textarea id="cadMotObs" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-300 outline-none"></textarea></div>
-                        <button type="button" onclick="salvarMotoristaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow cursor-pointer">💾 SALVAR MOTORISTA</button>
+                        <button type="button" onclick="salvarMotoristaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow cursor-pointer">💾 SALVAR MOTORISTA NA BASE</button>
                     </div>
                 </div>
             </div>
@@ -564,7 +617,7 @@
                     <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-700 mb-4 gap-2">
                         <h2 class="text-lg font-black text-white">Base do Banco de Dados</h2>
                         <div class="flex items-center gap-2">
-                            <input type="text" id="filtroMotoristaTabela" placeholder="🔍 Buscar..." oninput="renderizarTabelaMotoristas()" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-white outline-none">
+                            <input type="text" id="filtroMotoristaTabela" placeholder="🔍 Buscar CPF ou Nome..." oninput="renderizarTabelaMotoristas()" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-white outline-none">
                             <span id="badgeQtdMotoristas" class="bg-indigo-600 text-white font-black text-xs px-3 py-1 rounded-full">0</span>
                         </div>
                     </div>
@@ -580,7 +633,7 @@
             </div>
         </section>
 
-        <!-- MÓDULO 8: TORRE DE CONTROLE -->
+        <!-- MÓDULO 8: TORRE DE CONTROLE (PAINÉIS DE GESTÃO RESTAURADOS) -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
@@ -599,8 +652,138 @@
                 </div>
                 <div class="h-56"><canvas id="chartMediaTempoDoca"></canvas></div>
             </div>
-        </section>
 
+            <!-- GESTÃO DE BASE DE FORNECEDORES -->
+            <div class="bg-slate-800 p-6 rounded-3xl border border-amber-500/40 shadow-xl space-y-4">
+                <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-black text-amber-300 flex items-center gap-2"><span>🏢</span> GESTÃO DE BASE DE FORNECEDORES / PARCEIROS</h3>
+                        <p class="text-xs text-slate-400">Cadastre novas empresas parceiras ou altere senhas de acesso.</p>
+                    </div>
+                    <span id="badgeQtdFornecedoresTotal" class="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full">0 Empresas</span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">
+                        <h4 class="text-xs font-black text-white uppercase">Cadastrar / Editar Fornecedor</h4>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Razão Social / Nome da Empresa *</label>
+                            <input type="text" id="cadFornNome" placeholder="Ex: NOVA LOGÍSTICA S/A" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold uppercase outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Senha Exclusiva (Opcional)</label>
+                            <input type="text" id="cadFornSenha" placeholder="Ex: novalogistica@2026" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-yellow-300 font-mono outline-none">
+                        </div>
+                        <button type="button" onclick="salvarNovoFornecedorDinamico(event)" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase shadow cursor-pointer">➕ SALVAR FORNECEDOR NA BASE</button>
+                    </div>
+
+                    <div class="lg:col-span-7 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-2">
+                        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                            <span class="text-xs font-bold text-slate-300 uppercase">Empresas Cadastradas</span>
+                            <input type="text" id="filtroFornTabela" placeholder="🔍 Buscar..." oninput="renderizarTabelaFornecedores()" class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-bold text-white outline-none">
+                        </div>
+                        <div class="overflow-x-auto max-h-56 custom-scrollbar">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
+                                    <tr><th class="p-2.5">Razão Social</th><th class="p-2.5">Senha</th><th class="p-2.5 text-center">Ações</th></tr>
+                                </thead>
+                                <tbody id="tblCorpoFornecedores" class="divide-y divide-slate-800 text-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GESTÃO DE USUÁRIOS E PERMISSÕES -->
+            <div class="bg-slate-800 p-6 rounded-3xl border border-purple-500/40 shadow-xl space-y-4">
+                <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-black text-purple-300 flex items-center gap-2"><span>🔑</span> GESTÃO DE USUÁRIOS E PERMISSÃO DE MÓDULOS</h3>
+                        <p class="text-xs text-slate-400">Cadastre operadores e vincule os módulos que podem acessar.</p>
+                    </div>
+                    <span id="badgeQtdUsuarios" class="bg-purple-600 text-white font-black text-xs px-3 py-1 rounded-full">0 Cadastrados</span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Nome do Operador *</label>
+                            <input type="text" id="usrNome" placeholder="Ex: João Silva" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Login / Usuário *</label>
+                                <input type="text" id="usrLogin" placeholder="joao.doca" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono font-bold outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Senha *</label>
+                                <input type="password" id="usrSenha" placeholder="Senha..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Módulos Permitidos *</label>
+                            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="pcp" class="chk-modulo-usr accent-purple-600"> 🗓️ PCP</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="fornecedor" class="chk-modulo-usr accent-purple-600"> 🏢 Fornecedor</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="totem" class="chk-modulo-usr accent-purple-600"> 🏭 Totem</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="fiscal" class="chk-modulo-usr accent-purple-600"> 📑 Fiscal</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="doca" class="chk-modulo-usr accent-purple-600"> 🚛 Doca</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="checkout" class="chk-modulo-usr accent-purple-600"> 🚪 Check-out</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer"><input type="checkbox" value="motoristas" class="chk-modulo-usr accent-purple-600"> 🪪 Motoristas</label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-purple-300 cursor-pointer"><input type="checkbox" value="torre" class="chk-modulo-usr accent-purple-600"> 📡 Admin</label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="salvarUsuarioCustomizado(event)" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow cursor-pointer">💾 CADASTRAR USUÁRIO</button>
+                    </div>
+
+                    <div class="lg:col-span-7 bg-slate-900/90 p-4 rounded-2xl border border-slate-700 overflow-x-auto max-h-80 custom-scrollbar">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
+                                <tr><th class="p-2.5">Nome</th><th class="p-2.5">Login</th><th class="p-2.5">Permissões</th><th class="p-2.5 text-center">Ações</th></tr>
+                            </thead>
+                            <tbody id="tblCorpoUsuariosCustom" class="divide-y divide-slate-800 text-slate-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RELATÓRIO EXCEL -->
+            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+                <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-700 gap-3">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2"><span>📊</span> RELATÓRIO DE HISTÓRICO DE TICKETS E PÁTIO</h3>
+                        <p class="text-xs text-slate-400">Exporte os relatórios completos e consolidados de movimentação.</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-700">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block px-1">De:</span>
+                            <input type="date" id="repDataInicio" class="bg-slate-950 border border-slate-800 rounded-lg text-xs p-1 font-mono font-bold text-white outline-none">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block px-1">Até:</span>
+                            <input type="date" id="repDataFim" class="bg-slate-950 border border-slate-800 rounded-lg text-xs p-1 font-mono font-bold text-white outline-none">
+                        </div>
+                        <button type="button" onclick="carregarGraficosTorre()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition cursor-pointer self-end">🔍 Filtrar</button>
+                        <button type="button" onclick="exportarRelatorioExcelFormatado()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer self-end"><span>📥</span> BAIXAR EXCEL</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-60 custom-scrollbar">
+                    <table class="w-full text-left text-xs font-mono">
+                        <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
+                            <tr>
+                                <th class="p-2.5">Carga</th>
+                                <th class="p-2.5">Placa</th>
+                                <th class="p-2.5">Fornecedor</th>
+                                <th class="p-2.5">Doca</th>
+                                <th class="p-2.5">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblPreviewRelatorio" class="divide-y divide-slate-800 text-slate-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- TOAST DE NOTIFICAÇÃO -->
@@ -609,7 +792,7 @@
         <div><p class="font-bold text-sm" id="toastTitulo">Notificação</p><p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p></div>
     </div>
 
-    <!-- SCRIPT CENTRAL E RESTAURADO -->
+    <!-- SCRIPT JS CENTRAL INTEGRADO COM FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -647,7 +830,15 @@
             }
         }
 
-        window.ymsStore = { agendamentos: [], rascunhoAgendamentos: [], baseMotoristas: [], usuarioLogado: "ADMIN" };
+        window.ymsStore = { 
+            agendamentos: [], 
+            rascunhoAgendamentos: [], 
+            baseMotoristas: [], 
+            mapaCredenciaisFornecedores: [],
+            baseUsuariosCustom: [],
+            usuarioLogado: "ADMIN",
+            abaFornecedorAtual: "pendentes"
+        };
         window.tipoCargaAtivo = 'cotidiano';
         let instanceChartCheckin = null, instanceChartDocas = null, instanceChartMediaTempo = null;
 
@@ -702,9 +893,9 @@
         window.obterListaNomesFornecedores = function() {
             const setUnico = new Set(listaPadrao60Fornecedores);
             (window.ymsStore.agendamentos || []).forEach(a => {
-                if (a.fornecedor) setUnico.add(a.fornecedor);
+                if (a.fornecedor) setUnico.add(a.fornecedor.toUpperCase().trim());
             });
-            return Array.from(setUnico).sort();
+            return Array.from(setUnico).sort((a,b) => a.localeCompare(b, 'pt-BR'));
         };
 
         function inicializarEscutadoresFirebase() {
@@ -721,6 +912,18 @@
                 ];
                 window.renderizarTabelaMotoristas();
             });
+
+            onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
+                const data = snapshot.val();
+                window.ymsStore.mapaCredenciaisFornecedores = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                window.renderizarTabelaFornecedores();
+            });
+
+            onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
+                const data = snapshot.val();
+                window.ymsStore.baseUsuariosCustom = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                window.renderizarTabelaUsuariosCustom();
+            });
         }
 
         window.salvarAgendamentosNaMemoria = function() {
@@ -729,6 +932,8 @@
         };
 
         window.salvarBaseMotoristasNaMemoria = function() { set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas); };
+        window.salvarCredenciaisFornecedoresNaMemoria = function() { set(ref(db, 'yms_credenciais_fornecedores'), window.ymsStore.mapaCredenciaisFornecedores); };
+        window.salvarUsuariosCustomizadosNaMemoria = function() { set(ref(db, 'yms_usuarios_customizados'), window.ymsStore.baseUsuariosCustom); };
 
         window.mudarPerfil = function(perfilId) {
             document.querySelectorAll('.perfil-modulo').forEach(el => el.classList.add('hidden'));
@@ -909,7 +1114,10 @@
         window.criarJanelaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const rawData = document.getElementById('inpData').value;
-            if (window.dataEhPassada(rawData)) { alert("Não é possível agendar em datas passadas."); return; }
+            if (window.dataEhPassada(rawData)) { 
+                alert("OPERAÇÃO BLOQUEADA: Não é possível agendar para datas passadas."); 
+                return; 
+            }
 
             const tipoOp = window.tipoCargaAtivo;
             let motivoExtraVal = null, motoristaVal = null, cpfVal = null, celVal = null, codigoCriticoVal = null, motivoCriticoVal = null;
@@ -953,6 +1161,7 @@
                 const rows = XLSX.utils.sheet_to_json(firstSheet);
 
                 let inseridos = 0;
+                let ignoradosPassados = 0;
                 rows.forEach(r => {
                     const keys = Object.keys(r);
                     const kForn = keys.find(k => k.match(/fornec|nome|empresa|razao/i));
@@ -961,10 +1170,16 @@
                     const kIni = keys.find(k => k.match(/inicio|entrada|start/i));
                     const kFim = keys.find(k => k.match(/fim|saida|end/i));
 
+                    const dataFormatada = r[kData] ? window.normalizarDataUniversal(r[kData]) : window.obterDataHojePtBR();
+                    if (window.dataEhPassada(dataFormatada)) {
+                        ignoradosPassados++;
+                        return;
+                    }
+
                     if (r[kForn]) {
                         window.ymsStore.rascunhoAgendamentos.push({
                             ordem: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-                            data: r[kData] ? window.normalizarDataUniversal(r[kData]) : window.obterDataHojePtBR(),
+                            data: dataFormatada,
                             fornecedor: String(r[kForn]).trim().toUpperCase(),
                             doca: r[kDoca] || 'Doca - (04N/06N)',
                             horaIni: r[kIni] || '08:00',
@@ -978,7 +1193,7 @@
                 });
 
                 window.renderizarGradePCP();
-                window.exibirToast("Planilha Carregada!", `${inseridos} janelas em rascunho.`, "📊");
+                window.exibirToast("Planilha Carregada!", `${inseridos} janelas em rascunho. ${ignoradosPassados ? `(${ignoradosPassados} datas antigas ignoradas)` : ''}`, "📊");
             };
             reader.readAsArrayBuffer(file);
         };
@@ -1009,7 +1224,6 @@
             window.exibirToast("Texto Processado!", `${count} itens importados.`, "📋");
         };
 
-        // 🚀 CONFIRMAR E SUBIR PARA FIREBASE
         window.confirmarESubirJanelas = function() {
             if (window.ymsStore.rascunhoAgendamentos.length === 0) {
                 alert("Nenhuma janela no rascunho para subir.");
@@ -1027,7 +1241,7 @@
 
             window.salvarAgendamentosNaMemoria();
             window.renderizarGradePCP();
-            window.exibirToast("Janelas Publicadas!", "Todas as janelas foram enviadas ao banco de dados.", "🚀");
+            window.exibirToast("Janelas Publicadas!", "Todas as janelas foram salvas com sucesso.", "🚀");
         };
 
         window.limparJanelasSubidas = function() {
@@ -1095,6 +1309,7 @@
             window.atualizarHorariosDisponiveis();
         };
 
+        // 🏢 PORTAL DO FORNECEDOR (FILTRO POR EMPRESA E DATA RESTAURADO)
         window.renderizarModuloFornecedor = function() {
             const containerBox = document.getElementById('boxSeletorFornecedorPortal');
             const container = document.getElementById('listaOrdensFornecedor');
@@ -1102,19 +1317,30 @@
 
             const listaForn = window.obterListaNomesFornecedores();
             if (containerBox && !containerBox.children.length) {
-                let selHtml = `<select id="selFornFiltroPortal" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-xl p-2 text-xs font-black text-amber-300 outline-none">`;
+                let selHtml = `<select id="selFornFiltroPortal" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-xl p-2 text-xs font-black text-amber-300 outline-none cursor-pointer">`;
                 listaForn.forEach(f => selHtml += `<option value="${f}">${f}</option>`);
                 selHtml += `</select>`;
                 containerBox.innerHTML = selHtml;
             }
 
-            const ags = window.ymsStore.agendamentos || [];
+            const empSelecionada = document.getElementById('selFornFiltroPortal')?.value || listaForn[0] || "";
+            const dataSelecionadaRaw = document.getElementById('filtroDataFornecedor')?.value;
+            const dataFiltroFormatted = dataSelecionadaRaw ? window.normalizarDataUniversal(dataSelecionadaRaw) : null;
+
+            const ags = (window.ymsStore.agendamentos || []).filter(item => {
+                const bateEmpresa = window.normalizarTexto(item.fornecedor) === window.normalizarTexto(empSelecionada);
+                const bateData = dataFiltroFormatted ? window.normalizarTexto(item.data) === window.normalizarTexto(dataFiltroFormatted) : true;
+                return bateEmpresa && bateData;
+            });
+
             if (ags.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem para exibição.</p>`; return;
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem encontrada para ${empSelecionada}.</p>`; 
+                return;
             }
+
             ags.forEach(item => {
                 container.insertAdjacentHTML('beforeend', `
-                    <div class="bg-slate-900 border border-slate-700 p-3 rounded-xl flex justify-between items-center">
+                    <div class="bg-slate-900 border border-slate-700 p-3 rounded-xl flex justify-between items-center hover:border-indigo-500 transition cursor-pointer">
                         <div>
                             <span class="bg-indigo-600 text-white font-mono text-[10px] px-2 py-0.5 rounded">${item.ordem}</span>
                             <p class="text-xs font-black text-white mt-1">${item.fornecedor}</p>
@@ -1161,14 +1387,117 @@
             });
         };
 
+        // 🪪 CADASTRO DE MOTORISTAS (AÇÃO BLOQUEAR/LIBERAR RESTAURADA)
         window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas'); if (!tbody) return; tbody.innerHTML = "";
             const listData = window.ymsStore.baseMotoristas || [];
             document.getElementById('badgeQtdMotoristas').textContent = listData.length;
             if (listData.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista cadastrado.</td></tr>`; return; }
             listData.forEach(m => {
-                tbody.insertAdjacentHTML('beforeend', `<tr><td class="p-3 font-mono text-emerald-400 font-bold">${m.cpf}</td><td class="p-3 font-bold text-white">${m.nome}</td><td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td><td class="p-3"><span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full text-[10px] font-bold">${m.status || 'ATIVO'}</span></td><td class="p-3 text-center"><button class="bg-indigo-600 text-white p-1 px-2 rounded-lg text-xs font-bold">Ativo</button></td></tr>`);
+                const isBloqueado = m.status === 'BLOQUEADO';
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-900/60 transition">
+                        <td class="p-3 font-mono text-emerald-400 font-bold">${m.cpf}</td>
+                        <td class="p-3 font-bold text-white">${m.nome}</td>
+                        <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
+                        <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
+                        <td class="p-3 text-center">
+                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'} text-white px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">
+                                ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
+                            </button>
+                        </td>
+                    </tr>
+                `);
             });
+        };
+
+        window.alternarStatusMotorista = function(cpf) {
+            const mot = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === String(cpf).replace(/\D/g, ''));
+            if (!mot) return;
+            mot.status = (mot.status === 'BLOQUEADO') ? 'ATIVO' : 'BLOQUEADO';
+            window.salvarBaseMotoristasNaMemoria();
+            window.renderizarTabelaMotoristas();
+            window.exibirToast("Status Atualizado!", `Motorista ${mot.nome} ${mot.status === 'BLOQUEADO' ? 'bloqueado' : 'liberado'}.`, "🪪");
+        };
+
+        // 🏢 TOTAIS E TABELAS DA TORRE DE CONTROLE
+        window.renderizarTabelaFornecedores = function() {
+            const tbody = document.getElementById('tblCorpoFornecedores'); if (!tbody) return; tbody.innerHTML = "";
+            const lista = window.ymsStore.mapaCredenciaisFornecedores || [];
+            document.getElementById('badgeQtdFornecedoresTotal').textContent = `${lista.length} Empresas`;
+            lista.forEach(f => {
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white uppercase">${f.empresa}</td>
+                        <td class="p-2.5 font-mono text-yellow-300">${f.senha || '---'}</td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="excluirFornecedorDinamico('${f.empresa}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 px-2 rounded-lg text-xs cursor-pointer">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        };
+
+        window.salvarNovoFornecedorDinamico = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const nome = document.getElementById('cadFornNome')?.value.trim().toUpperCase();
+            const senha = document.getElementById('cadFornSenha')?.value.trim();
+            if (!nome) { alert("Digite a Razão Social."); return; }
+            window.ymsStore.mapaCredenciaisFornecedores.push({ empresa: nome, senha: senha || `${nome.toLowerCase()}@2026` });
+            window.salvarCredenciaisFornecedoresNaMemoria();
+            document.getElementById('cadFornNome').value = ""; document.getElementById('cadFornSenha').value = "";
+            window.exibirToast("Fornecedor Salvo!", `${nome} cadastrado.`, "🏢");
+        };
+
+        window.excluirFornecedorDinamico = function(empresa) {
+            if (!confirm(`Deseja excluir a empresa ${empresa}?`)) return;
+            window.ymsStore.mapaCredenciaisFornecedores = window.ymsStore.mapaCredenciaisFornecedores.filter(f => f.empresa !== empresa);
+            window.salvarCredenciaisFornecedoresNaMemoria();
+        };
+
+        window.renderizarTabelaUsuariosCustom = function() {
+            const tbody = document.getElementById('tblCorpoUsuariosCustom'); if (!tbody) return; tbody.innerHTML = "";
+            const lista = window.ymsStore.baseUsuariosCustom || [];
+            document.getElementById('badgeQtdUsuarios').textContent = `${lista.length} Cadastrados`;
+            lista.forEach(u => {
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white">${u.nome}</td>
+                        <td class="p-2.5 font-mono text-indigo-300">${u.login}</td>
+                        <td class="p-2.5">${(u.modulos || []).join(', ')}</td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 px-2 rounded-lg text-xs cursor-pointer">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        };
+
+        window.salvarUsuarioCustomizado = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const nome = document.getElementById('usrNome')?.value.trim();
+            const login = document.getElementById('usrLogin')?.value.trim();
+            const senha = document.getElementById('usrSenha')?.value.trim();
+            const chks = Array.from(document.querySelectorAll('.chk-modulo-usr:checked')).map(c => c.value);
+            if (!nome || !login || !senha) { alert("Preencha Nome, Login e Senha."); return; }
+            window.ymsStore.baseUsuariosCustom.push({ id: `usr_${Date.now()}`, nome, login, senha, modulos: chks });
+            window.salvarUsuariosCustomizadosNaMemoria();
+            document.getElementById('usrNome').value = ""; document.getElementById('usrLogin').value = ""; document.getElementById('usrSenha').value = "";
+            window.exibirToast("Usuário Cadastrado!", `${nome} salvo.`, "🔑");
+        };
+
+        window.excluirUsuarioCustom = function(id) {
+            window.ymsStore.baseUsuariosCustom = window.ymsStore.baseUsuariosCustom.filter(u => u.id !== id);
+            window.salvarUsuariosCustomizadosNaMemoria();
+        };
+
+        window.exportarRelatorioExcelFormatado = function() {
+            const ags = window.ymsStore.agendamentos || [];
+            if (ags.length === 0) { alert("Nenhum dado para exportar."); return; }
+            const ws = XLSX.utils.json_to_sheet(ags);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Pátio");
+            XLSX.writeFile(wb, `Relatorio_YMS_${window.obterDataHojeISO()}.xlsx`);
         };
 
         window.carregarGraficosTorre = function() {
@@ -1233,7 +1562,14 @@
                 if (r) r.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
             }, 1000);
 
-            if (document.getElementById('inpData')) document.getElementById('inpData').value = window.obterDataHojeISO();
+            const hojeIso = window.obterDataHojeISO();
+            if (document.getElementById('inpData')) {
+                document.getElementById('inpData').min = hojeIso;
+                document.getElementById('inpData').value = hojeIso;
+            }
+            if (document.getElementById('filtroDataFornecedor')) {
+                document.getElementById('filtroDataFornecedor').value = hojeIso;
+            }
 
             const selDoca = document.getElementById('inpDoca');
             if (selDoca) {
