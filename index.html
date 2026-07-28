@@ -942,7 +942,7 @@
             return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         };
 
-        function inicializarEscutadoresFirebase() {
+        ffunction inicializarEscutadoresFirebase() {
             // Escuta Agendamentos Oficiais
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                 const data = snapshot.val();
@@ -951,7 +951,7 @@
                 window.sincronizarTodosModulos();
             });
 
-            // Escuta Base de Motoristas (Com Fallback Padrão)
+            // Escuta Base de Motoristas (Com Fallback Padrão para não sumir)
             onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
                 const data = snapshot.val();
                 if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
@@ -1279,7 +1279,7 @@
             window.popularSelectLoginEmpresas(filtrados);
         };
 
-       window.renderizarTabelaMotoristas = function() {
+     window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
             tbody.innerHTML = "";
@@ -1288,7 +1288,8 @@
             const listData = Array.isArray(window.ymsStore.baseMotoristas) ? window.ymsStore.baseMotoristas : [];
             const filtrados = listData.filter(m => String(m.cpf).includes(termoBusca) || String(m.nome).toLowerCase().includes(termoBusca));
 
-            document.getElementById('badgeQtdMotoristas').textContent = listData.length;
+            const badgeQtd = document.getElementById('badgeQtdMotoristas');
+            if (badgeQtd) badgeQtd.textContent = listData.length;
 
             if (filtrados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
@@ -1329,7 +1330,6 @@
             window.renderizarTabelaMotoristas();
             window.exibirToast("Motorista Removido", `${mot.nome} foi excluído da base.`, "🗑️");
         };
-
             filtrados.forEach(m => {
                 const isBloqueado = m.status === 'BLOQUEADO';
                 const row = `
