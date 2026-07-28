@@ -2517,16 +2517,71 @@
             window.renderizarModuloFornecedor();
         };
 
-        window.salvarConfirmacaoFornecedor = function(e) {
+       window.salvarConfirmacaoFornecedor = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const ativa = window.ymsStore.agendamentos.find(i => i.ordem === window.ymsStore.ordemAtivaFornecedor);
             if (!ativa) { alert("Selecione uma ordem."); return; }
 
             if (window.dataEhPassada(ativa.data)) {
-                alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possível realizar o pré-cadastro de tickets para datas antigas.`);
+                alert(`🚫 TICKET BLOQUEADO!\n\nA data desta janela (${ativa.data}) já passou.\nNão é possível realizar o pré-cadastro para datas antigas.`);
                 return;
             }
 
+            const cpfLimpo = document.getElementById('fornCpf').value.replace(/\D/g, '').trim();
+            const nomeMot = document.getElementById('fornMotorista').value.trim();
+            const celMot = document.getElementById('fornCelular').value.trim();
+
+            if (!cpfLimpo || !nomeMot) {
+                alert("Preencha obrigatoriamente o CPF e o Nome do Motorista.");
+                return;
+            }
+
+            if (!Array.isArray(window.ymsStore.baseMotoristas)) {
+                window.ymsStore.baseMotoristas = [];
+            }
+
+            // CHECK PELO CPF SE JÁ EXISTE NA BASE PERMANENTE
+            const idxMot = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+            
+            if (idxMot !== -1) {
+                // Motorista já existe na base
+                const motExiste = window.ymsStore.baseMotoristas[idxMot];
+                if (motExiste.status === 'BLOQUEADO') {
+                    alert(`🚫 MOTORISTA BLOQUEADO NO SISTEMA!\n\nO motorista "${motExiste.nome}" está bloqueado pela portaria e não pode ser agendado.\nMotivo: ${motExiste.obs || 'Restrição de acesso'}.`);
+                    return;
+                }
+                // Atualiza nome e celular caso o fornecedor tenha alterado
+                window.ymsStore.baseMotoristas[idxMot].nome = nomeMot;
+                if (celMot) window.ymsStore.baseMotoristas[idxMot].celular = celMot;
+            } else {
+                // NÃO EXISTE NA BASE: ADICIONA AUTOMATICAMENTE!
+                window.ymsStore.baseMotoristas.push({
+                    cpf: cpfLimpo,
+                    nome: nomeMot,
+                    celular: celMot || '',
+                    status: 'ATIVO',
+                    obs: `Auto-cadastrado via Portal Fornecedor (${ativa.fornecedor})`
+                });
+                window.exibirToast("Motorista Cadastrado!", `${nomeMot} adicionado automaticamente à base permanente.`, "🪪");
+            }
+            
+            // Salva a base atualizada no Firebase Realtime
+            window.salvarBaseMotoristasNaMemoria();
+            window.renderizarTabelaMotoristas();
+
+            // Salva dados da ordem de agendamento
+            ativa.nf = document.getElementById('fornNf').value;
+            ativa.transp = document.getElementById('fornTransp').value;
+            ativa.cavalo = document.getElementById('fornCavalo').value;
+            ativa.carreta = document.getElementById('fornCarreta').value;
+            ativa.motorista = nomeMot;
+            ativa.cpf = cpfLimpo;
+            ativa.celular = celMot;
+            ativa.status = "CONFIRMADO_FORNECEDOR";
+
+            window.salvarAgendamentosNaMemoria();
+            window.dispararSmsEtapa(ativa, 'CONFIRMADO_FORNECEDOR');
+        };
             const cpfLimpo = document.getElementById('fornCpf').value.replace(/\D/g, '').trim();
             const nomeMot = document.getElementById('fornMotorista').value.trim();
             const celMot = document.getElementById('fornCelular').value.trim();
@@ -2883,8 +2938,7 @@
             window.exibirToast("Check-out Realizado!", `Veículo ${item.cavalo} liberado.`, "🚪");
         };
 
-        // --- MOTORISTAS ---
-        window.renderizarTabelaMotoristas = function() {
+     window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
             tbody.innerHTML = "";
@@ -2893,12 +2947,48 @@
             const listData = Array.isArray(window.ymsStore.baseMotoristas) ? window.ymsStore.baseMotoristas : [];
             const filtrados = listData.filter(m => String(m.cpf).includes(termoBusca) || String(m.nome).toLowerCase().includes(termoBusca));
 
-            document.getElementById('badgeQtdMotoristas').textContent = listData.length;
+            const badgeElement = document.getElementById('badgeQtdMotoristas');
+            if (badgeElement) badgeElement.textContent = listData.length;
 
             if (filtrados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
                 return;
             }
+
+            filtrados.forEach(m => {
+                const isBloqueado = m.status === 'BLOQUEADO';
+                const row = `
+                    <tr class="hover:bg-slate-900/60 transition border-b border-slate-800">
+                        <td class="p-3 font-mono font-bold text-emerald-400">${m.cpf}</td>
+                        <td class="p-3 font-bold text-white">${m.nome}</td>
+                        <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
+                        <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px] border border-red-500/30">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px] border border-emerald-500/30">🟢 LIBERADO</span>'}</td>
+                        <td class="p-3 text-center flex items-center justify-center gap-1.5">
+                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'} text-white font-bold px-2.5 py-1 rounded-lg text-xs cursor-pointer shadow transition">
+                                ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
+                            </button>
+                            <button type="button" onclick="excluirMotorista('${m.cpf}')" title="Excluir da Base" class="bg-red-950/80 hover:bg-red-800 border border-red-500/30 text-red-300 p-1 rounded-lg text-xs cursor-pointer transition">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        };
+
+        window.excluirMotorista = function(cpf) {
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const mot = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+            
+            if (!mot) return;
+            if (!confirm(`Tem certeza que deseja excluir o motorista "${mot.nome}" (CPF: ${mot.cpf}) da base permanente?`)) return;
+
+            window.ymsStore.baseMotoristas = window.ymsStore.baseMotoristas.filter(m => String(m.cpf).replace(/\D/g, '') !== cpfLimpo);
+            window.salvarBaseMotoristasNaMemoria();
+            window.renderizarTabelaMotoristas();
+            window.exibirToast("Motorista Excluído", `${mot.nome} foi removido do banco de dados.`, "🗑️");
+        };
 
             filtrados.forEach(m => {
                 const isBloqueado = m.status === 'BLOQUEADO';
