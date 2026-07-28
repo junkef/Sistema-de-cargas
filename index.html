@@ -1162,23 +1162,23 @@
 
         // --- MÉTODOS DE SINCRONIZAÇÃO EM TEMPO REAL COM FIREBASE ---
 // Escuta Usuários Customizados
-onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
-    const data = snapshot.val();
-    if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
-        window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
-    } else {
-        // Se estiver vazio no Firebase, carrega os padrões E GRAVA no Firebase para fixar
-        const usuariosPadrao = [
-            { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
-            { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
-            { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca", "torre"], fornecedorEmpresa: null }
-        ];
-        window.ymsStore.baseUsuariosCustom = usuariosPadrao;
-        window.salvarUsuariosCustomizadosNaMemoria(); // Envia para o Firebase na hora
-    }
-    window.renderizarTabelaUsuariosCustom();
-    window.sincronizarTodosModulos();
-});
+            onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
+                const data = snapshot.val();
+                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
+                    window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    // Se o Firebase estiver vazio, popula a lista padrão e SALVA no Firebase
+                    const usuariosPadrao = [
+                        { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
+                        { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca", "torre"], fornecedorEmpresa: null }
+                    ];
+                    window.ymsStore.baseUsuariosCustom = usuariosPadrao;
+                    window.salvarUsuariosCustomizadosNaMemoria();
+                }
+                window.renderizarTabelaUsuariosCustom();
+                window.sincronizarTodosModulos();
+            });
         window.garantirTodosFornecedoresNaLista = function() {
             if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
                 window.mapaCredenciaisFornecedores = [];
@@ -1678,17 +1678,17 @@ onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
             return false;
         };
 
-       window.fazerLogoutGlobal = function() {
-    window.ymsStore.usuarioLogado = null;
-    window.ymsStore.empresaFornecedorLogada = null;
-    
-    // Limpa a sessão do navegador
-    localStorage.removeItem('yms_sessao_usuario');
-    localStorage.removeItem('yms_empresa_fornecedor_logada');
+     window.fazerLogoutGlobal = function() {
+            window.ymsStore.usuarioLogado = null;
+            window.ymsStore.empresaFornecedorLogada = null;
+            
+            // Limpa dados salvos da sessão no navegador
+            localStorage.removeItem('yms_sessao_usuario');
+            localStorage.removeItem('yms_empresa_fornecedor_logada');
 
-    // Força o recarregamento limpo da página para voltar à tela inicial Zerada
-    window.location.reload();
-};
+            // Força a página a recarregar limpa no Login
+            window.location.reload();
+        };
 
         window.obterDataHojeISO = function() {
             const hoje = new Date();
