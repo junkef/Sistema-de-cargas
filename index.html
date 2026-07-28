@@ -80,14 +80,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         };
 
-        function inicializarEscutadoresFirebase() {
+      function inicializarEscutadoresFirebase() {
+            // Escuta Agendamentos Oficiais
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                 const data = snapshot.val();
                 window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 window.garantirTodosFornecedoresNaLista();
-                window.sincronizarTodosModulos();
+                if(window.sincronizarTodosModulos) window.sincronizarTodosModulos();
             });
 
+            // Escuta Base de Motoristas (Com Fallback Padrão para não sumir)
             onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
                 const data = snapshot.val();
                 if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
@@ -99,8 +101,48 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
                     ];
                     window.salvarBaseMotoristasNaMemoria();
                 }
-                window.renderizarTabelaMotoristas();
+                if(window.renderizarTabelaMotoristas) window.renderizarTabelaMotoristas();
             });
+
+            // Escuta Credenciais de Fornecedores (Com Restauração dos 60)
+            onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
+                const data = snapshot.val();
+                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
+                    window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
+                    window.salvarCredenciaisFornecedoresNaMemoria();
+                }
+                window.garantirTodosFornecedoresNaLista();
+                if(window.atualizarTodasListasFornecedores) window.atualizarTodasListasFornecedores();
+            });
+
+            // Escuta Usuários Customizados
+            onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
+                const data = snapshot.val();
+                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
+                    window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    const usuariosPadrao = [
+                        { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
+                        { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca", "torre"], fornecedorEmpresa: null }
+                    ];
+                    window.ymsStore.baseUsuariosCustom = usuariosPadrao;
+                    window.salvarUsuariosCustomizadosNaMemoria();
+                }
+                if(window.renderizarTabelaUsuariosCustom) window.renderizarTabelaUsuariosCustom();
+            });
+
+            // Escuta Configurações da API de Mensagens
+            onValue(ref(db, 'yms_config_api'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.ymsStore.configApi = data;
+                    if(window.preencherFormularioConfigApi) window.preencherFormularioConfigApi();
+                }
+            });
+        }
 
             onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
                 const data = snapshot.val();
@@ -166,24 +208,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
             if (relogio) relogio.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
         };
 
-        window.fazerLogoutGlobal = function() {
+    window.fazerLogoutGlobal = function() {
             window.ymsStore.usuarioLogado = null;
             window.ymsStore.empresaFornecedorLogada = null;
+            
+            // Limpa dados de sessão do navegador
             localStorage.removeItem('yms_sessao_usuario');
             localStorage.removeItem('yms_empresa_fornecedor_logada');
+
+            // Força a página a recarregar limpa no Login
             window.location.reload();
         };
-
-        window.exibirToast = function(titulo, sub, icone = "✨") {
-            const toast = document.getElementById('toast');
-            if (!toast) return;
-            document.getElementById('toastIcon').textContent = icone;
-            document.getElementById('toastTitulo').textContent = titulo;
-            document.getElementById('toastSub').textContent = sub;
-            toast.className = "fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-100 z-50 min-w-[320px]";
-            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
-        };
-
         const configPerfisAcesso = {
             'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
             'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
