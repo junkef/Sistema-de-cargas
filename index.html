@@ -1477,7 +1477,7 @@ window.solicitarAcessoPerfil = function(keyPerfil) {
             if (valAnt && sel.querySelector(`option[value="${valAnt}"]`)) sel.value = valAnt;
         };
 
-        // 3. Preenche a lista do Login do Fornecedor e FIXA O CLIQUE EM AZUL
+   // Preenche a lista do Login do Fornecedor e MANTÉM O DESTAQUE MESMO SEM FOCO
         window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
             const sel = document.getElementById('selEmpresaFornecedorLogin');
             if (!sel) return;
@@ -1486,11 +1486,15 @@ window.solicitarAcessoPerfil = function(keyPerfil) {
             const lista = listaParaExibir || window.obterListaNomesFornecedores();
             const listaUnica = Array.from(new Set(lista.map(f => window.limparNomeFornecedor(f)))).filter(Boolean);
             
-            const atualizarDestaqueVisual = (valorSelecionado) => {
-                window.ymsStore.fornecedorSelecionadoTemp = valorSelecionado;
+            // Força a cor roxa/azul diretamente na opção para não sumir ao clicar na senha
+            const atualizarDestaqueVisual = () => {
+                const valorSelecionado = sel.value;
+                if (valorSelecionado) {
+                    window.ymsStore.fornecedorSelecionadoTemp = valorSelecionado;
+                }
                 Array.from(sel.options).forEach(opt => {
                     if (opt.value === valorSelecionado) {
-                        opt.style.backgroundColor = "#4f46e5";
+                        opt.style.backgroundColor = "#4f46e5"; // Roxo/Azul fixo
                         opt.style.color = "#ffffff";
                         opt.style.fontWeight = "900";
                     } else {
@@ -1509,17 +1513,23 @@ window.solicitarAcessoPerfil = function(keyPerfil) {
                 sel.appendChild(opt);
             });
 
-            sel.onchange = function() {
-                atualizarDestaqueVisual(sel.value);
-            };
+            // Ouve as interações no próprio <select> (funciona no mouse e no teclado)
+            sel.onchange = atualizarDestaqueVisual;
+            sel.onclick = atualizarDestaqueVisual;
+            sel.onkeyup = atualizarDestaqueVisual;
 
             sel.ondblclick = function() {
                 window.confirmarLoginFornecedorEmpresa();
             };
 
+            // Mantém a seleção anterior se já existia, senão marca a primeira
             if (sel.options.length > 0) {
-                sel.selectedIndex = 0;
-                atualizarDestaqueVisual(sel.options[0].value);
+                if (window.ymsStore.fornecedorSelecionadoTemp && sel.querySelector(`option[value="${window.ymsStore.fornecedorSelecionadoTemp}"]`)) {
+                    sel.value = window.ymsStore.fornecedorSelecionadoTemp;
+                } else {
+                    sel.selectedIndex = 0;
+                }
+                atualizarDestaqueVisual();
             }
         };
 
