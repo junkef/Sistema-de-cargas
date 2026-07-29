@@ -1632,7 +1632,7 @@ window.confirmarLoginFornecedorEmpresa = function() {
             const inputSenha = document.getElementById('inputSenhaFornecedor');
             const senhaForn = inputSenha ? inputSenha.value.trim() : "";
             
-            // 🔒 Exige o preenchimento obrigatório da senha (não aceita vazio)
+            // 🔒 TRAVA RIGOROSA: Exige que o usuário digite a senha (não aceita em branco)
             if (!senhaForn) {
                 alert(`⚠️ Preencha a senha exclusiva da empresa "${empSel}" para continuar!`);
                 if (inputSenha) inputSenha.focus();
@@ -1640,9 +1640,11 @@ window.confirmarLoginFornecedorEmpresa = function() {
             }
 
             const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
+
+            // Senha oficial cadastrada no Firebase ou a senha padrão do sistema (ex: csn@2026)
             const senhaCorreta = cadForn ? cadForn.senha : `${empSel.toLowerCase().replace(/\s+/g, '')}@2026`;
 
-            // Valida se a senha digitada é a da empresa OU a senha mestra (admin / 1234 / 123)
+            // Valida se a senha digitada é a correta da empresa OU a senha mestra da torre (1234 / admin / 123)
             if (senhaForn === senhaCorreta || senhaForn === "admin" || senhaForn === "1234" || senhaForn === "123") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
                 localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
@@ -1655,7 +1657,6 @@ window.confirmarLoginFornecedorEmpresa = function() {
                 }
             }
         };
-
         window.confirmarLoginComSenha = function() {
             const userDig = document.getElementById('inputUserLogin').value.trim();
             const pinDig = document.getElementById('inputPinLogin').value.trim();
@@ -1710,24 +1711,13 @@ window.confirmarLoginFornecedorEmpresa = function() {
             window.mudarPerfil(targetAba);
         };
 
-   window.restaurarSessaoLocal = function() {
-            // Desativado propositalmente para exigir autenticação sempre que a página for atualizada/aberta.
+  window.restaurarSessaoLocal = function() {
+            // Desativado propositalmente para exigir autenticação sempre que a página for atualizada (F5)
             const modalLogin = document.getElementById('modalLoginGlobal');
             if (modalLogin) {
                 modalLogin.classList.remove('hidden');
             }
             return false;
-        };
-        window.fazerLogoutGlobal = function() {
-            window.ymsStore.usuarioLogado = null;
-            window.ymsStore.empresaFornecedorLogada = null;
-            
-            // Limpa dados de sessão do navegador
-            localStorage.removeItem('yms_sessao_usuario');
-            localStorage.removeItem('yms_empresa_fornecedor_logada');
-
-            // Força a página a recarregar limpa no Login
-            window.location.reload();
         };
 
       
