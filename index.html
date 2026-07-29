@@ -1118,14 +1118,12 @@
 
         window.mapaCredenciaisFornecedores = [];
 
-      window.limparNomeFornecedor = function(nome) {
+     window.limparNomeFornecedor = function(nome) {
             let str = String(nome || '').trim().toUpperCase();
             if (!str) return '';
             
-            // Remove números no final do nome (ex: 5 ESTRELAS1 -> 5 ESTRELAS)
-            if (str.match(/^5\s+ESTRELAS/i)) {
-                return "5 ESTRELAS";
-            }
+            // Remove sufixos numéricos duplicados (Ex: 5 ESTRELAS1 -> 5 ESTRELAS)
+            if (str.match(/^5\s+ESTRELAS/i)) return "5 ESTRELAS";
             
             str = str.replace(/[\s\-_]*\d+$/, '').trim();
             return str;
