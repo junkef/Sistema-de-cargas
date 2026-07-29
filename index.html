@@ -1927,16 +1927,13 @@ window.confirmarLoginFornecedorEmpresa = function() {
             return "NO HORÁRIO";
         };
 
-        window.addEventListener('DOMContentLoaded', () => {
-            window.atualizarRelogioDigital();
-            setInterval(window.atualizarRelogioDigital, 1000);
-
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') window.fecharModalSms();
-            });
-
-            if ("Notification" in window) {
-                Notification.requestPermission();
+       // Vincula o evento de clique diretamente no botão de Sair
+            const btnLogout = document.getElementById('btnLogoutUser');
+            if (btnLogout) {
+                btnLogout.onclick = function(e) {
+                    if (e) e.preventDefault();
+                    window.fazerLogoutGlobal();
+                };
             }
 
             const hojeIso = window.obterDataHojeISO();
