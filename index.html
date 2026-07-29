@@ -2930,7 +2930,7 @@
             window.exibirToast("Check-out Realizado!", `Veículo ${item.cavalo} liberado.`, "🚪");
         };
 
-        // --- MOTORISTAS ---
+     // Renderiza a tabela de motoristas cadastrados com botões de Ações
         window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
@@ -2940,7 +2940,8 @@
             const listData = Array.isArray(window.ymsStore.baseMotoristas) ? window.ymsStore.baseMotoristas : [];
             const filtrados = listData.filter(m => String(m.cpf).includes(termoBusca) || String(m.nome).toLowerCase().includes(termoBusca));
 
-            document.getElementById('badgeQtdMotoristas').textContent = listData.length;
+            const badgeQtd = document.getElementById('badgeQtdMotoristas');
+            if (badgeQtd) badgeQtd.textContent = listData.length;
 
             if (filtrados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
@@ -2950,14 +2951,17 @@
             filtrados.forEach(m => {
                 const isBloqueado = m.status === 'BLOQUEADO';
                 const row = `
-                    <tr class="hover:bg-slate-900/60 transition">
+                    <tr class="hover:bg-slate-900/60 transition border-b border-slate-800">
                         <td class="p-3 font-mono font-bold text-emerald-400">${m.cpf}</td>
                         <td class="p-3 font-bold text-white">${m.nome}</td>
                         <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
                         <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
-                        <td class="p-3 text-center">
-                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
+                        <td class="p-3 text-center flex items-center justify-center gap-1.5">
+                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'} text-white font-bold px-2.5 py-1 rounded-lg text-xs cursor-pointer shadow transition">
                                 ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
+                            </button>
+                            <button type="button" onclick="excluirMotorista('${m.cpf}')" title="Excluir da Base" class="bg-red-950/80 hover:bg-red-800 border border-red-500/30 text-red-300 p-1.5 rounded-lg text-xs cursor-pointer transition">
+                                🗑️
                             </button>
                         </td>
                     </tr>
@@ -2966,6 +2970,19 @@
             });
         };
 
+        // Função para remover motorista do Firebase em tempo real
+        window.excluirMotorista = function(cpf) {
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const mot = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+            if (!mot) return;
+
+            if (!confirm(`Tem certeza que deseja excluir o motorista "${mot.nome}" (CPF: ${mot.cpf}) da base permanente?`)) return;
+
+            window.ymsStore.baseMotoristas = window.ymsStore.baseMotoristas.filter(m => String(m.cpf).replace(/\D/g, '') !== cpfLimpo);
+            window.salvarBaseMotoristasNaMemoria();
+            window.renderizarTabelaMotoristas();
+            if (window.exibirToast) window.exibirToast("Motorista Removido", `${mot.nome} foi excluído da base.`, "🗑️");
+        };
         window.salvarMotoristaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const cpf = document.getElementById('cadMotCpf').value.replace(/\D/g, '').trim();
