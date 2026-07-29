@@ -1641,28 +1641,7 @@
             }
         };
 
-        window.confirmarLoginComSenha = function() {
-            const userDig = document.getElementById('inputUserLogin').value.trim();
-            const pinDig = document.getElementById('inputPinLogin').value.trim();
-            const perfilSel = window.ymsStore.perfilSolicitadoTemp;
-
-            if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
-                window.concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
-                return;
-            }
-
-            const usrEncontrado = window.ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
-
-            if (usrEncontrado) {
-                if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
-                    alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
-                    return;
-                }
-                window.concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
-            } else {
-                alert("Usuário ou Senha incorretos!");
-            }
-        };
+     
 
         window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos, abaParaAbrir = null) {
             const targetAba = abaParaAbrir || modulosPermitidos[0];
@@ -2196,47 +2175,7 @@
             }
         };
 
-        // Criação de Janela PCP
-        window.criarJanelaManual = function(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            const rawData = document.getElementById('inpData').value;
-            
-            if (window.dataEhPassada(rawData)) {
-                alert("🚫 OPERAÇÃO BLOQUEADA!\n\nVocê não pode ofertar janelas para DATAS RETROATIVAS (passadas).\nSelecione a data de hoje em diante.");
-                return;
-            }
-
-            const partes = rawData.split('-');
-            const proximoId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
-            const novaOrdem = `ORD-${proximoId}`;
-            const horaIni = document.getElementById('inpHora').value;
-            const horaFim = document.getElementById('inpHoraFim').value;
-            const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor').value);
-
-            if (!fornSel) { alert("Selecione um fornecedor."); return; }
-
-            const tipoOperacao = window.tipoCargaSelecionada || 'cotidiano';
-            const ehCritica = tipoOperacao === 'critica';
-            const codigoCritico = ehCritica ? document.getElementById('pcpCodigoCritico')?.value.trim() : null;
-            const motivoCritico = ehCritica ? document.getElementById('pcpMotivoCritico')?.value.trim() : null;
-
-            const item = {
-                ordem: novaOrdem,
-                data: `${partes[2]}/${partes[1]}/${partes[0]}`,
-                fornecedor: fornSel,
-                doca: document.getElementById('inpDoca').value,
-                horaIni: horaIni,
-                horaFim: horaFim,
-                tipoOperacao: tipoOperacao,
-                isCritica: ehCritica,
-                codigoCritico: codigoCritico,
-                motivoCritico: motivoCritico,
-                status: "AGENDADO",
-                isRascunho: true,
-                nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
-                timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
-            };
-
+       
             window.ymsStore.rascunhoAgendamentos.push(item);
 
             window.garantirTodosFornecedoresNaLista();
@@ -3014,45 +2953,7 @@
             window.exibirToast("Check-out Realizado!", `Veículo ${item.cavalo} liberado.`, "🚪");
         };
 
-     // Renderiza a tabela de motoristas cadastrados com botões de Ações
-        window.renderizarTabelaMotoristas = function() {
-            const tbody = document.getElementById('tblCorpoMotoristas');
-            if (!tbody) return;
-            tbody.innerHTML = "";
-
-            const termoBusca = (document.getElementById('filtroMotoristaTabela')?.value || '').toLowerCase().trim();
-            const listData = Array.isArray(window.ymsStore.baseMotoristas) ? window.ymsStore.baseMotoristas : [];
-            const filtrados = listData.filter(m => String(m.cpf).includes(termoBusca) || String(m.nome).toLowerCase().includes(termoBusca));
-
-            const badgeQtd = document.getElementById('badgeQtdMotoristas');
-            if (badgeQtd) badgeQtd.textContent = listData.length;
-
-            if (filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
-                return;
-            }
-
-            filtrados.forEach(m => {
-                const isBloqueado = m.status === 'BLOQUEADO';
-                const row = `
-                    <tr class="hover:bg-slate-900/60 transition border-b border-slate-800">
-                        <td class="p-3 font-mono font-bold text-emerald-400">${m.cpf}</td>
-                        <td class="p-3 font-bold text-white">${m.nome}</td>
-                        <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
-                        <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
-                        <td class="p-3 text-center flex items-center justify-center gap-1.5">
-                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'} text-white font-bold px-2.5 py-1 rounded-lg text-xs cursor-pointer shadow transition">
-                                ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
-                            </button>
-                            <button type="button" onclick="excluirMotorista('${m.cpf}')" title="Excluir da Base" class="bg-red-950/80 hover:bg-red-800 border border-red-500/30 text-red-300 p-1.5 rounded-lg text-xs cursor-pointer transition">
-                                🗑️
-                            </button>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        };
+   
 
  window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
