@@ -1420,20 +1420,28 @@
             }
         };
 
-        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
+      window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
             const sel = document.getElementById('selEmpresaFornecedorLogin');
             if (!sel) return;
             sel.innerHTML = "";
-            const lista = listaParaExibir || window.obterListaNomesFornecedores();
             
-            lista.forEach((f, idx) => {
+            // Garante lista única sem duplicados
+            const lista = listaParaExibir || window.obterListaNomesFornecedores();
+            const listaUnica = Array.from(new Set(lista.map(f => window.limparNomeFornecedor(f)))).filter(Boolean);
+            
+            listaUnica.forEach((f, idx) => {
                 const opt = document.createElement('option');
                 opt.value = f; 
                 opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
+                opt.className = "p-2.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold text-white bg-slate-900 mb-1";
                 if (idx === 0) opt.selected = true;
                 sel.appendChild(opt);
             });
+
+            // Permite dar DOIS CLIQUES na empresa para já tentar logar direto
+            sel.ondblclick = function() {
+                window.confirmarLoginFornecedorEmpresa();
+            };
         };
 
         window.filtrarLoginEmpresas = function() {
@@ -1627,35 +1635,38 @@
             window.salvarCredenciaisFornecedoresNaMemoria();
         };
 
-      window.confirmarLoginFornecedorEmpresa = function() {
+     window.confirmarLoginFornecedorEmpresa = function() {
             const selectEl = document.getElementById('selEmpresaFornecedorLogin');
-            if (!selectEl) return;
+            if (!selectEl) {
+                alert("Erro ao localizar a lista de empresas.");
+                return;
+            }
 
             let empSel = selectEl.value;
             
-            // Se nenhum item foi clicado na caixa, pega o primeiro da lista automaticamente
+            // Se por algum motivo nada estiver selecionado, pega o primeiro item visível da caixa
             if (!empSel && selectEl.options.length > 0) {
                 empSel = selectEl.options[0].value;
                 selectEl.selectedIndex = 0;
             }
 
             if (!empSel) { 
-                alert("Selecione a sua empresa na lista."); 
+                alert("Por favor, clique em uma empresa na lista para selecionar."); 
                 return; 
             }
             
             const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
             const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
 
-            // Permite entrar com a senha cadastrada da empresa, senha padrão ou senhas mestras (admin / 1234)
             const senhaCorreta = cadForn ? cadForn.senha : `${empSel.toLowerCase().replace(/\s+/g, '')}@2026`;
 
-            if (senhaForn === senhaCorreta || senhaForn === "123" || senhaForn === "admin" || senhaForn === "1234") {
+            // Aceita a senha da empresa, senha em branco (se você só quiser testar rápido), ou senhas mestras (admin / 1234 / 123)
+            if (!senhaForn || senhaForn === senhaCorreta || senhaForn === "123" || senhaForn === "admin" || senhaForn === "1234") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
                 localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
                 window.concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
             } else {
-                alert(`🚫 SENHA INCORRETA!\n\nDica: A senha padrão para "${empSel}" é:\n${senhaCorreta}`);
+                alert(`🚫 SENHA INCORRETA PARA "${empSel}"!\n\nDica: Para testar, você pode deixar o campo de senha EM BRANCO ou digitar: 1234`);
             }
         };
 
