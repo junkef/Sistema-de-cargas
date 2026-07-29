@@ -176,7 +176,7 @@
             <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-2">
                 <span>🕒</span> <span>00:00:00</span>
             </div>
-           <button type="button" onclick="window.fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
+            <button type="button" onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
                 <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
             </button>
         </div>
@@ -1030,12 +1030,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-   // LISTA MESTRE DOS 70 FORNECEDORES PADRÃO
+        // LISTA MESTRE DOS 60 FORNECEDORES PADRÃO
         const listaPadrao60Fornecedores = [
             { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
             { empresa: "ADERE", senha: "adere@2026" },
-            { empresa: "ADERE/BRINDEC/WELOZE", senha: "aderebrindecweloze@2026" },
-            { empresa: "ALDELBRAS", senha: "aldelbras@2026" },
             { empresa: "ALEPLAST", senha: "aleplast@2026" },
             { empresa: "ARAMART", senha: "aramart@2026" },
             { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" },
@@ -1058,7 +1056,6 @@
             { empresa: "CSN", senha: "csn@2026" },
             { empresa: "DENK", senha: "denk@2026" },
             { empresa: "DUFERCO", senha: "duferco@2026" },
-            { empresa: "EMBAQUIM", senha: "embaquim@2026" },
             { empresa: "FOCUS", senha: "focus@2026" },
             { empresa: "FORMPARTS", senha: "formparts@2026" },
             { empresa: "GRÁFICA NACIONAL", senha: "graficanacional@2026" },
@@ -1071,7 +1068,6 @@
             { empresa: "KLABIN", senha: "klabin@2026" },
             { empresa: "KNAUF", senha: "knauf@2026" },
             { empresa: "LINKPLAS", senha: "linkplas@2026" },
-            { empresa: "LOGPLAST", senha: "logplast@2026" },
             { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" },
             { empresa: "METALMA", senha: "metalma@2026" },
             { empresa: "MICROJUNTAS", senha: "microjuntas@2026" },
@@ -1080,7 +1076,6 @@
             { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
             { empresa: "PARANAPANEMA", senha: "paranapanema@2026" },
             { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
-            { empresa: "POLIMETAL", senha: "polimetal@2026" },
             { empresa: "REFREX", senha: "refrex@2026" },
             { empresa: "RUDOLPH", senha: "rudolph@2026" },
             { empresa: "SCHOTT", senha: "schott@2026" },
@@ -1096,13 +1091,9 @@
             { empresa: "VITROCOLOR", senha: "vitrocolor@2026" },
             { empresa: "WEG MOTORES", senha: "weg@2026" },
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" },
-            { empresa: "WEST ROCK", senha: "westrock@2026" },
-            { empresa: "WHIRLPOOL JOINVILLE", senha: "whirlpooljoinville@2026" },
-            { empresa: "WHIRLPOOL RIO CLARO", senha: "whirlpoolrioclaro@2026" },
-            { empresa: "ZANOTTI", senha: "zanotti@2026" },
-            { empresa: "ZETA DO BRASIL", senha: "zetadobrasil@2026" },
-            { empresa: "ZILOR", senha: "zilor@2026" }
+            { empresa: "WEST ROCK", senha: "westrock@2026" }
         ];
+
         // Estado da Aplicação
         window.ymsStore = {
             agendamentos: [],
@@ -1127,14 +1118,16 @@
 
         window.mapaCredenciaisFornecedores = [];
 
-     window.limparNomeFornecedor = function(nome) {
+        // LIMPEZA E NORMALIZAÇÃO ESTRITA DE SUFIXOS E DUPLICADOS
+        window.limparNomeFornecedor = function(nome) {
             let str = String(nome || '').trim().toUpperCase();
             if (!str) return '';
             
-            // Remove sufixos numéricos duplicados (Ex: 5 ESTRELAS1 -> 5 ESTRELAS)
-            if (str.match(/^5\s+ESTRELAS/i)) return "5 ESTRELAS";
-            
-            str = str.replace(/[\s\-_]*\d+$/, '').trim();
+            // Remove sufixos numéricos ao final de nomes importados (Ex: ARCELOMITTAL1 -> ARCELOMITTAL)
+            // preservando exceções como "5 ESTRELAS"
+            if (!str.match(/^5\s+ESTRELAS/i)) {
+                str = str.replace(/[\s\-_]*\d+$/, '').trim();
+            }
             return str;
         };
 
@@ -1167,7 +1160,7 @@
             return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         };
 
-     // --- MÉTODOS DE SINCRONIZAÇÃO EM TEMPO REAL COM FIREBASE ---
+        // --- MÉTODOS DE SINCRONIZAÇÃO EM TEMPO REAL COM FIREBASE ---
         function inicializarEscutadoresFirebase() {
             // Escuta Agendamentos Oficiais
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
@@ -1177,56 +1170,45 @@
                 window.sincronizarTodosModulos();
             });
 
-            // Escuta Base de Motoristas (Com Fallback Padrão para não sumir)
+            // Escuta Base de Motoristas
             onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
                 const data = snapshot.val();
-                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
+                if (data) {
                     window.ymsStore.baseMotoristas = Array.isArray(data) ? data : Object.values(data);
                 } else {
                     window.ymsStore.baseMotoristas = [
                         { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
                         { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
                     ];
-                    window.salvarBaseMotoristasNaMemoria();
                 }
-                if(window.renderizarTabelaMotoristas) window.renderizarTabelaMotoristas();
+                window.renderizarTabelaMotoristas();
             });
 
-         // Escuta Credenciais de Fornecedores (Com Mesclagem Segura para não perder os 70)
+            // Escuta Credenciais de Fornecedores
             onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
                 const data = snapshot.val();
-                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
-                    const listaFirebase = Array.isArray(data) ? data : Object.values(data);
-                    
-                    // Mescla o que veio do Firebase com a lista padrão sem apagar fornecedores extras
-                    const mapaMesclado = new Map();
-                    listaPadrao60Fornecedores.forEach(item => mapaMesclado.set(window.limparNomeFornecedor(item.empresa), item));
-                    listaFirebase.forEach(item => mapaMesclado.set(window.limparNomeFornecedor(item.empresa), item));
-                    
-                    window.mapaCredenciaisFornecedores = Array.from(mapaMesclado.values());
+                if (data) {
+                    window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
                 } else {
                     window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
-                    window.salvarCredenciaisFornecedoresNaMemoria();
                 }
-                
                 window.garantirTodosFornecedoresNaLista();
-                if(window.atualizarTodasListasFornecedores) window.atualizarTodasListasFornecedores();
+                window.atualizarTodasListasFornecedores();
             });
+
             // Escuta Usuários Customizados
             onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
                 const data = snapshot.val();
-                if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
+                if (data) {
                     window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
                 } else {
-                    const usuariosPadrao = [
+                    window.ymsStore.baseUsuariosCustom = [
                         { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
                         { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
-                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca", "torre"], fornecedorEmpresa: null }
+                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
                     ];
-                    window.ymsStore.baseUsuariosCustom = usuariosPadrao;
-                    window.salvarUsuariosCustomizadosNaMemoria();
                 }
-                if(window.renderizarTabelaUsuariosCustom) window.renderizarTabelaUsuariosCustom();
+                window.sincronizarTodosModulos();
             });
 
             // Escuta Configurações da API de Mensagens
@@ -1234,7 +1216,7 @@
                 const data = snapshot.val();
                 if (data) {
                     window.ymsStore.configApi = data;
-                    if(window.preencherFormularioConfigApi) window.preencherFormularioConfigApi();
+                    window.preencherFormularioConfigApi();
                 }
             });
         }
@@ -1259,7 +1241,7 @@
 
             if (alterou) {
                 window.salvarCredenciaisFornecedoresNaMemoria();
-                if(window.atualizarTodasListasFornecedores) window.atualizarTodasListasFornecedores();
+                window.atualizarTodasListasFornecedores();
             }
         };
 
@@ -1351,7 +1333,7 @@
 
                 if (response.ok) {
                     console.log("📲 Mensagem enviada com sucesso pela API!");
-                    if(window.exibirToast) window.exibirToast("Mensagem Enviada!", `Enviada para +${numFormatado}`, "📲");
+                    window.exibirToast("Mensagem Enviada!", `Enviada para +${numFormatado}`, "📲");
                     return true;
                 } else {
                     console.error("Erro na API de Mensagens:", response.status, await response.text());
@@ -1414,7 +1396,8 @@
             'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, modulos: ['motoristas'] },
             'admin': { nome: "Torre / Administrador", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
         };
-window.solicitarAcessoPerfil = function(keyPerfil) {
+
+        window.solicitarAcessoPerfil = function(keyPerfil) {
             window.ymsStore.perfilSolicitadoTemp = keyPerfil;
             const cfg = configPerfisAcesso[keyPerfil];
             if (!cfg) return;
@@ -1435,168 +1418,70 @@ window.solicitarAcessoPerfil = function(keyPerfil) {
             }
         };
 
-        // 1. Preenche a caixinha do PCP Programador
-        window.popularSelectFornecedores = function(listaParaExibir = null) {
-            const sel = document.getElementById('inpFornecedor');
-            if (!sel) return;
-            const valorAnterior = sel.value;
-            sel.innerHTML = "";
-            
-            const lista = listaParaExibir || window.obterListaNomesFornecedores();
-            const listaUnica = Array.from(new Set(lista.map(f => window.limparNomeFornecedor(f)))).filter(Boolean);
-            
-            listaUnica.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; 
-                opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold text-slate-200 bg-slate-950 mb-1";
-                sel.appendChild(opt);
-            });
-
-            if (valorAnterior && sel.querySelector(`option[value="${valorAnterior}"]`)) {
-                sel.value = valorAnterior;
-            } else if (sel.options.length > 0) {
-                sel.selectedIndex = 0;
-            }
-        };
-
-        // 2. Preenche a caixa de empresas na tela de Cadastro de Usuário
-        window.popularSelectCadastroEmpresasUsr = function() {
-            const sel = document.getElementById('selUsrEmpresa');
-            if (!sel) return;
-            const valAnt = sel.value;
-            sel.innerHTML = '<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>';
-            
-            window.obterListaNomesFornecedores().forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f;
-                opt.textContent = f;
-                sel.appendChild(opt);
-            });
-            
-            if (valAnt && sel.querySelector(`option[value="${valAnt}"]`)) sel.value = valAnt;
-        };
-
-        // 3. Preenche a lista do Login do Fornecedor e MANTÉM O DESTAQUE AZUL FIXO
         window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
             const sel = document.getElementById('selEmpresaFornecedorLogin');
             if (!sel) return;
             sel.innerHTML = "";
-            
             const lista = listaParaExibir || window.obterListaNomesFornecedores();
-            const listaUnica = Array.from(new Set(lista.map(f => window.limparNomeFornecedor(f)))).filter(Boolean);
             
-            const atualizarDestaqueVisual = () => {
-                const valorSelecionado = sel.value;
-                if (valorSelecionado) {
-                    window.ymsStore.fornecedorSelecionadoTemp = valorSelecionado;
-                }
-                Array.from(sel.options).forEach(opt => {
-                    if (opt.value === valorSelecionado) {
-                        opt.style.backgroundColor = "#4f46e5";
-                        opt.style.color = "#ffffff";
-                        opt.style.fontWeight = "900";
-                    } else {
-                        opt.style.backgroundColor = "transparent";
-                        opt.style.color = "#e2e8f0";
-                        opt.style.fontWeight = "700";
-                    }
-                });
-            };
-
-            listaUnica.forEach((f, idx) => {
+            lista.forEach((f, idx) => {
                 const opt = document.createElement('option');
                 opt.value = f; 
                 opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-2.5 cursor-pointer rounded mb-1 transition-colors";
+                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
+                if (idx === 0) opt.selected = true;
                 sel.appendChild(opt);
             });
-
-            sel.onchange = atualizarDestaqueVisual;
-            sel.onclick = atualizarDestaqueVisual;
-            sel.onkeyup = atualizarDestaqueVisual;
-
-            sel.ondblclick = function() {
-                window.confirmarLoginFornecedorEmpresa();
-            };
-
-            if (sel.options.length > 0) {
-                if (window.ymsStore.fornecedorSelecionadoTemp && sel.querySelector(`option[value="${window.ymsStore.fornecedorSelecionadoTemp}"]`)) {
-                    sel.value = window.ymsStore.fornecedorSelecionadoTemp;
-                } else {
-                    sel.selectedIndex = 0;
-                }
-                atualizarDestaqueVisual();
-            }
         };
 
-        // Pesquisa / filtro rápido no modal de login do fornecedor
         window.filtrarLoginEmpresas = function() {
-            const termo = (document.getElementById('filtroLoginForn')?.value || '').toLowerCase().trim();
+            const termo = document.getElementById('filtroLoginForn').value.toLowerCase().trim();
             const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
             window.popularSelectLoginEmpresas(filtrados);
         };
 
-        // Função de logout global
-        window.fazerLogoutGlobal = function() {
-            window.ymsStore.usuarioLogado = null;
-            window.ymsStore.empresaFornecedorLogada = null;
-            window.ymsStore.fornecedorSelecionadoTemp = null;
-
-            localStorage.removeItem('yms_sessao_usuario');
-            localStorage.removeItem('yms_empresa_fornecedor_logada');
-
-            const lbl = document.getElementById('lblNomeUsuarioLogado');
-            if (lbl) lbl.textContent = "Sair";
-
-            const nav = document.getElementById('navBarPerfis');
-            if (nav) nav.classList.add('hidden');
-
-            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
-
-            if (document.getElementById('inputSenhaFornecedor')) document.getElementById('inputSenhaFornecedor').value = '';
-            if (document.getElementById('inputUserLogin')) document.getElementById('inputUserLogin').value = '';
-            if (document.getElementById('inputPinLogin')) document.getElementById('inputPinLogin').value = '';
-
-            const boxSenha = document.getElementById('boxSenhaLogin');
-            if (boxSenha) boxSenha.classList.add('hidden');
-            const boxEmp = document.getElementById('boxEmpresaFornecedorLogin');
-            if (boxEmp) boxEmp.classList.add('hidden');
-
-            const modal = document.getElementById('modalLoginGlobal');
-            if (modal) modal.classList.remove('hidden');
-
-            if (window.exibirToast) window.exibirToast("Sessão Encerrada", "Você desconectou com sucesso.", "🔴");
+        window.popularSelectCadastroEmpresasUsr = function() {
+            const sel = document.getElementById('selUsrEmpresa');
+            if (!sel) return;
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
+            window.obterListaNomesFornecedores().forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = f;
+                sel.appendChild(opt);
+            });
         };
 
-        // Função de restauração de sessão local
-        window.restaurarSessaoLocal = function() {
-            const modalLogin = document.getElementById('modalLoginGlobal');
-            if (modalLogin) {
-                modalLogin.classList.remove('hidden');
-            }
-            return false;
+        window.popularSelectFornecedores = function(lista) {
+            const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
+            selForn.innerHTML = "";
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; 
+                opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
         };
+
         window.filtrarOpcoesFornecedor = function() {
             const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
             const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
             window.popularSelectFornecedores(filtrados);
         };
 
-       window.atualizarTodasListasFornecedores = function() {
+        window.atualizarTodasListasFornecedores = function() {
             const fornecedoresLimpos = window.obterListaNomesFornecedores();
             window.popularSelectFornecedores(fornecedoresLimpos);
             window.popularSelectLoginEmpresas(fornecedoresLimpos);
             window.popularSelectCadastroEmpresasUsr();
             window.renderizarTabelaFornecedores();
-            if (window.renderizarTabelaMotoristas) window.renderizarTabelaMotoristas();
-            if (window.renderizarTabelaUsuariosCustom) window.renderizarTabelaUsuariosCustom();
-            
+            window.renderizarTabelaMotoristas();
+            window.renderizarTabelaUsuariosCustom();
             const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
             if (badgeTotal) badgeTotal.textContent = `${fornecedoresLimpos.length} Empresas`;
-            
-            const lblContador = document.getElementById('lblContadorForn');
-            if (lblContador) lblContador.textContent = `(${fornecedoresLimpos.length} CADASTRADOS)`;
         };
 
         window.renderizarTabelaFornecedores = function() {
@@ -1740,199 +1625,124 @@ window.solicitarAcessoPerfil = function(keyPerfil) {
             window.salvarCredenciaisFornecedoresNaMemoria();
         };
 
-window.confirmarLoginFornecedorEmpresa = function() {
-            const selectEl = document.getElementById('selEmpresaFornecedorLogin');
-            if (!selectEl) {
-                alert("Erro ao localizar a lista de empresas.");
-                return;
-            }
-
-            let empSel = window.ymsStore.fornecedorSelecionadoTemp || selectEl.value;
+        window.confirmarLoginFornecedorEmpresa = function() {
+            const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
+            if (!empSel) { alert("Selecione a sua empresa na lista."); return; }
             
-            if (!empSel && selectEl.options.length > 0) {
-                empSel = selectEl.options[0].value;
-                selectEl.selectedIndex = 0;
-            }
-
-            if (!empSel) { 
-                alert("Por favor, clique em uma empresa na lista para selecionar."); 
-                return; 
-            }
-            
-            const inputSenha = document.getElementById('inputSenhaFornecedor');
-            const senhaForn = inputSenha ? inputSenha.value.trim() : "";
-            
-            // 🔒 TRAVA RIGOROSA: Exige que o usuário digite a senha (não aceita em branco)
-            if (!senhaForn) {
-                alert(`⚠️ Preencha a senha exclusiva da empresa "${empSel}" para continuar!`);
-                if (inputSenha) inputSenha.focus();
-                return;
-            }
-
+            const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
             const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
 
-            // Senha oficial cadastrada no Firebase ou a senha padrão do sistema (ex: csn@2026)
-            const senhaCorreta = cadForn ? cadForn.senha : `${empSel.toLowerCase().replace(/\s+/g, '')}@2026`;
-
-            // Valida se a senha digitada é a correta da empresa OU a senha mestra da torre (1234 / admin / 123)
-            if (senhaForn === senhaCorreta || senhaForn === "admin" || senhaForn === "1234" || senhaForn === "123") {
+            if (senhaForn === (cadForn ? cadForn.senha : "123") || senhaForn === "admin" || senhaForn === "1234") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
                 localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
                 window.concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
             } else {
-                alert(`🚫 SENHA INCORRETA PARA "${empSel}"!\n\nA senha digitada não confere com a credencial desta empresa.`);
-                if (inputSenha) {
-                    inputSenha.value = "";
-                    inputSenha.focus();
-                }
+                alert("Senha incorreta!");
             }
         };
-      // Valida o login de Operadores e Administrador (Torre de Controle)
-      // Valida o login de Operadores e Administrador (Torre de Controle)
-     // Valida o login de Operadores e Administrador (Torre de Controle)
+
         window.confirmarLoginComSenha = function() {
             const userDig = document.getElementById('inputUserLogin').value.trim();
             const pinDig = document.getElementById('inputPinLogin').value.trim();
             const perfilSel = window.ymsStore.perfilSolicitadoTemp;
 
-            // Login de Administrador Mestre (Usuário: admin / Senha: 1234, admin ou 123)
             if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
-                const targetAba = (perfilSel === 'admin' || perfilSel === 'torre') ? 'torre' : (perfilSel || 'torre');
-                window.concluirLoginPerfil('admin', 'Administrador', ['torre', 'pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas'], targetAba);
+                window.concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
                 return;
             }
 
-            // Login de Usuários Customizados do Banco
             const usrEncontrado = window.ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
 
             if (usrEncontrado) {
-                if (perfilSel && perfilSel !== 'admin' && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
+                if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
                     alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
                     return;
                 }
-                const targetAba = (perfilSel === 'admin' || perfilSel === 'torre') ? 'torre' : (perfilSel || usrEncontrado.modulos[0]);
-                window.concluirLoginPerfil(usrEncontrado.modulos.includes('torre') ? 'admin' : perfilSel, usrEncontrado.nome, usrEncontrado.modulos, targetAba);
+                window.concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
             } else {
-                alert("🚫 Usuário ou Senha incorretos!\n\nCredenciais de Administrador:\n• Usuário: admin\n• Senha: 1234 (ou admin / 123)");
+                alert("Usuário ou Senha incorretos!");
             }
         };
 
-        // Função para encerrar a sessão, resetar a tela e abrir o modal de login
+        window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos, abaParaAbrir = null) {
+            const targetAba = abaParaAbrir || modulosPermitidos[0];
+            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos, abaAtiva: targetAba };
+            window.ymsStore.usuarioLogado = sessaoData;
+            
+            // Grava a sessão localmente para persistir após F5
+            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessaoData));
+
+            document.getElementById('modalLoginGlobal').classList.add('hidden');
+            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
+
+            const navBar = document.getElementById('navBarPerfis');
+
+            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
+                if (navBar) navBar.classList.add('hidden');
+            } else {
+                if (navBar) navBar.classList.remove('hidden');
+                
+                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
+                    const moduloBtn = btn.getAttribute('data-modulo');
+                    if (modulosPermitidos.includes(moduloBtn)) {
+                        btn.classList.remove('hidden');
+                    } else {
+                        btn.classList.add('hidden');
+                    }
+                });
+            }
+
+            window.mudarPerfil(targetAba);
+        };
+
+        window.restaurarSessaoLocal = function() {
+            try {
+                const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
+                const empForSalva = localStorage.getItem('yms_empresa_fornecedor_logada');
+
+                if (empForSalva) {
+                    window.ymsStore.empresaFornecedorLogada = empForSalva;
+                }
+
+                if (sessaoSalva) {
+                    const parsed = JSON.parse(sessaoSalva);
+                    if (parsed && parsed.key && parsed.modulosCustom) {
+                        window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom, parsed.abaAtiva || parsed.modulosCustom[0]);
+                        return true;
+                    }
+                }
+            } catch(e) {
+                console.error("Erro ao restaurar sessão:", e);
+            }
+
+            // Caso não haja login ativo no localStorage, exibe o modal de login
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            return false;
+        };
+
         window.fazerLogoutGlobal = function() {
             window.ymsStore.usuarioLogado = null;
             window.ymsStore.empresaFornecedorLogada = null;
-            window.ymsStore.fornecedorSelecionadoTemp = null;
-
+            
+            // Limpa dados de sessão do navegador
             localStorage.removeItem('yms_sessao_usuario');
             localStorage.removeItem('yms_empresa_fornecedor_logada');
 
-            const lbl = document.getElementById('lblNomeUsuarioLogado');
-            if (lbl) lbl.textContent = "Sair";
-
-            const nav = document.getElementById('navBarPerfis');
-            if (nav) nav.classList.add('hidden');
-
-            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
-
-            if (document.getElementById('inputSenhaFornecedor')) document.getElementById('inputSenhaFornecedor').value = '';
-            if (document.getElementById('inputUserLogin')) document.getElementById('inputUserLogin').value = '';
-            if (document.getElementById('inputPinLogin')) document.getElementById('inputPinLogin').value = '';
-
-            const boxSenha = document.getElementById('boxSenhaLogin');
-            if (boxSenha) boxSenha.classList.add('hidden');
-            const boxEmp = document.getElementById('boxEmpresaFornecedorLogin');
-            if (boxEmp) boxEmp.classList.add('hidden');
-
-            const modal = document.getElementById('modalLoginGlobal');
-            if (modal) modal.classList.remove('hidden');
-
-            if (window.exibirToast) window.exibirToast("Sessão Encerrada", "Você desconectou com sucesso.", "🔴");
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+            
+            const navBar = document.getElementById('navBarPerfis');
+            if (navBar) navBar.classList.remove('hidden');
+            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
         };
 
-        // Função de restauração de sessão local
-   // 1. Função que conclui o login, oculta o modal e libera os módulos permitidos
-        window.concluirLoginPerfil = function(keyPerfil, nomeUsuario, modulosPermitidos, abaInicial = null) {
-            const sessao = {
-                perfil: keyPerfil,
-                nome: nomeUsuario,
-                modulosCustom: modulosPermitidos,
-                abaAtiva: abaInicial || (modulosPermitidos && modulosPermitidos[0]) || 'pcp'
-            };
-            window.ymsStore.usuarioLogado = sessao;
-            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessao));
-
-            // Atualiza o texto do botão do topo
-            const lblUser = document.getElementById('lblNomeUsuarioLogado');
-            if (lblUser) lblUser.textContent = `Sair (${nomeUsuario})`;
-
-            // Oculta a tela escura de login
-            const modal = document.getElementById('modalLoginGlobal');
-            if (modal) modal.classList.add('hidden');
-
-            // Exibe a barra de navegação de módulos
-            const nav = document.getElementById('navBarPerfis');
-            if (nav) nav.classList.remove('hidden');
-
-            // Exibe apenas os botões dos módulos permitidos para esse usuário
-            document.querySelectorAll('#navBarPerfis .btn-perfil').forEach(btn => {
-                const mod = btn.getAttribute('data-modulo');
-                if (modulosPermitidos.includes(mod) || modulosPermitidos.includes('torre') || keyPerfil === 'admin') {
-                    btn.classList.remove('hidden');
-                } else {
-                    btn.classList.add('hidden');
-                }
-            });
-
-            // Abre o módulo de destino (ex: Torre de Controle)
-            const moduloParaAbrir = abaInicial || modulosPermitidos[0] || 'pcp';
-            window.mudarPerfil(moduloParaAbrir);
-
-            if (window.exibirToast) {
-                window.exibirToast("Acesso Concedido!", `Bem-vindo(a), ${nomeUsuario}`, "🔓");
-            }
-        };
-
-        // 2. Restaura automaticamente o acesso salvo ao recarregar com F5
-        window.restaurarSessaoLocal = function() {
-            const modalLogin = document.getElementById('modalLoginGlobal');
-            const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
-            const empSalva = localStorage.getItem('yms_empresa_fornecedor_logada');
-
-            if (empSalva) window.ymsStore.empresaFornecedorLogada = empSalva;
-
-            if (sessaoSalva) {
-                try {
-                    const sessao = JSON.parse(sessaoSalva);
-                    if (sessao && sessao.modulosCustom) {
-                        window.ymsStore.usuarioLogado = sessao;
-
-                        const lblUser = document.getElementById('lblNomeUsuarioLogado');
-                        if (lblUser) lblUser.textContent = `Sair (${sessao.nome})`;
-
-                        if (modalLogin) modalLogin.classList.add('hidden');
-
-                        const nav = document.getElementById('navBarPerfis');
-                        if (nav) nav.classList.remove('hidden');
-
-                        document.querySelectorAll('#navBarPerfis .btn-perfil').forEach(btn => {
-                            const mod = btn.getAttribute('data-modulo');
-                            if (sessao.modulosCustom.includes(mod) || sessao.modulosCustom.includes('torre') || sessao.perfil === 'admin') {
-                                btn.classList.remove('hidden');
-                            } else {
-                                btn.classList.add('hidden');
-                            }
-                        });
-
-                        window.mudarPerfil(sessao.abaAtiva || sessao.modulosCustom[0] || 'pcp');
-                        return true;
-                    }
-                } catch (e) {
-                    console.error("Erro na sessão:", e);
-                }
-            }
-
-            if (modalLogin) modalLogin.classList.remove('hidden');
-            return false;
+        window.obterDataHojeISO = function() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
         };
 
         window.obterDataHojePtBR = function() {
@@ -1959,7 +1769,7 @@ window.confirmarLoginFornecedorEmpresa = function() {
             return String(txt || '').toLowerCase().replace(/\s+/g, '').trim();
         };
 
-      window.calcularSlaTicket = function(ag) {
+        window.calcularSlaTicket = function(ag) {
             if (!ag || !ag.timeCheckin) return "";
 
             const timeCheckin = new Date(ag.timeCheckin);
@@ -2009,55 +1819,38 @@ window.confirmarLoginFornecedorEmpresa = function() {
                 Notification.requestPermission();
             }
 
-            // Vincula o evento de clique no botão de Sair
-            const btnLogout = document.getElementById('btnLogoutUser');
-            if (btnLogout) {
-                btnLogout.onclick = function(e) {
-                    if (e) e.preventDefault();
-                    window.fazerLogoutGlobal();
-                };
-            }
-
             const hojeIso = window.obterDataHojeISO();
             
-            if (document.getElementById('inpData')) {
-                document.getElementById('inpData').min = hojeIso;
-                document.getElementById('inpData').value = hojeIso;
-            }
-            if (document.getElementById('filtroDataFornecedor')) {
-                document.getElementById('filtroDataFornecedor').min = hojeIso;
-                document.getElementById('filtroDataFornecedor').value = hojeIso;
-            }
-            if (document.getElementById('repDataInicio')) document.getElementById('repDataInicio').value = hojeIso;
-            if (document.getElementById('repDataFim')) document.getElementById('repDataFim').value = hojeIso;
+            document.getElementById('inpData').min = hojeIso;
+            document.getElementById('inpData').value = hojeIso;
+            document.getElementById('filtroDataFornecedor').min = hojeIso;
+            document.getElementById('filtroDataFornecedor').value = hojeIso;
+            document.getElementById('repDataInicio').value = hojeIso;
+            document.getElementById('repDataFim').value = hojeIso;
 
             const selDoca = document.getElementById('inpDoca');
-            if (selDoca) {
-                selDoca.innerHTML = "";
-                listaTodasDocas.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d; opt.textContent = d;
-                    selDoca.appendChild(opt);
-                });
-            }
+            selDoca.innerHTML = "";
+            listaTodasDocas.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d;
+                selDoca.appendChild(opt);
+            });
 
             const selDocaOp = document.getElementById('selDocaOperador');
-            if (selDocaOp) {
-                selDocaOp.innerHTML = "";
-                listaTodasDocas.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d; opt.textContent = d;
-                    selDocaOp.appendChild(opt);
-                });
-            }
+            selDocaOp.innerHTML = "";
+            listaTodasDocas.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d;
+                selDocaOp.appendChild(opt);
+            });
 
+            // Tenta restaurar sessão prévia sem exibir o modal
             window.restaurarSessaoLocal();
-            inicializarEscutadoresFirebase();
 
-            if (window.atualizarTodasListasFornecedores) {
-                window.atualizarTodasListasFornecedores();
-            }
+            // Inicializar escuta Realtime
+            inicializarEscutadoresFirebase();
         });
+
         window.extrairDataReal = function(row) {
             let keys = Object.keys(row);
             let targetKey = keys.find(k => k.match(/dia|data|date|agendamento/i));
@@ -2187,48 +1980,25 @@ window.confirmarLoginFornecedorEmpresa = function() {
             window.carregarGraficosTorre();
         };
 
-       window.selecionarTipoCarga = function(tipo) {
-            const btnCot = document.getElementById('btnTipoCotidiano');
-            const btnExt = document.getElementById('btnTipoExtra');
-            const btnCri = document.getElementById('btnTipoCritica');
-            const badge = document.getElementById('badgeTipoJanela');
+        // --- PCP PROGRAMADOR ---
+        window.alternarAbaPCP = function(aba) {
+            document.getElementById('tabIndividualBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            document.getElementById('tabMassaBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+            document.getElementById('tabTextoBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
 
-            const boxExtra = document.getElementById('boxMotivoExtra');
-            const boxMot = document.getElementById('boxDadosMotorista');
-            const boxCrit = document.getElementById('boxCamposCriticos');
+            document.getElementById('conteudoIndividual').classList.add('hidden');
+            document.getElementById('conteudoMassa').classList.add('hidden');
+            document.getElementById('conteudoTexto').classList.add('hidden');
 
-            // Reseta cores dos botões
-            if (btnCot) btnCot.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-emerald-400 flex flex-col items-center gap-0.5 cursor-pointer";
-            if (btnExt) btnExt.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer";
-            if (btnCri) btnCri.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer";
-
-            // Esconde todos os painéis extras
-            if (boxExtra) boxExtra.classList.add('hidden');
-            if (boxMot) boxMot.classList.add('hidden');
-            if (boxCrit) boxCrit.classList.add('hidden');
-
-            if (tipo === 'cotidiano') {
-                if (btnCot) btnCot.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                if (badge) {
-                    badge.textContent = "🟢 Cotidiano";
-                    badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
-                }
-            } else if (tipo === 'extra') {
-                if (btnExt) btnExt.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-600 border-amber-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                if (badge) {
-                    badge.textContent = "🟡 Extra";
-                    badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
-                }
-                if (boxExtra) boxExtra.classList.remove('hidden');
-                if (boxMot) boxMot.classList.remove('hidden');
-            } else if (tipo === 'critica') {
-                if (btnCri) btnCri.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                if (badge) {
-                    badge.textContent = "🔴 Crítica";
-                    badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
-                }
-                if (boxCrit) boxCrit.classList.remove('hidden');
-                if (boxMot) boxMot.classList.remove('hidden');
+            if (aba === 'individual') {
+                document.getElementById('tabIndividualBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoIndividual').classList.remove('hidden');
+            } else if (aba === 'massa') {
+                document.getElementById('tabMassaBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoMassa').classList.remove('hidden');
+            } else {
+                document.getElementById('tabTextoBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
+                document.getElementById('conteudoTexto').classList.remove('hidden');
             }
         };
 
@@ -3161,7 +2931,7 @@ window.confirmarLoginFornecedorEmpresa = function() {
         };
 
         // --- MOTORISTAS ---
-      window.renderizarTabelaMotoristas = function() {
+        window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
             tbody.innerHTML = "";
@@ -3170,8 +2940,7 @@ window.confirmarLoginFornecedorEmpresa = function() {
             const listData = Array.isArray(window.ymsStore.baseMotoristas) ? window.ymsStore.baseMotoristas : [];
             const filtrados = listData.filter(m => String(m.cpf).includes(termoBusca) || String(m.nome).toLowerCase().includes(termoBusca));
 
-            const badgeQtd = document.getElementById('badgeQtdMotoristas');
-            if (badgeQtd) badgeQtd.textContent = listData.length;
+            document.getElementById('badgeQtdMotoristas').textContent = listData.length;
 
             if (filtrados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
@@ -3181,17 +2950,14 @@ window.confirmarLoginFornecedorEmpresa = function() {
             filtrados.forEach(m => {
                 const isBloqueado = m.status === 'BLOQUEADO';
                 const row = `
-                    <tr class="hover:bg-slate-900/60 transition border-b border-slate-800">
+                    <tr class="hover:bg-slate-900/60 transition">
                         <td class="p-3 font-mono font-bold text-emerald-400">${m.cpf}</td>
                         <td class="p-3 font-bold text-white">${m.nome}</td>
                         <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
                         <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
-                        <td class="p-3 text-center flex items-center justify-center gap-1.5">
-                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'} text-white font-bold px-2.5 py-1 rounded-lg text-xs cursor-pointer shadow transition">
+                        <td class="p-3 text-center">
+                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
                                 ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
-                            </button>
-                            <button type="button" onclick="excluirMotorista('${m.cpf}')" title="Excluir da Base" class="bg-red-950/80 hover:bg-red-800 border border-red-500/30 text-red-300 p-1.5 rounded-lg text-xs cursor-pointer transition">
-                                🗑️
                             </button>
                         </td>
                     </tr>
@@ -3200,18 +2966,6 @@ window.confirmarLoginFornecedorEmpresa = function() {
             });
         };
 
-        window.excluirMotorista = function(cpf) {
-            const cpfLimpo = String(cpf).replace(/\D/g, '');
-            const mot = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-            if (!mot) return;
-            
-            if (!confirm(`Tem certeza que deseja excluir o motorista "${mot.nome}" (CPF: ${mot.cpf}) da base permanente?`)) return;
-
-            window.ymsStore.baseMotoristas = window.ymsStore.baseMotoristas.filter(m => String(m.cpf).replace(/\D/g, '') !== cpfLimpo);
-            window.salvarBaseMotoristasNaMemoria();
-            window.renderizarTabelaMotoristas();
-            if(window.exibirToast) window.exibirToast("Motorista Removido", `${mot.nome} foi excluído da base.`, "🗑️");
-        };
         window.salvarMotoristaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const cpf = document.getElementById('cadMotCpf').value.replace(/\D/g, '').trim();
