@@ -1118,16 +1118,16 @@
 
         window.mapaCredenciaisFornecedores = [];
 
-        // LIMPEZA E NORMALIZAÇÃO ESTRITA DE SUFIXOS E DUPLICADOS
-        window.limparNomeFornecedor = function(nome) {
+      window.limparNomeFornecedor = function(nome) {
             let str = String(nome || '').trim().toUpperCase();
             if (!str) return '';
             
-            // Remove sufixos numéricos ao final de nomes importados (Ex: ARCELOMITTAL1 -> ARCELOMITTAL)
-            // preservando exceções como "5 ESTRELAS"
-            if (!str.match(/^5\s+ESTRELAS/i)) {
-                str = str.replace(/[\s\-_]*\d+$/, '').trim();
+            // Remove números no final do nome (ex: 5 ESTRELAS1 -> 5 ESTRELAS)
+            if (str.match(/^5\s+ESTRELAS/i)) {
+                return "5 ESTRELAS";
             }
+            
+            str = str.replace(/[\s\-_]*\d+$/, '').trim();
             return str;
         };
 
