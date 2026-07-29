@@ -1650,13 +1650,14 @@
             window.salvarCredenciaisFornecedoresNaMemoria();
         };
 
-  window.confirmarLoginFornecedorEmpresa = function() {
+window.confirmarLoginFornecedorEmpresa = function() {
             const selectEl = document.getElementById('selEmpresaFornecedorLogin');
             if (!selectEl) {
                 alert("Erro ao localizar a lista de empresas.");
                 return;
             }
 
+            // Tenta pegar da variável temporária (clique simples) ou do próprio select
             let empSel = window.ymsStore.fornecedorSelecionadoTemp || selectEl.value;
             
             if (!empSel && selectEl.options.length > 0) {
@@ -1669,29 +1670,32 @@
                 return; 
             }
             
-            const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
+            const inputSenha = document.getElementById('inputSenhaFornecedor');
+            const senhaForn = inputSenha ? inputSenha.value.trim() : "";
             
-            // Exige que o usuário digite alguma coisa no campo de senha
+            // 🔒 TRAVA RIGOROSA: Exige que o usuário digite a senha (não aceita em branco)
             if (!senhaForn) {
                 alert(`⚠️ Preencha a senha exclusiva da empresa "${empSel}" para continuar!`);
-                document.getElementById('inputSenhaFornecedor').focus();
+                if (inputSenha) inputSenha.focus();
                 return;
             }
 
             const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
 
-            // Senha oficial cadastrada no Firebase ou a senha padrão gerada pelo sistema
+            // Senha oficial cadastrada no Firebase ou a senha padrão do sistema (ex: csn@2026)
             const senhaCorreta = cadForn ? cadForn.senha : `${empSel.toLowerCase().replace(/\s+/g, '')}@2026`;
 
-            // Valida se a senha digitada é a correta da empresa OU a senha mestra da torre (1234 / admin)
-            if (senhaForn === senhaCorreta || senhaForn === "admin" || senhaForn === "1234") {
+            // Valida se a senha digitada é a correta da empresa OU a senha mestra da torre (1234 / admin / 123)
+            if (senhaForn === senhaCorreta || senhaForn === "admin" || senhaForn === "1234" || senhaForn === "123") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
                 localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
                 window.concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
             } else {
                 alert(`🚫 SENHA INCORRETA PARA "${empSel}"!\n\nA senha digitada não confere com a credencial desta empresa.`);
-                document.getElementById('inputSenhaFornecedor').value = "";
-                document.getElementById('inputSenhaFornecedor').focus();
+                if (inputSenha) {
+                    inputSenha.value = "";
+                    inputSenha.focus();
+                }
             }
         };
 
