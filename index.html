@@ -1435,47 +1435,7 @@
                 document.getElementById('inputUserLogin').focus();
             }
         };
-// Preenche a caixa do PCP e fixa a seleção ao clicar
-        window.popularSelectFornecedores = function(listaParaExibir = null) {
-            const sel = document.getElementById('inpFornecedor');
-            if (!sel) return;
-            const valorAnterior = sel.value;
-            sel.innerHTML = "";
-            
-            const lista = listaParaExibir || window.obterListaNomesFornecedores();
-            const listaUnica = Array.from(new Set(lista.map(f => window.limparNomeFornecedor(f)))).filter(Boolean);
-            
-            listaUnica.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; 
-                opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold text-slate-200 bg-slate-950 mb-1";
-                sel.appendChild(opt);
-            });
 
-            if (valorAnterior && sel.querySelector(`option[value="${valorAnterior}"]`)) {
-                sel.value = valorAnterior;
-            } else if (sel.options.length > 0) {
-                sel.selectedIndex = 0;
-            }
-        };
-
-        // Preenche a caixa de empresas na tela de Cadastro de Usuário
-        window.popularSelectCadastroEmpresasUsr = function() {
-            const sel = document.getElementById('selUsrEmpresa');
-            if (!sel) return;
-            const valAnt = sel.value;
-            sel.innerHTML = '<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>';
-            
-            window.obterListaNomesFornecedores().forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f;
-                opt.textContent = f;
-                sel.appendChild(opt);
-            });
-            
-            if (valAnt && sel.querySelector(`option[value="${valAnt}"]`)) sel.value = valAnt;
-        };
                 // Grava imediatamente o item selecionado ao clicar
             // 1. Preenche a caixinha do PCP Programador
         window.popularSelectFornecedores = function(listaParaExibir = null) {
