@@ -2126,7 +2126,7 @@
                 }
             });
         };
-        // Função para disparar e-mail de Carga Crítica
+   // Função para disparar e-mail de Carga Crítica
         window.dispararEmailCargaCritica = function(item) {
             const destinatario = "fernando_junkes@whirlpool.com";
             const assunto = encodeURIComponent(`🚨 [ALERTA YMS] Nova Carga Crítica - ${item.ordem} (${item.fornecedor})`);
@@ -2149,7 +2149,55 @@
             window.open(`mailto:${destinatario}?subject=${assunto}&body=${corpo}`, '_blank');
         };
 
-       window.criarJanelaManual = function(e) {
+        // Controle de seleção do tipo de carga (Cotidiano / Extra / Crítica)
+        window.tipoCargaSelecionada = 'cotidiano';
+
+        window.selecionarTipoCarga = function(tipo) {
+            window.tipoCargaSelecionada = tipo;
+            
+            const btnCot = document.getElementById('btnTipoCotidiano');
+            const btnExt = document.getElementById('btnTipoExtra');
+            const btnCri = document.getElementById('btnTipoCritica');
+
+            // Reset estilo botões
+            if (btnCot) btnCot.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-emerald-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            if (btnExt) btnExt.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            if (btnCri) btnCri.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer";
+
+            document.getElementById('boxMotivoExtra')?.classList.add('hidden');
+            document.getElementById('boxDadosMotorista')?.classList.add('hidden');
+            document.getElementById('boxCamposCriticos')?.classList.add('hidden');
+
+            if (tipo === 'cotidiano') {
+                if (btnCot) btnCot.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                const badge = document.getElementById('badgeTipoJanela');
+                if (badge) {
+                    badge.textContent = "🟢 Cotidiano";
+                    badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                }
+            } else if (tipo === 'extra') {
+                if (btnExt) btnExt.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-600 border-amber-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                document.getElementById('boxMotivoExtra')?.classList.remove('hidden');
+                document.getElementById('boxDadosMotorista')?.classList.remove('hidden');
+                const badge = document.getElementById('badgeTipoJanela');
+                if (badge) {
+                    badge.textContent = "🟡 Extra";
+                    badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                }
+            } else if (tipo === 'critica') {
+                if (btnCri) btnCri.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                document.getElementById('boxCamposCriticos')?.classList.remove('hidden');
+                document.getElementById('boxDadosMotorista')?.classList.remove('hidden');
+                const badge = document.getElementById('badgeTipoJanela');
+                if (badge) {
+                    badge.textContent = "🔴 Crítica";
+                    badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                }
+            }
+        };
+
+        // Criação de Janela PCP
+        window.criarJanelaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const rawData = document.getElementById('inpData').value;
             
@@ -2167,6 +2215,11 @@
 
             if (!fornSel) { alert("Selecione um fornecedor."); return; }
 
+            const tipoOperacao = window.tipoCargaSelecionada || 'cotidiano';
+            const ehCritica = tipoOperacao === 'critica';
+            const codigoCritico = ehCritica ? document.getElementById('pcpCodigoCritico')?.value.trim() : null;
+            const motivoCritico = ehCritica ? document.getElementById('pcpMotivoCritico')?.value.trim() : null;
+
             const item = {
                 ordem: novaOrdem,
                 data: `${partes[2]}/${partes[1]}/${partes[0]}`,
@@ -2174,6 +2227,10 @@
                 doca: document.getElementById('inpDoca').value,
                 horaIni: horaIni,
                 horaFim: horaFim,
+                tipoOperacao: tipoOperacao,
+                isCritica: ehCritica,
+                codigoCritico: codigoCritico,
+                motivoCritico: motivoCritico,
                 status: "AGENDADO",
                 isRascunho: true,
                 nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
@@ -2184,16 +2241,14 @@
 
             window.garantirTodosFornecedoresNaLista();
             window.renderizarGradePCP();
-            window.exibirToast("Adicionado ao Rascunho!", `Ordem ${novaOrdem} aguardando subida no botão verde.`, "📝");
+
+            if (ehCritica) {
+                window.exibirToast("🚨 Carga Crítica!", `Abrindo envio de e-mail para Fernando Junkes...`, "🔴");
+                if (window.dispararEmailCargaCritica) window.dispararEmailCargaCritica(item);
+            } else {
+                window.exibirToast("Adicionado ao Rascunho!", `Ordem ${novaOrdem} aguardando subida no botão verde.`, "📝");
+            }
         };
-
-            window.ymsStore.rascunhoAgendamentos.push(item);
-
-            window.garantirTodosFornecedoresNaLista();
-            window.renderizarGradePCP();
-            window.exibirToast("Adicionado ao Rascunho!", `Ordem ${novaOrdem} aguardando subida no botão verde.`, "📝");
-        };
-
         window.tratarDragOver = function(e) {
             e.preventDefault(); e.stopPropagation();
             const dz = document.getElementById('dropZonePlanilha');
