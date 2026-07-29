@@ -2126,8 +2126,30 @@
                 }
             });
         };
+        // Função para disparar e-mail de Carga Crítica
+        window.dispararEmailCargaCritica = function(item) {
+            const destinatario = "fernando_junkes@whirlpool.com";
+            const assunto = encodeURIComponent(`🚨 [ALERTA YMS] Nova Carga Crítica - ${item.ordem} (${item.fornecedor})`);
+            
+            const corpo = encodeURIComponent(
+                `Atenção PCP / Logística,\n\n` +
+                `Uma nova CARGA CRÍTICA foi cadastrada no sistema YMS e requer atenção prioritária:\n\n` +
+                `📌 Ordem: ${item.ordem}\n` +
+                `🏢 Fornecedor: ${item.fornecedor}\n` +
+                `📅 Data da Janela: ${item.data}\n` +
+                `🕒 Horário: ${item.horaIni} às ${item.horaFim}\n` +
+                `📍 Doca: ${item.doca}\n` +
+                `🏷️ Part Number / Código: ${item.codigoCritico || 'Não informado'}\n` +
+                `⚠️ Motivo / Urgência: ${item.motivoCritico || 'Não informado'}\n\n` +
+                `Por favor, acompanhem a chegada desta carga no pátio.\n` +
+                `Sistema YMS Ecosystem`
+            );
 
-        window.criarJanelaManual = function(e) {
+            // Abre o popup do leitor de e-mail padrão (Outlook, Mail, etc.)
+            window.open(`mailto:${destinatario}?subject=${assunto}&body=${corpo}`, '_blank');
+        };
+
+       window.criarJanelaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const rawData = document.getElementById('inpData').value;
             
@@ -2157,6 +2179,13 @@
                 nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
                 timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
             };
+
+            window.ymsStore.rascunhoAgendamentos.push(item);
+
+            window.garantirTodosFornecedoresNaLista();
+            window.renderizarGradePCP();
+            window.exibirToast("Adicionado ao Rascunho!", `Ordem ${novaOrdem} aguardando subida no botão verde.`, "📝");
+        };
 
             window.ymsStore.rascunhoAgendamentos.push(item);
 
