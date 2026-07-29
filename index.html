@@ -176,7 +176,7 @@
             <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-2">
                 <span>🕒</span> <span>00:00:00</span>
             </div>
-            <button type="button" onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
+           <button type="button" onclick="window.fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
                 <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
             </button>
         </div>
@@ -1819,43 +1819,44 @@ window.confirmarLoginFornecedorEmpresa = function() {
             }
         };
 
-      // Função para encerrar a sessão, esconder barras e voltar ao login
+   // Função para encerrar a sessão, resetar a tela e abrir o modal de login
         window.fazerLogoutGlobal = function() {
-            // 1. Limpa os dados de login da memória e local storage
+            // 1. Limpa os dados de login da memória
             window.ymsStore.usuarioLogado = null;
             window.ymsStore.empresaFornecedorLogada = null;
             window.ymsStore.fornecedorSelecionadoTemp = null;
+
+            // 2. Remove as sessões salvas no navegador
             localStorage.removeItem('yms_sessao_usuario');
             localStorage.removeItem('yms_empresa_fornecedor_logada');
 
-            // 2. Reseta o texto do botão no topo de volta para "Sair"
-            const lblUsuario = document.getElementById('lblNomeUsuarioLogado');
-            if (lblUsuario) lblUsuario.textContent = 'Sair';
+            // 3. Reseta o texto do botão no topo de volta para "Sair"
+            const lbl = document.getElementById('lblNomeUsuarioLogado');
+            if (lbl) lbl.textContent = "Sair";
 
-            // 3. Esconde as abas dos perfis no topo
-            const navBar = document.getElementById('navBarPerfis');
-            if (navBar) navBar.classList.add('hidden');
+            // 4. Esconde a barra de navegação de módulos
+            const nav = document.getElementById('navBarPerfis');
+            if (nav) nav.classList.add('hidden');
 
-            // 4. Oculta todas as telas operacionais do fundo
+            // 5. Esconde todas as telas de módulos do fundo
             document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
 
-            // 5. Limpa os campos de senha
+            // 6. Limpa e oculta os campos de senha do modal
             if (document.getElementById('inputSenhaFornecedor')) document.getElementById('inputSenhaFornecedor').value = '';
             if (document.getElementById('inputUserLogin')) document.getElementById('inputUserLogin').value = '';
             if (document.getElementById('inputPinLogin')) document.getElementById('inputPinLogin').value = '';
 
             const boxSenha = document.getElementById('boxSenhaLogin');
-            const boxEmp = document.getElementById('boxEmpresaFornecedorLogin');
             if (boxSenha) boxSenha.classList.add('hidden');
+            const boxEmp = document.getElementById('boxEmpresaFornecedorLogin');
             if (boxEmp) boxEmp.classList.add('hidden');
 
-            // 6. Abre a tela inicial de seleção de perfil
-            const modalLogin = document.getElementById('modalLoginGlobal');
-            if (modalLogin) modalLogin.classList.remove('hidden');
+            // 7. Força a exibição do Modal Global de Login
+            const modal = document.getElementById('modalLoginGlobal');
+            if (modal) modal.classList.remove('hidden');
 
             if (window.exibirToast) window.exibirToast("Sessão Encerrada", "Você desconectou com sucesso.", "🔴");
         };
-      
         window.obterDataHojeISO = function() {
             const hoje = new Date();
             const ano = hoje.getFullYear();
