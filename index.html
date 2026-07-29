@@ -3202,27 +3202,7 @@
             setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
         };
     
-      // Autenticação de Operadores e Administrador
-        window.confirmarLoginComSenha = function() {
-            const userDig = document.getElementById('inputUserLogin')?.value.trim() || '';
-            const pinDig = document.getElementById('inputPinLogin')?.value.trim() || '';
-            const perfilSel = window.ymsStore.perfilSolicitadoTemp;
-
-            const modulosMestres = ['torre', 'pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas'];
-            const senhasValidasAdmin = ['1234', 'admin123', 'admin', '123'];
-
-            // Valida o Administrador Mestre
-            if (userDig.toLowerCase() === 'admin' || userDig === '' || perfilSel === 'admin' || perfilSel === 'torre') {
-                if (senhasValidasAdmin.includes(pinDig)) {
-                    window.concluirLoginPerfil('admin', 'Administrador', modulosMestres, 'torre');
-                    return;
-                }
-            }
-
-            // Valida Usuários do Banco
-            const usrEncontrado = (window.ymsStore.baseUsuariosCustom || []).find(
-                u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig
-            );
+     
 
             if (usrEncontrado) {
                 const targetAba = (perfilSel === 'admin' || perfilSel === 'torre') ? 'torre' : (perfilSel || usrEncontrado.modulos[0]);
