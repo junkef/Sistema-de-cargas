@@ -1419,8 +1419,7 @@
                 document.getElementById('inputUserLogin').focus();
             }
         };
-
-     window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
+window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
             const sel = document.getElementById('selEmpresaFornecedorLogin');
             if (!sel) return;
             sel.innerHTML = "";
@@ -1447,50 +1446,11 @@
                 sel.appendChild(opt);
             });
 
-            // Se der dois cliques, já autentica direto
+            // Se der dois cliques, já tenta autenticar direto
             sel.ondblclick = function() {
                 window.confirmarLoginFornecedorEmpresa();
             };
         };
-
-            // Permite dar DOIS CLIQUES na empresa para já tentar logar direto
-            sel.ondblclick = function() {
-                window.confirmarLoginFornecedorEmpresa();
-            };
-        };
-
-        window.filtrarLoginEmpresas = function() {
-            const termo = document.getElementById('filtroLoginForn').value.toLowerCase().trim();
-            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
-            window.popularSelectLoginEmpresas(filtrados);
-        };
-
-        window.popularSelectCadastroEmpresasUsr = function() {
-            const sel = document.getElementById('selUsrEmpresa');
-            if (!sel) return;
-            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
-            window.obterListaNomesFornecedores().forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = f;
-                sel.appendChild(opt);
-            });
-        };
-
-        window.popularSelectFornecedores = function(lista) {
-            const selForn = document.getElementById('inpFornecedor');
-            if (!selForn) return;
-            selForn.innerHTML = "";
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; 
-                opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
-                if (idx === 0) opt.selected = true;
-                selForn.appendChild(opt);
-            });
-            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
-        };
-
         window.filtrarOpcoesFornecedor = function() {
             const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
             const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
@@ -1657,7 +1617,6 @@ window.confirmarLoginFornecedorEmpresa = function() {
                 return;
             }
 
-            // Tenta pegar da variável temporária (clique simples) ou do próprio select
             let empSel = window.ymsStore.fornecedorSelecionadoTemp || selectEl.value;
             
             if (!empSel && selectEl.options.length > 0) {
@@ -1673,7 +1632,7 @@ window.confirmarLoginFornecedorEmpresa = function() {
             const inputSenha = document.getElementById('inputSenhaFornecedor');
             const senhaForn = inputSenha ? inputSenha.value.trim() : "";
             
-            // 🔒 TRAVA RIGOROSA: Exige que o usuário digite a senha (não aceita em branco)
+            // 🔒 Exige o preenchimento obrigatório da senha (não aceita vazio)
             if (!senhaForn) {
                 alert(`⚠️ Preencha a senha exclusiva da empresa "${empSel}" para continuar!`);
                 if (inputSenha) inputSenha.focus();
@@ -1681,11 +1640,9 @@ window.confirmarLoginFornecedorEmpresa = function() {
             }
 
             const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
-
-            // Senha oficial cadastrada no Firebase ou a senha padrão do sistema (ex: csn@2026)
             const senhaCorreta = cadForn ? cadForn.senha : `${empSel.toLowerCase().replace(/\s+/g, '')}@2026`;
 
-            // Valida se a senha digitada é a correta da empresa OU a senha mestra da torre (1234 / admin / 123)
+            // Valida se a senha digitada é a da empresa OU a senha mestra (admin / 1234 / 123)
             if (senhaForn === senhaCorreta || senhaForn === "admin" || senhaForn === "1234" || senhaForn === "123") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
                 localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
@@ -1753,22 +1710,12 @@ window.confirmarLoginFornecedorEmpresa = function() {
             window.mudarPerfil(targetAba);
         };
 
-     window.restaurarSessaoLocal = function() {
-            // Comentado para NÃO logar automaticamente ao dar F5:
-            // try {
-            //     const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
-            //     if (sessaoSalva) {
-            //         const parsed = JSON.parse(sessaoSalva);
-            //         if (parsed && parsed.key && parsed.modulosCustom) {
-            //             window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom, parsed.abaAtiva || parsed.modulosCustom[0]);
-            //             return true;
-            //         }
-            //     }
-            // } catch(e) { console.error("Erro ao restaurar sessão:", e); }
-
-            // Sempre exibe o modal de login inicial ao carregar a página
+   window.restaurarSessaoLocal = function() {
+            // Desativado propositalmente para exigir autenticação sempre que a página for atualizada/aberta.
             const modalLogin = document.getElementById('modalLoginGlobal');
-            if (modalLogin) modalLogin.classList.remove('hidden');
+            if (modalLogin) {
+                modalLogin.classList.remove('hidden');
+            }
             return false;
         };
         window.fazerLogoutGlobal = function() {
