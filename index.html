@@ -1980,25 +1980,48 @@
             window.carregarGraficosTorre();
         };
 
-        // --- PCP PROGRAMADOR ---
-        window.alternarAbaPCP = function(aba) {
-            document.getElementById('tabIndividualBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
-            document.getElementById('tabMassaBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
-            document.getElementById('tabTextoBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+       window.selecionarTipoCarga = function(tipo) {
+            const btnCot = document.getElementById('btnTipoCotidiano');
+            const btnExt = document.getElementById('btnTipoExtra');
+            const btnCri = document.getElementById('btnTipoCritica');
+            const badge = document.getElementById('badgeTipoJanela');
 
-            document.getElementById('conteudoIndividual').classList.add('hidden');
-            document.getElementById('conteudoMassa').classList.add('hidden');
-            document.getElementById('conteudoTexto').classList.add('hidden');
+            const boxExtra = document.getElementById('boxMotivoExtra');
+            const boxMot = document.getElementById('boxDadosMotorista');
+            const boxCrit = document.getElementById('boxCamposCriticos');
 
-            if (aba === 'individual') {
-                document.getElementById('tabIndividualBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
-                document.getElementById('conteudoIndividual').classList.remove('hidden');
-            } else if (aba === 'massa') {
-                document.getElementById('tabMassaBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
-                document.getElementById('conteudoMassa').classList.remove('hidden');
-            } else {
-                document.getElementById('tabTextoBtn').className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
-                document.getElementById('conteudoTexto').classList.remove('hidden');
+            // Reseta cores dos botões
+            if (btnCot) btnCot.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-emerald-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            if (btnExt) btnExt.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            if (btnCri) btnCri.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer";
+
+            // Esconde todos os painéis extras
+            if (boxExtra) boxExtra.classList.add('hidden');
+            if (boxMot) boxMot.classList.add('hidden');
+            if (boxCrit) boxCrit.classList.add('hidden');
+
+            if (tipo === 'cotidiano') {
+                if (btnCot) btnCot.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                if (badge) {
+                    badge.textContent = "🟢 Cotidiano";
+                    badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                }
+            } else if (tipo === 'extra') {
+                if (btnExt) btnExt.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-600 border-amber-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                if (badge) {
+                    badge.textContent = "🟡 Extra";
+                    badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                }
+                if (boxExtra) boxExtra.classList.remove('hidden');
+                if (boxMot) boxMot.classList.remove('hidden');
+            } else if (tipo === 'critica') {
+                if (btnCri) btnCri.className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                if (badge) {
+                    badge.textContent = "🔴 Crítica";
+                    badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                }
+                if (boxCrit) boxCrit.classList.remove('hidden');
+                if (boxMot) boxMot.classList.remove('hidden');
             }
         };
 
@@ -2931,7 +2954,7 @@
         };
 
         // --- MOTORISTAS ---
-        window.renderizarTabelaMotoristas = function() {
+      window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
             tbody.innerHTML = "";
@@ -2940,7 +2963,8 @@
             const listData = Array.isArray(window.ymsStore.baseMotoristas) ? window.ymsStore.baseMotoristas : [];
             const filtrados = listData.filter(m => String(m.cpf).includes(termoBusca) || String(m.nome).toLowerCase().includes(termoBusca));
 
-            document.getElementById('badgeQtdMotoristas').textContent = listData.length;
+            const badgeQtd = document.getElementById('badgeQtdMotoristas');
+            if (badgeQtd) badgeQtd.textContent = listData.length;
 
             if (filtrados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
@@ -2950,14 +2974,17 @@
             filtrados.forEach(m => {
                 const isBloqueado = m.status === 'BLOQUEADO';
                 const row = `
-                    <tr class="hover:bg-slate-900/60 transition">
+                    <tr class="hover:bg-slate-900/60 transition border-b border-slate-800">
                         <td class="p-3 font-mono font-bold text-emerald-400">${m.cpf}</td>
                         <td class="p-3 font-bold text-white">${m.nome}</td>
                         <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
                         <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
-                        <td class="p-3 text-center">
-                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
+                        <td class="p-3 text-center flex items-center justify-center gap-1.5">
+                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'} text-white font-bold px-2.5 py-1 rounded-lg text-xs cursor-pointer shadow transition">
                                 ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
+                            </button>
+                            <button type="button" onclick="excluirMotorista('${m.cpf}')" title="Excluir da Base" class="bg-red-950/80 hover:bg-red-800 border border-red-500/30 text-red-300 p-1.5 rounded-lg text-xs cursor-pointer transition">
+                                🗑️
                             </button>
                         </td>
                     </tr>
@@ -2966,6 +2993,18 @@
             });
         };
 
+        window.excluirMotorista = function(cpf) {
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const mot = window.ymsStore.baseMotoristas.find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+            if (!mot) return;
+            
+            if (!confirm(`Tem certeza que deseja excluir o motorista "${mot.nome}" (CPF: ${mot.cpf}) da base permanente?`)) return;
+
+            window.ymsStore.baseMotoristas = window.ymsStore.baseMotoristas.filter(m => String(m.cpf).replace(/\D/g, '') !== cpfLimpo);
+            window.salvarBaseMotoristasNaMemoria();
+            window.renderizarTabelaMotoristas();
+            if(window.exibirToast) window.exibirToast("Motorista Removido", `${mot.nome} foi excluído da base.`, "🗑️");
+        };
         window.salvarMotoristaManual = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const cpf = document.getElementById('cadMotCpf').value.replace(/\D/g, '').trim();
