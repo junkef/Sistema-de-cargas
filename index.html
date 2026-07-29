@@ -1819,46 +1819,42 @@ window.confirmarLoginFornecedorEmpresa = function() {
             }
         };
 
-       // Função para encerrar a sessão e voltar para a tela inicial de login
+      // Função para encerrar a sessão, esconder barras e voltar ao login
         window.fazerLogoutGlobal = function() {
-            // 1. Limpa as variáveis de usuário da memória
+            // 1. Limpa os dados de login da memória e local storage
             window.ymsStore.usuarioLogado = null;
             window.ymsStore.empresaFornecedorLogada = null;
             window.ymsStore.fornecedorSelecionadoTemp = null;
-
-            // 2. Apaga as sessões salvas no navegador
             localStorage.removeItem('yms_sessao_usuario');
             localStorage.removeItem('yms_empresa_fornecedor_logada');
 
-            // 3. Limpa os campos de senha do modal de login
+            // 2. Reseta o texto do botão no topo de volta para "Sair"
+            const lblUsuario = document.getElementById('lblNomeUsuarioLogado');
+            if (lblUsuario) lblUsuario.textContent = 'Sair';
+
+            // 3. Esconde as abas dos perfis no topo
+            const navBar = document.getElementById('navBarPerfis');
+            if (navBar) navBar.classList.add('hidden');
+
+            // 4. Oculta todas as telas operacionais do fundo
+            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
+
+            // 5. Limpa os campos de senha
             if (document.getElementById('inputSenhaFornecedor')) document.getElementById('inputSenhaFornecedor').value = '';
             if (document.getElementById('inputUserLogin')) document.getElementById('inputUserLogin').value = '';
             if (document.getElementById('inputPinLogin')) document.getElementById('inputPinLogin').value = '';
 
-            // 4. Esconde as caixas de senha internas do modal
             const boxSenha = document.getElementById('boxSenhaLogin');
             const boxEmp = document.getElementById('boxEmpresaFornecedorLogin');
             if (boxSenha) boxSenha.classList.add('hidden');
             if (boxEmp) boxEmp.classList.add('hidden');
 
-            // 5. Exibe o Modal Global de Seleção de Perfil
+            // 6. Abre a tela inicial de seleção de perfil
             const modalLogin = document.getElementById('modalLoginGlobal');
             if (modalLogin) modalLogin.classList.remove('hidden');
 
-            // 6. Oculta todos os módulos abertos ao fundo
-            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
-
             if (window.exibirToast) window.exibirToast("Sessão Encerrada", "Você desconectou com sucesso.", "🔴");
         };
-  window.restaurarSessaoLocal = function() {
-            // Desativado propositalmente para exigir autenticação sempre que a página for atualizada (F5)
-            const modalLogin = document.getElementById('modalLoginGlobal');
-            if (modalLogin) {
-                modalLogin.classList.remove('hidden');
-            }
-            return false;
-        };
-
       
         window.obterDataHojeISO = function() {
             const hoje = new Date();
