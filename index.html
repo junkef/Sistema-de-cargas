@@ -1533,7 +1533,7 @@ window.solicitarAcessoPerfil = function(keyPerfil) {
             }
         };
 
-                // Grava imediatamente o item selecionado ao clicar
+            
            // 3. Preenche a lista do Login do Fornecedor e MANTÉM O DESTAQUE AZUL FIXO
         window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
             const sel = document.getElementById('selEmpresaFornecedorLogin');
@@ -1889,7 +1889,7 @@ window.confirmarLoginFornecedorEmpresa = function() {
             return String(txt || '').toLowerCase().replace(/\s+/g, '').trim();
         };
 
-        window.calcularSlaTicket = function(ag) {
+      window.calcularSlaTicket = function(ag) {
             if (!ag || !ag.timeCheckin) return "";
 
             const timeCheckin = new Date(ag.timeCheckin);
@@ -1927,7 +1927,19 @@ window.confirmarLoginFornecedorEmpresa = function() {
             return "NO HORÁRIO";
         };
 
-       // Vincula o evento de clique diretamente no botão de Sair
+        window.addEventListener('DOMContentLoaded', () => {
+            window.atualizarRelogioDigital();
+            setInterval(window.atualizarRelogioDigital, 1000);
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') window.fecharModalSms();
+            });
+
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+
+            // Vincula o evento de clique no botão de Sair
             const btnLogout = document.getElementById('btnLogoutUser');
             if (btnLogout) {
                 btnLogout.onclick = function(e) {
@@ -1938,35 +1950,40 @@ window.confirmarLoginFornecedorEmpresa = function() {
 
             const hojeIso = window.obterDataHojeISO();
             
-            document.getElementById('inpData').min = hojeIso;
-            document.getElementById('inpData').value = hojeIso;
-            document.getElementById('filtroDataFornecedor').min = hojeIso;
-            document.getElementById('filtroDataFornecedor').value = hojeIso;
-            document.getElementById('repDataInicio').value = hojeIso;
-            document.getElementById('repDataFim').value = hojeIso;
+            if (document.getElementById('inpData')) {
+                document.getElementById('inpData').min = hojeIso;
+                document.getElementById('inpData').value = hojeIso;
+            }
+            if (document.getElementById('filtroDataFornecedor')) {
+                document.getElementById('filtroDataFornecedor').min = hojeIso;
+                document.getElementById('filtroDataFornecedor').value = hojeIso;
+            }
+            if (document.getElementById('repDataInicio')) document.getElementById('repDataInicio').value = hojeIso;
+            if (document.getElementById('repDataFim')) document.getElementById('repDataFim').value = hojeIso;
 
             const selDoca = document.getElementById('inpDoca');
-            selDoca.innerHTML = "";
-            listaTodasDocas.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d; opt.textContent = d;
-                selDoca.appendChild(opt);
-            });
+            if (selDoca) {
+                selDoca.innerHTML = "";
+                listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    selDoca.appendChild(opt);
+                });
+            }
 
             const selDocaOp = document.getElementById('selDocaOperador');
-            selDocaOp.innerHTML = "";
-            listaTodasDocas.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d; opt.textContent = d;
-                selDocaOp.appendChild(opt);
-            });
-// Tenta restaurar sessão prévia sem exibir o modal
-            window.restaurarSessaoLocal();
+            if (selDocaOp) {
+                selDocaOp.innerHTML = "";
+                listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    selDocaOp.appendChild(opt);
+                });
+            }
 
-            // Inicializar escuta Realtime
+            window.restaurarSessaoLocal();
             inicializarEscutadoresFirebase();
 
-            // Popula imediatamente as caixas de fornecedores assim que a tela abre
             if (window.atualizarTodasListasFornecedores) {
                 window.atualizarTodasListasFornecedores();
             }
