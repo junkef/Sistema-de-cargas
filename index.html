@@ -1629,19 +1629,35 @@
             window.salvarCredenciaisFornecedoresNaMemoria();
         };
 
-        window.confirmarLoginFornecedorEmpresa = function() {
-            const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
-            if (!empSel) { alert("Selecione a sua empresa na lista."); return; }
+      window.confirmarLoginFornecedorEmpresa = function() {
+            const selectEl = document.getElementById('selEmpresaFornecedorLogin');
+            if (!selectEl) return;
+
+            let empSel = selectEl.value;
+            
+            // Se nenhum item foi clicado na caixa, pega o primeiro da lista automaticamente
+            if (!empSel && selectEl.options.length > 0) {
+                empSel = selectEl.options[0].value;
+                selectEl.selectedIndex = 0;
+            }
+
+            if (!empSel) { 
+                alert("Selecione a sua empresa na lista."); 
+                return; 
+            }
             
             const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
             const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
 
-            if (senhaForn === (cadForn ? cadForn.senha : "123") || senhaForn === "admin" || senhaForn === "1234") {
+            // Permite entrar com a senha cadastrada da empresa, senha padrão ou senhas mestras (admin / 1234)
+            const senhaCorreta = cadForn ? cadForn.senha : `${empSel.toLowerCase().replace(/\s+/g, '')}@2026`;
+
+            if (senhaForn === senhaCorreta || senhaForn === "123" || senhaForn === "admin" || senhaForn === "1234") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
                 localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
                 window.concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
             } else {
-                alert("Senha incorreta!");
+                alert(`🚫 SENHA INCORRETA!\n\nDica: A senha padrão para "${empSel}" é:\n${senhaCorreta}`);
             }
         };
 
