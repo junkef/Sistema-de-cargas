@@ -1850,19 +1850,89 @@ window.confirmarLoginFornecedorEmpresa = function() {
         };
 
         // Função de restauração de sessão local
+   // 1. Função que conclui o login, oculta o modal e libera os módulos permitidos
+        window.concluirLoginPerfil = function(keyPerfil, nomeUsuario, modulosPermitidos, abaInicial = null) {
+            const sessao = {
+                perfil: keyPerfil,
+                nome: nomeUsuario,
+                modulosCustom: modulosPermitidos,
+                abaAtiva: abaInicial || (modulosPermitidos && modulosPermitidos[0]) || 'pcp'
+            };
+            window.ymsStore.usuarioLogado = sessao;
+            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessao));
+
+            // Atualiza o texto do botão do topo
+            const lblUser = document.getElementById('lblNomeUsuarioLogado');
+            if (lblUser) lblUser.textContent = `Sair (${nomeUsuario})`;
+
+            // Oculta a tela escura de login
+            const modal = document.getElementById('modalLoginGlobal');
+            if (modal) modal.classList.add('hidden');
+
+            // Exibe a barra de navegação de módulos
+            const nav = document.getElementById('navBarPerfis');
+            if (nav) nav.classList.remove('hidden');
+
+            // Exibe apenas os botões dos módulos permitidos para esse usuário
+            document.querySelectorAll('#navBarPerfis .btn-perfil').forEach(btn => {
+                const mod = btn.getAttribute('data-modulo');
+                if (modulosPermitidos.includes(mod) || modulosPermitidos.includes('torre') || keyPerfil === 'admin') {
+                    btn.classList.remove('hidden');
+                } else {
+                    btn.classList.add('hidden');
+                }
+            });
+
+            // Abre o módulo de destino (ex: Torre de Controle)
+            const moduloParaAbrir = abaInicial || modulosPermitidos[0] || 'pcp';
+            window.mudarPerfil(moduloParaAbrir);
+
+            if (window.exibirToast) {
+                window.exibirToast("Acesso Concedido!", `Bem-vindo(a), ${nomeUsuario}`, "🔓");
+            }
+        };
+
+        // 2. Restaura automaticamente o acesso salvo ao recarregar com F5
         window.restaurarSessaoLocal = function() {
             const modalLogin = document.getElementById('modalLoginGlobal');
-            if (modalLogin) {
-                modalLogin.classList.remove('hidden');
+            const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
+            const empSalva = localStorage.getItem('yms_empresa_fornecedor_logada');
+
+            if (empSalva) window.ymsStore.empresaFornecedorLogada = empSalva;
+
+            if (sessaoSalva) {
+                try {
+                    const sessao = JSON.parse(sessaoSalva);
+                    if (sessao && sessao.modulosCustom) {
+                        window.ymsStore.usuarioLogado = sessao;
+
+                        const lblUser = document.getElementById('lblNomeUsuarioLogado');
+                        if (lblUser) lblUser.textContent = `Sair (${sessao.nome})`;
+
+                        if (modalLogin) modalLogin.classList.add('hidden');
+
+                        const nav = document.getElementById('navBarPerfis');
+                        if (nav) nav.classList.remove('hidden');
+
+                        document.querySelectorAll('#navBarPerfis .btn-perfil').forEach(btn => {
+                            const mod = btn.getAttribute('data-modulo');
+                            if (sessao.modulosCustom.includes(mod) || sessao.modulosCustom.includes('torre') || sessao.perfil === 'admin') {
+                                btn.classList.remove('hidden');
+                            } else {
+                                btn.classList.add('hidden');
+                            }
+                        });
+
+                        window.mudarPerfil(sessao.abaAtiva || sessao.modulosCustom[0] || 'pcp');
+                        return true;
+                    }
+                } catch (e) {
+                    console.error("Erro na sessão:", e);
+                }
             }
+
+            if (modalLogin) modalLogin.classList.remove('hidden');
             return false;
-        };
-        window.obterDataHojeISO = function() {
-            const hoje = new Date();
-            const ano = hoje.getFullYear();
-            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-            const dia = String(hoje.getDate()).padStart(2, '0');
-            return `${ano}-${mes}-${dia}`;
         };
 
         window.obterDataHojePtBR = function() {
