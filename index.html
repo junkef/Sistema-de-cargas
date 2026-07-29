@@ -3199,9 +3199,10 @@
             setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
         };
     
-        // ===== SISTEMA DE AUTENTICAÇÃO =====
+        // ===== SISTEMA DE AUTENTICAÇÃO CORRIGIDO =====
         window.usuarioLogado = null;
         window.perfilAtivo = null;
+        window.fornecedorSelecionado = null;
         
         // Dados de fornecedores
         window.fornecedoresData = {"ADERE": "adere@2026", "ALEPLAST": "aleplast@2026", "ARAMART": "aramart@2026", "ARCELORMITTAL": "arcelormittal@2026", "ARMACELL": "armacell@2026", "AROTUBI CURITIBA": "arotubicuritiba@2026", "AROTUBI JOINVILLE": "arotubijoinville@2026", "ASIBRAS": "asibras@2026", "BELENUS": "belenus@2026", "BIGFER": "bigfer@2026", "BOLLHOFF": "bollhoff@2026", "BRASCABOS": "brascabos@2026", "BRASKEN": "brasken@2026", "BUNDY CURITIBA": "bundycuritiba@2026", "BUNDY PINDA": "bundypinda@2026", "CARIBOR": "caribor@2026", "CCL": "ccl@2026", "CISER": "ciser@2026", "COLORFIX": "colorfix@2026", "CREMER": "cremer@2026", "CSN": "csn@2026", "DENK": "denk@2026", "DUFERCO": "duferco@2026", "FOCUS": "focus@2026", "FORMPARTS": "formparts@2026", "GRÁFICA NACIONAL": "graficanacional@2026", "INJEQUALY": "injequaly@2026", "INNARA": "innara@2026", "INNOVA": "innova@2026", "ISHENG": "isheng@2026", "ISOFORMA": "isoforma@2026", "ISOTERM": "isoterm@2026", "KLABIN": "klabin@2026", "KNAUF": "knauf@2026", "LINKPLAS": "linkplas@2026", "MARCEGAGLIA": "marcegaglia@2026", "METALMA": "metalma@2026", "MICROJUNTAS": "microjuntas@2026", "MULTILOG": "multilog@2026", "NIDEC": "nidec@2026", "NIDEC ITAIÓPOLIS": "nidecitaiopolis@2026", "PARANAPANEMA": "paranapanema@2026", "PLASTICOVILLE": "plasticoville@2026", "REFREX": "refrex@2026", "RUDOLPH": "rudolph@2026", "SCHOTT": "schott@2026", "SG/LEAS": "sgleas@2026", "SINERGIA /CONBRAS": "sinergia@2026", "TERMOTECNICA": "termotecnica@2026", "TESA": "tesa@2026", "UNIPLAST": "uniplast@2026", "UNITAAL": "unitaal@2026", "USIMINAS": "usiminas@2026", "VEXILIOM": "vexiliom@2026", "VIPRADO": "viprado@2026", "VITROCOLOR": "vitrocolor@2026", "WEG MOTORES": "weg@2026", "WEG TINTAS": "wegtintas@2026", "WEST ROCK": "westrock@2026"};
@@ -3211,11 +3212,23 @@
         
         // Inicializar o sistema
         window.inicializarSistema = function() {
-            // Mostrar modal de login
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            // Verificar se há sessão salva
+            const sessaoSalva = localStorage.getItem('yms_usuario_logado');
+            const perfilSalvo = localStorage.getItem('yms_perfil_ativo');
             
-            // Popular lista de fornecedores
-            window.popularListaFornecedores();
+            if (sessaoSalva && perfilSalvo) {
+                window.usuarioLogado = sessaoSalva;
+                window.perfilAtivo = perfilSalvo;
+                if (perfilSalvo === 'fornecedor') {
+                    window.fornecedorSelecionado = sessaoSalva;
+                }
+                document.getElementById('lblNomeUsuarioLogado').textContent = sessaoSalva;
+                document.getElementById('modalLoginGlobal').classList.add('hidden');
+                window.mudarPerfil(perfilSalvo);
+            } else {
+                document.getElementById('modalLoginGlobal').classList.remove('hidden');
+                window.popularListaFornecedores();
+            }
         };
         
         // Popular lista de fornecedores no select
@@ -3230,6 +3243,11 @@
                 option.textContent = fornecedor;
                 select.appendChild(option);
             });
+            
+            // Selecionar o primeiro por padrão
+            if (select.options.length > 0) {
+                select.selectedIndex = 0;
+            }
         };
         
         // Filtrar fornecedores
@@ -3239,23 +3257,28 @@
             if (!select) return;
             
             select.innerHTML = '';
-            Object.keys(window.fornecedoresData)
+            const fornecedoresFiltrados = Object.keys(window.fornecedoresData)
                 .filter(f => f.toLowerCase().includes(filtro))
-                .sort()
-                .forEach(fornecedor => {
-                    const option = document.createElement('option');
-                    option.value = fornecedor;
-                    option.textContent = fornecedor;
-                    select.appendChild(option);
-                });
+                .sort();
+            
+            fornecedoresFiltrados.forEach(fornecedor => {
+                const option = document.createElement('option');
+                option.value = fornecedor;
+                option.textContent = fornecedor;
+                select.appendChild(option);
+            });
+            
+            if (select.options.length > 0) {
+                select.selectedIndex = 0;
+            }
         };
         
-        // Confirmar login do fornecedor
+        // Confirmar login do fornecedor - CORRIGIDO
         window.confirmarLoginFornecedorEmpresa = function() {
             const select = document.getElementById('selEmpresaFornecedorLogin');
             const senha = document.getElementById('inputSenhaFornecedor').value;
             
-            if (!select.value) {
+            if (!select || !select.value) {
                 alert('⚠️ Selecione um fornecedor!');
                 return;
             }
@@ -3269,12 +3292,25 @@
             const senhaCorreta = window.fornecedoresData[fornecedor];
             
             if (senha === senhaCorreta) {
+                // Salvar sessão
+                localStorage.setItem('yms_usuario_logado', fornecedor);
+                localStorage.setItem('yms_perfil_ativo', 'fornecedor');
+                
                 window.usuarioLogado = fornecedor;
                 window.perfilAtivo = 'fornecedor';
+                window.fornecedorSelecionado = fornecedor;
+                
                 document.getElementById('lblNomeUsuarioLogado').textContent = fornecedor;
                 document.getElementById('modalLoginGlobal').classList.add('hidden');
+                
+                // Limpar formulário
+                document.getElementById('inputSenhaFornecedor').value = '';
+                document.getElementById('filtroLoginForn').value = '';
+                
+                // Ir para o módulo de fornecedor
                 window.mudarPerfil('fornecedor');
-                alert('✅ Login realizado com sucesso!');
+                
+                console.log('✅ Fornecedor logado:', fornecedor);
             } else {
                 alert('❌ Senha incorreta!');
                 document.getElementById('inputSenhaFornecedor').value = '';
@@ -3295,12 +3331,22 @@
             if (window.usuariosData[usuario]) {
                 const dadosUsuario = window.usuariosData[usuario];
                 if (senha === dadosUsuario.senha) {
+                    // Salvar sessão
+                    localStorage.setItem('yms_usuario_logado', usuario);
+                    localStorage.setItem('yms_perfil_ativo', dadosUsuario.perfil);
+                    
                     window.usuarioLogado = usuario;
                     window.perfilAtivo = dadosUsuario.perfil;
+                    
                     document.getElementById('lblNomeUsuarioLogado').textContent = usuario.toUpperCase();
                     document.getElementById('modalLoginGlobal').classList.add('hidden');
+                    
+                    // Limpar formulário
+                    document.getElementById('inputUserLogin').value = '';
+                    document.getElementById('inputPinLogin').value = '';
+                    
                     window.mudarPerfil(dadosUsuario.perfil);
-                    alert('✅ Login realizado com sucesso!');
+                    console.log('✅ Operador logado:', usuario);
                 } else {
                     alert('❌ Senha incorreta!');
                     document.getElementById('inputPinLogin').value = '';
@@ -3314,12 +3360,19 @@
         // Fazer logout
         window.fazerLogoutGlobal = function() {
             if (confirm('Deseja realmente sair do sistema?')) {
+                // Limpar localStorage
+                localStorage.removeItem('yms_usuario_logado');
+                localStorage.removeItem('yms_perfil_ativo');
+                
                 window.usuarioLogado = null;
                 window.perfilAtivo = null;
+                window.fornecedorSelecionado = null;
+                
                 document.getElementById('inputUserLogin').value = '';
                 document.getElementById('inputPinLogin').value = '';
                 document.getElementById('inputSenhaFornecedor').value = '';
                 document.getElementById('filtroLoginForn').value = '';
+                
                 document.getElementById('modalLoginGlobal').classList.remove('hidden');
                 window.inicializarSistema();
             }
