@@ -1819,37 +1819,37 @@ window.confirmarLoginFornecedorEmpresa = function() {
             }
         };
 
-        window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos, abaParaAbrir = null) {
-            const targetAba = abaParaAbrir || modulosPermitidos[0];
-            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos, abaAtiva: targetAba };
-            window.ymsStore.usuarioLogado = sessaoData;
-            
-            // Grava a sessão localmente para persistir após F5
-            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessaoData));
+       // Função para encerrar a sessão e voltar para a tela inicial de login
+        window.fazerLogoutGlobal = function() {
+            // 1. Limpa as variáveis de usuário da memória
+            window.ymsStore.usuarioLogado = null;
+            window.ymsStore.empresaFornecedorLogada = null;
+            window.ymsStore.fornecedorSelecionadoTemp = null;
 
-            document.getElementById('modalLoginGlobal').classList.add('hidden');
-            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
+            // 2. Apaga as sessões salvas no navegador
+            localStorage.removeItem('yms_sessao_usuario');
+            localStorage.removeItem('yms_empresa_fornecedor_logada');
 
-            const navBar = document.getElementById('navBarPerfis');
+            // 3. Limpa os campos de senha do modal de login
+            if (document.getElementById('inputSenhaFornecedor')) document.getElementById('inputSenhaFornecedor').value = '';
+            if (document.getElementById('inputUserLogin')) document.getElementById('inputUserLogin').value = '';
+            if (document.getElementById('inputPinLogin')) document.getElementById('inputPinLogin').value = '';
 
-            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
-                if (navBar) navBar.classList.add('hidden');
-            } else {
-                if (navBar) navBar.classList.remove('hidden');
-                
-                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
-                    const moduloBtn = btn.getAttribute('data-modulo');
-                    if (modulosPermitidos.includes(moduloBtn)) {
-                        btn.classList.remove('hidden');
-                    } else {
-                        btn.classList.add('hidden');
-                    }
-                });
-            }
+            // 4. Esconde as caixas de senha internas do modal
+            const boxSenha = document.getElementById('boxSenhaLogin');
+            const boxEmp = document.getElementById('boxEmpresaFornecedorLogin');
+            if (boxSenha) boxSenha.classList.add('hidden');
+            if (boxEmp) boxEmp.classList.add('hidden');
 
-            window.mudarPerfil(targetAba);
+            // 5. Exibe o Modal Global de Seleção de Perfil
+            const modalLogin = document.getElementById('modalLoginGlobal');
+            if (modalLogin) modalLogin.classList.remove('hidden');
+
+            // 6. Oculta todos os módulos abertos ao fundo
+            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
+
+            if (window.exibirToast) window.exibirToast("Sessão Encerrada", "Você desconectou com sucesso.", "🔴");
         };
-
   window.restaurarSessaoLocal = function() {
             // Desativado propositalmente para exigir autenticação sempre que a página for atualizada (F5)
             const modalLogin = document.getElementById('modalLoginGlobal');
