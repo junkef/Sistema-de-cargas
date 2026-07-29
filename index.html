@@ -194,13 +194,33 @@
                         <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
                     </div>
 
-                    <div id="conteudoIndividual" class="space-y-3">
-                        <h2 class="text-base font-black text-white mb-1">Ofertar Nova Janela Manual</h2>
-                        
+                    <!-- FORMULÁRIO MANUAL -->
+                    <div id="conteudoIndividual" class="space-y-3.5">
+                        <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
+                            <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
+                            <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
+                        </div>
+
+                        <!-- 🟢🟡🔴 BOTÕES DO TIPO DE OPERAÇÃO -->
+                        <div>
+                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
+                            <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+                                <button type="button" id="btnTipoCotidiano" onclick="selecionarTipoCarga('cotidiano')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer">
+                                    <span>🟢</span> <span>Cotidiano</span>
+                                </button>
+                                <button type="button" id="btnTipoExtra" onclick="selecionarTipoCarga('extra')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer">
+                                    <span>🟡</span> <span>Extra</span>
+                                </button>
+                                <button type="button" id="btnTipoCritica" onclick="selecionarTipoCarga('critica')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer">
+                                    <span>🔴</span> <span>Crítica</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <div>
                             <div class="flex justify-between items-center mb-1">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR</label>
-                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(0 CADASTRADOS)</span>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
+                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(60 CADASTRADOS)</span>
                             </div>
                             <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
                                 <div class="p-2 border-b border-slate-800 bg-slate-900 flex items-center gap-2">
@@ -223,12 +243,38 @@
                             </div>
                         </div>
 
+                        <!-- BOXES CONDICIONAIS -->
+                        <div id="boxMotivoExtra" class="hidden bg-amber-950/20 p-3 rounded-2xl border border-amber-500/40 space-y-1.5">
+                            <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">📋 Motivo da Carga Extra *</label>
+                            <select id="pcpMotivoExtra" class="w-full bg-slate-900 border border-amber-500/50 rounded-xl p-2 text-xs text-white font-bold outline-none cursor-pointer">
+                                <option value="Aumento de Demanda / Pico de Produção">📈 Aumento de Demanda / Pico de Produção</option>
+                                <option value="Atraso na Entrega Anterior do Fornecedor">🚚 Atraso na Entrega Anterior do Fornecedor</option>
+                                <option value="Ajuste de Estoque de Segurança">📦 Ajuste de Estoque de Segurança</option>
+                                <option value="Refugo / Substituição de Lote Com Defeito">⚠️ Refugo / Substituição de Lote Com Defeito</option>
+                            </select>
+                        </div>
+
+                        <div id="boxDadosMotorista" class="hidden bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">👤 Dados Rápidos do Motorista</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="pcpCpf" placeholder="CPF (Apenas Números)" class="bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 font-bold outline-none">
+                                <input type="text" id="pcpCelular" placeholder="Celular com DDD" class="bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-yellow-400 font-bold outline-none">
+                            </div>
+                            <input type="text" id="pcpMotorista" placeholder="Nome Completo do Motorista" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white font-bold outline-none">
+                        </div>
+
+                        <div id="boxCamposCriticos" class="hidden bg-red-950/30 p-3 rounded-2xl border border-red-500/40 space-y-2">
+                            <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider block">🚨 Detalhes da Carga Crítica</span>
+                            <input type="text" id="pcpCodigoCritico" placeholder="Part Number / Código do Material" class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-white font-mono font-bold outline-none">
+                            <textarea id="pcpMotivoCritico" rows="2" placeholder="Descreva a urgência / Risco de Parada..." class="w-full bg-slate-900 border border-red-500/50 rounded-lg p-2 text-xs text-slate-200 outline-none"></textarea>
+                        </div>
+
                         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px] font-bold">
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
                                 <span class="text-slate-400"><span class="text-emerald-400">■</span> Livre <span class="text-red-400 ml-1">■</span> Ocupado</span>
                             </div>
-                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-28 overflow-y-auto pr-1"></div>
+                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-28 overflow-y-auto pr-1 custom-scrollbar"></div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -241,33 +287,30 @@
                                 <select id="inpHoraFim" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 outline-none"></select>
                             </div>
                         </div>
-                        <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
+                        <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
                     </div>
 
+                    <!-- UPLOAD PLANILHA -->
                     <div id="conteudoMassa" class="space-y-4 hidden">
-                        <div id="dropZonePlanilha" 
-                             onclick="document.getElementById('fileInput').click()"
-                             ondragover="tratarDragOver(event)" 
-                             ondragleave="tratarDragLeave(event)" 
-                             ondrop="tratarDrop(event)"
-                             class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all duration-200">
+                        <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all">
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
-                            <div class="text-4xl mb-3" id="iconDropZone">📂</div>
-                            <p class="text-sm font-bold text-white mb-1" id="txtDropTitle">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv (Filtra datas antigas automaticamente)</p>
+                            <div class="text-4xl mb-2">📂</div>
+                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
+                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv</p>
                         </div>
                     </div>
 
+                    <!-- COLAR TEXTO -->
                     <div id="conteudoTexto" class="space-y-3 hidden">
-                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none focus:border-indigo-500"></textarea>
+                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none"></textarea>
                         <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
                     </div>
                 </div>
             </div>
 
+            <!-- GRADE DE JANELAS -->
             <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
-                    <!-- CABEÇALHO DA GRADE COM CONTADOR -->
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
                         <div>
                             <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
@@ -278,14 +321,13 @@
                         </div>
                     </div>
 
-                    <!-- BOTÃO EM DESTAQUE PARA LIMPAR O BANCO COMPLETO DO FIREBASE -->
                     <div class="mb-4">
                         <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
                             <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
                         </button>
                     </div>
 
-                    <div id="containerJanelas" class="space-y-3 max-h-[24rem] overflow-y-auto pr-1">
+                    <div id="containerJanelas" class="space-y-3 max-h-[24rem] overflow-y-auto pr-1 custom-scrollbar">
                         <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
                     </div>
                 </div>
@@ -3156,6 +3198,238 @@
             toast.className = "fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-100 z-50 min-w-[320px]";
             setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
         };
-    </script>
+    
+        // ===== SISTEMA DE AUTENTICAÇÃO - NAVEGAÇÃO CORRIGIDA =====
+        window.usuarioLogado = null;
+        window.perfilAtivo = null;
+        window.fornecedorSelecionado = null;
+        
+        window.fornecedoresData = {"ADERE": "adere@2026", "ALEPLAST": "aleplast@2026", "ARAMART": "aramart@2026", "ARCELORMITTAL": "arcelormittal@2026", "ARMACELL": "armacell@2026", "AROTUBI CURITIBA": "arotubicuritiba@2026", "AROTUBI JOINVILLE": "arotubijoinville@2026", "ASIBRAS": "asibras@2026", "BELENUS": "belenus@2026", "BIGFER": "bigfer@2026", "BOLLHOFF": "bollhoff@2026", "BRASCABOS": "brascabos@2026", "BRASKEN": "brasken@2026", "BUNDY CURITIBA": "bundycuritiba@2026", "BUNDY PINDA": "bundypinda@2026", "CARIBOR": "caribor@2026", "CCL": "ccl@2026", "CISER": "ciser@2026", "COLORFIX": "colorfix@2026", "CREMER": "cremer@2026", "CSN": "csn@2026", "DENK": "denk@2026", "DUFERCO": "duferco@2026", "FOCUS": "focus@2026", "FORMPARTS": "formparts@2026", "GRÁFICA NACIONAL": "graficanacional@2026", "INJEQUALY": "injequaly@2026", "INNARA": "innara@2026", "INNOVA": "innova@2026", "ISHENG": "isheng@2026", "ISOFORMA": "isoforma@2026", "ISOTERM": "isoterm@2026", "KLABIN": "klabin@2026", "KNAUF": "knauf@2026", "LINKPLAS": "linkplas@2026", "MARCEGAGLIA": "marcegaglia@2026", "METALMA": "metalma@2026", "MICROJUNTAS": "microjuntas@2026", "MULTILOG": "multilog@2026", "NIDEC": "nidec@2026", "NIDEC ITAIÓPOLIS": "nidecitaiopolis@2026", "PARANAPANEMA": "paranapanema@2026", "PLASTICOVILLE": "plasticoville@2026", "REFREX": "refrex@2026", "RUDOLPH": "rudolph@2026", "SCHOTT": "schott@2026", "SG/LEAS": "sgleas@2026", "SINERGIA /CONBRAS": "sinergia@2026", "TERMOTECNICA": "termotecnica@2026", "TESA": "tesa@2026", "UNIPLAST": "uniplast@2026", "UNITAAL": "unitaal@2026", "USIMINAS": "usiminas@2026", "VEXILIOM": "vexiliom@2026", "VIPRADO": "viprado@2026", "VITROCOLOR": "vitrocolor@2026", "WEG MOTORES": "weg@2026", "WEG TINTAS": "wegtintas@2026", "WEST ROCK": "westrock@2026"};
+        window.usuariosData = {"doca": {"senha": "doca123", "perfil": "doca"}, "fiscal": {"senha": "fiscal123", "perfil": "fiscal"}, "admin": {"senha": "admin123", "perfil": "admin"}};
+        
+        window.inicializarSistema = function() {
+            const sessaoSalva = localStorage.getItem('yms_usuario_logado');
+            const perfilSalvo = localStorage.getItem('yms_perfil_ativo');
+            
+            if (sessaoSalva && perfilSalvo) {
+                window.usuarioLogado = sessaoSalva;
+                window.perfilAtivo = perfilSalvo;
+                if (perfilSalvo === 'fornecedor') {
+                    window.fornecedorSelecionado = sessaoSalva;
+                }
+                document.getElementById('lblNomeUsuarioLogado').textContent = sessaoSalva;
+                document.getElementById('modalLoginGlobal').classList.add('hidden');
+                window.atualizarNavegacao();
+                window.mudarPerfil(perfilSalvo);
+            } else {
+                document.getElementById('modalLoginGlobal').classList.remove('hidden');
+                window.popularListaFornecedores();
+            }
+        };
+        
+        window.popularListaFornecedores = function() {
+            const select = document.getElementById('selEmpresaFornecedorLogin');
+            if (!select) return;
+            select.innerHTML = '';
+            
+            Object.keys(window.fornecedoresData).sort().forEach(fornecedor => {
+                const option = document.createElement('option');
+                option.value = fornecedor;
+                option.textContent = fornecedor;
+                select.appendChild(option);
+            });
+            
+            if (select.options.length > 0) {
+                select.selectedIndex = 0;
+            }
+        };
+        
+        window.filtrarLoginEmpresas = function() {
+            const filtro = document.getElementById('filtroLoginForn').value.toLowerCase();
+            const select = document.getElementById('selEmpresaFornecedorLogin');
+            if (!select) return;
+            
+            select.innerHTML = '';
+            Object.keys(window.fornecedoresData)
+                .filter(f => f.toLowerCase().includes(filtro))
+                .sort()
+                .forEach(fornecedor => {
+                    const option = document.createElement('option');
+                    option.value = fornecedor;
+                    option.textContent = fornecedor;
+                    select.appendChild(option);
+                });
+            
+            if (select.options.length > 0) {
+                select.selectedIndex = 0;
+            }
+        };
+        
+        window.confirmarLoginFornecedorEmpresa = function() {
+            const select = document.getElementById('selEmpresaFornecedorLogin');
+            const senha = document.getElementById('inputSenhaFornecedor').value;
+            
+            if (!select || !select.value) {
+                alert('⚠️ Selecione um fornecedor!');
+                return;
+            }
+            
+            if (!senha) {
+                alert('⚠️ Digite a senha!');
+                return;
+            }
+            
+            const fornecedor = select.value;
+            const senhaCorreta = window.fornecedoresData[fornecedor];
+            
+            if (senha === senhaCorreta) {
+                localStorage.setItem('yms_usuario_logado', fornecedor);
+                localStorage.setItem('yms_perfil_ativo', 'fornecedor');
+                
+                window.usuarioLogado = fornecedor;
+                window.perfilAtivo = 'fornecedor';
+                window.fornecedorSelecionado = fornecedor;
+                
+                document.getElementById('lblNomeUsuarioLogado').textContent = fornecedor;
+                document.getElementById('modalLoginGlobal').classList.add('hidden');
+                
+                document.getElementById('inputSenhaFornecedor').value = '';
+                document.getElementById('filtroLoginForn').value = '';
+                
+                window.atualizarNavegacao();
+                window.mudarPerfil('fornecedor');
+            } else {
+                alert('❌ Senha incorreta!');
+                document.getElementById('inputSenhaFornecedor').value = '';
+            }
+        };
+        
+        window.confirmarLoginComSenha = function() {
+            const usuario = document.getElementById('inputUserLogin').value;
+            const senha = document.getElementById('inputPinLogin').value;
+            
+            if (!usuario || !senha) {
+                alert('⚠️ Preencha usuário e senha!');
+                return;
+            }
+            
+            if (window.usuariosData[usuario]) {
+                const dadosUsuario = window.usuariosData[usuario];
+                if (senha === dadosUsuario.senha) {
+                    localStorage.setItem('yms_usuario_logado', usuario);
+                    localStorage.setItem('yms_perfil_ativo', dadosUsuario.perfil);
+                    
+                    window.usuarioLogado = usuario;
+                    window.perfilAtivo = dadosUsuario.perfil;
+                    
+                    document.getElementById('lblNomeUsuarioLogado').textContent = usuario.toUpperCase();
+                    document.getElementById('modalLoginGlobal').classList.add('hidden');
+                    
+                    document.getElementById('inputUserLogin').value = '';
+                    document.getElementById('inputPinLogin').value = '';
+                    
+                    window.atualizarNavegacao();
+                    window.mudarPerfil(dadosUsuario.perfil);
+                } else {
+                    alert('❌ Senha incorreta!');
+                    document.getElementById('inputPinLogin').value = '';
+                }
+            } else {
+                alert('❌ Usuário não encontrado!');
+                document.getElementById('inputUserLogin').value = '';
+            }
+        };
+        
+        // CORRIGIDO: Atualizar navegação - mostrar/ocultar botões
+        window.atualizarNavegacao = function() {
+            const navBar = document.getElementById('navBarPerfis');
+            if (!navBar) return;
+            
+            const botoes = navBar.querySelectorAll('.btn-perfil');
+            
+            botoes.forEach(btn => {
+                btn.style.display = 'inline-block'; // Mostrar todos por padrão
+            });
+            
+            // Se for fornecedor, ocultar todos exceto fornecedor
+            if (window.perfilAtivo === 'fornecedor') {
+                botoes.forEach(btn => {
+                    const modulo = btn.getAttribute('data-modulo');
+                    if (modulo !== 'fornecedor') {
+                        btn.style.display = 'none';
+                    }
+                });
+            }
+            // Admin, doca e fiscal veem todos os botões
+        };
+        
+        window.fazerLogoutGlobal = function() {
+            if (confirm('Deseja realmente sair do sistema?')) {
+                localStorage.removeItem('yms_usuario_logado');
+                localStorage.removeItem('yms_perfil_ativo');
+                
+                window.usuarioLogado = null;
+                window.perfilAtivo = null;
+                window.fornecedorSelecionado = null;
+                
+                document.getElementById('inputUserLogin').value = '';
+                document.getElementById('inputPinLogin').value = '';
+                document.getElementById('inputSenhaFornecedor').value = '';
+                document.getElementById('filtroLoginForn').value = '';
+                
+                document.getElementById('modalLoginGlobal').classList.remove('hidden');
+                window.inicializarSistema();
+            }
+        };
+        
+        window.solicitarAcessoPerfil = function(perfil) {
+            if (perfil === 'fornecedor') {
+                document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
+                document.getElementById('boxSenhaLogin').classList.add('hidden');
+            } else {
+                document.getElementById('boxSenhaLogin').classList.remove('hidden');
+                document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = 
+                    'AUTENTICAÇÃO - ' + perfil.toUpperCase();
+            }
+        };
+        
+        window.mudarPerfil = function(perfil) {
+            // Validar acesso: fornecedor só pode acessar fornecedor
+            if (window.perfilAtivo === 'fornecedor' && perfil !== 'fornecedor') {
+                alert('❌ Fornecedores só podem acessar o Portal Fornecedor!');
+                return;
+            }
+            
+            // Mostrar/ocultar módulos
+            document.querySelectorAll('.perfil-modulo').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            const modulo = document.getElementById('perfil-' + perfil);
+            if (modulo) {
+                modulo.classList.remove('hidden');
+            }
+            
+            // Atualizar botões de navegação
+            document.querySelectorAll('.btn-perfil').forEach(btn => {
+                if (btn.style.display !== 'none') {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
+                    btn.classList.add('text-slate-400', 'hover:text-white');
+                }
+            });
+            
+            const btnAtivo = document.getElementById('btn-' + perfil);
+            if (btnAtivo && btnAtivo.style.display !== 'none') {
+                btnAtivo.classList.remove('text-slate-400', 'hover:text-white');
+                btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow');
+            }
+        };
+        
+        window.addEventListener('load', function() {
+            window.inicializarSistema();
+        });
+
+        </script>
 </body>
 </html>
