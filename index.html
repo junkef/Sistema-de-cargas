@@ -1991,14 +1991,17 @@ window.confirmarLoginFornecedorEmpresa = function() {
                 opt.value = d; opt.textContent = d;
                 selDocaOp.appendChild(opt);
             });
-
-            // Tenta restaurar sessão prévia sem exibir o modal
+// Tenta restaurar sessão prévia sem exibir o modal
             window.restaurarSessaoLocal();
 
             // Inicializar escuta Realtime
             inicializarEscutadoresFirebase();
-        });
 
+            // Popula imediatamente as caixas de fornecedores assim que a tela abre
+            if (window.atualizarTodasListasFornecedores) {
+                window.atualizarTodasListasFornecedores();
+            }
+        });
         window.extrairDataReal = function(row) {
             let keys = Object.keys(row);
             let targetKey = keys.find(k => k.match(/dia|data|date|agendamento/i));
