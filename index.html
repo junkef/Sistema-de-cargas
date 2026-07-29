@@ -1420,12 +1420,11 @@
             }
         };
 
-      window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
+     window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
             const sel = document.getElementById('selEmpresaFornecedorLogin');
             if (!sel) return;
             sel.innerHTML = "";
             
-            // Garante lista única sem duplicados
             const lista = listaParaExibir || window.obterListaNomesFornecedores();
             const listaUnica = Array.from(new Set(lista.map(f => window.limparNomeFornecedor(f)))).filter(Boolean);
             
@@ -1434,9 +1433,25 @@
                 opt.value = f; 
                 opt.textContent = `${idx + 1}. ${f}`;
                 opt.className = "p-2.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold text-white bg-slate-900 mb-1";
-                if (idx === 0) opt.selected = true;
+                
+                // Grava imediatamente o item selecionado ao clicar
+                opt.onclick = function() {
+                    window.ymsStore.fornecedorSelecionadoTemp = f;
+                };
+
+                if (idx === 0) {
+                    opt.selected = true;
+                    window.ymsStore.fornecedorSelecionadoTemp = f;
+                }
+                
                 sel.appendChild(opt);
             });
+
+            // Se der dois cliques, já autentica direto
+            sel.ondblclick = function() {
+                window.confirmarLoginFornecedorEmpresa();
+            };
+        };
 
             // Permite dar DOIS CLIQUES na empresa para já tentar logar direto
             sel.ondblclick = function() {
@@ -1635,16 +1650,17 @@
             window.salvarCredenciaisFornecedoresNaMemoria();
         };
 
-     window.confirmarLoginFornecedorEmpresa = function() {
+   window.confirmarLoginFornecedorEmpresa = function() {
             const selectEl = document.getElementById('selEmpresaFornecedorLogin');
             if (!selectEl) {
                 alert("Erro ao localizar a lista de empresas.");
                 return;
             }
 
-            let empSel = selectEl.value;
+            // Tenta pegar da nossa variável temporária ou do próprio select
+            let empSel = window.ymsStore.fornecedorSelecionadoTemp || selectEl.value;
             
-            // Se por algum motivo nada estiver selecionado, pega o primeiro item visível da caixa
+            // Se ainda assim estiver vazio, pega a primeira opção visível da lista
             if (!empSel && selectEl.options.length > 0) {
                 empSel = selectEl.options[0].value;
                 selectEl.selectedIndex = 0;
@@ -1660,7 +1676,7 @@
 
             const senhaCorreta = cadForn ? cadForn.senha : `${empSel.toLowerCase().replace(/\s+/g, '')}@2026`;
 
-            // Aceita a senha da empresa, senha em branco (se você só quiser testar rápido), ou senhas mestras (admin / 1234 / 123)
+            // Aceita a senha da empresa, senha em branco, ou senhas mestras (admin / 1234 / 123)
             if (!senhaForn || senhaForn === senhaCorreta || senhaForn === "123" || senhaForn === "admin" || senhaForn === "1234") {
                 window.ymsStore.empresaFornecedorLogada = empSel;
                 localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
