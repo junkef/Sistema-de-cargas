@@ -1030,10 +1030,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // LISTA MESTRE DOS 60 FORNECEDORES PADRÃO
+     // LISTA MESTRE DOS 70 FORNECEDORES PADRÃO
         const listaPadrao60Fornecedores = [
             { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
             { empresa: "ADERE", senha: "adere@2026" },
+            { empresa: "ADERE/BRINDEC/WELOZE", senha: "aderebrindecweloze@2026" },
+            { empresa: "ALDELBRAS", senha: "aldelbras@2026" },
             { empresa: "ALEPLAST", senha: "aleplast@2026" },
             { empresa: "ARAMART", senha: "aramart@2026" },
             { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" },
@@ -1056,6 +1058,7 @@
             { empresa: "CSN", senha: "csn@2026" },
             { empresa: "DENK", senha: "denk@2026" },
             { empresa: "DUFERCO", senha: "duferco@2026" },
+            { empresa: "EMBAQUIM", senha: "embaquim@2026" },
             { empresa: "FOCUS", senha: "focus@2026" },
             { empresa: "FORMPARTS", senha: "formparts@2026" },
             { empresa: "GRÁFICA NACIONAL", senha: "graficanacional@2026" },
@@ -1068,6 +1071,7 @@
             { empresa: "KLABIN", senha: "klabin@2026" },
             { empresa: "KNAUF", senha: "knauf@2026" },
             { empresa: "LINKPLAS", senha: "linkplas@2026" },
+            { empresa: "LOGPLAST", senha: "logplast@2026" },
             { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" },
             { empresa: "METALMA", senha: "metalma@2026" },
             { empresa: "MICROJUNTAS", senha: "microjuntas@2026" },
@@ -1076,6 +1080,7 @@
             { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
             { empresa: "PARANAPANEMA", senha: "paranapanema@2026" },
             { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
+            { empresa: "POLIMETAL", senha: "polimetal@2026" },
             { empresa: "REFREX", senha: "refrex@2026" },
             { empresa: "RUDOLPH", senha: "rudolph@2026" },
             { empresa: "SCHOTT", senha: "schott@2026" },
@@ -1091,7 +1096,12 @@
             { empresa: "VITROCOLOR", senha: "vitrocolor@2026" },
             { empresa: "WEG MOTORES", senha: "weg@2026" },
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" },
-            { empresa: "WEST ROCK", senha: "westrock@2026" }
+            { empresa: "WEST ROCK", senha: "westrock@2026" },
+            { empresa: "WHIRLPOOL JOINVILLE", senha: "whirlpooljoinville@2026" },
+            { empresa: "WHIRLPOOL RIO CLARO", senha: "whirlpoolrioclaro@2026" },
+            { empresa: "ZANOTTI", senha: "zanotti@2026" },
+            { empresa: "ZETA DO BRASIL", senha: "zetadobrasil@2026" },
+            { empresa: "ZILOR", senha: "zilor@2026" }
         ];
 
         // Estado da Aplicação
@@ -1426,9 +1436,11 @@
                 document.getElementById('inputUserLogin').focus();
             }
         };
-window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
-            const sel = document.getElementById('selEmpresaFornecedorLogin');
+// Preenche a caixa do PCP e fixa a seleção ao clicar
+        window.popularSelectFornecedores = function(listaParaExibir = null) {
+            const sel = document.getElementById('inpFornecedor');
             if (!sel) return;
+            const valorAnterior = sel.value;
             sel.innerHTML = "";
             
             const lista = listaParaExibir || window.obterListaNomesFornecedores();
@@ -1438,8 +1450,33 @@ window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
                 const opt = document.createElement('option');
                 opt.value = f; 
                 opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-2.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold text-white bg-slate-900 mb-1";
-                
+                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold text-slate-200 bg-slate-950 mb-1";
+                sel.appendChild(opt);
+            });
+
+            if (valorAnterior && sel.querySelector(`option[value="${valorAnterior}"]`)) {
+                sel.value = valorAnterior;
+            } else if (sel.options.length > 0) {
+                sel.selectedIndex = 0;
+            }
+        };
+
+        // Preenche a caixa de empresas na tela de Cadastro de Usuário
+        window.popularSelectCadastroEmpresasUsr = function() {
+            const sel = document.getElementById('selUsrEmpresa');
+            if (!sel) return;
+            const valAnt = sel.value;
+            sel.innerHTML = '<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>';
+            
+            window.obterListaNomesFornecedores().forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f;
+                opt.textContent = f;
+                sel.appendChild(opt);
+            });
+            
+            if (valAnt && sel.querySelector(`option[value="${valAnt}"]`)) sel.value = valAnt;
+        };
                 // Grava imediatamente o item selecionado ao clicar
                 opt.onclick = function() {
                     window.ymsStore.fornecedorSelecionadoTemp = f;
@@ -1464,16 +1501,20 @@ window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
             window.popularSelectFornecedores(filtrados);
         };
 
-        window.atualizarTodasListasFornecedores = function() {
+       window.atualizarTodasListasFornecedores = function() {
             const fornecedoresLimpos = window.obterListaNomesFornecedores();
             window.popularSelectFornecedores(fornecedoresLimpos);
             window.popularSelectLoginEmpresas(fornecedoresLimpos);
             window.popularSelectCadastroEmpresasUsr();
             window.renderizarTabelaFornecedores();
-            window.renderizarTabelaMotoristas();
-            window.renderizarTabelaUsuariosCustom();
+            if (window.renderizarTabelaMotoristas) window.renderizarTabelaMotoristas();
+            if (window.renderizarTabelaUsuariosCustom) window.renderizarTabelaUsuariosCustom();
+            
             const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
             if (badgeTotal) badgeTotal.textContent = `${fornecedoresLimpos.length} Empresas`;
+            
+            const lblContador = document.getElementById('lblContadorForn');
+            if (lblContador) lblContador.textContent = `(${fornecedoresLimpos.length} CADASTRADOS)`;
         };
 
         window.renderizarTabelaFornecedores = function() {
