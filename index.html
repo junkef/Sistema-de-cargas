@@ -1788,6 +1788,7 @@ window.confirmarLoginFornecedorEmpresa = function() {
             }
         };
       // Valida o login de Operadores e Administrador (Torre de Controle)
+      // Valida o login de Operadores e Administrador (Torre de Controle)
         window.confirmarLoginComSenha = function() {
             const userDig = document.getElementById('inputUserLogin').value.trim();
             const pinDig = document.getElementById('inputPinLogin').value.trim();
@@ -1814,12 +1815,6 @@ window.confirmarLoginFornecedorEmpresa = function() {
                 alert("🚫 Usuário ou Senha incorretos!\n\nCredenciais de Administrador:\n• Usuário: admin\n• Senha: 1234 (ou admin / 123)");
             }
         };
-                window.concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
-            } else {
-                alert("Usuário ou Senha incorretos!");
-            }
-        };
-
    // Função para encerrar a sessão, resetar a tela e abrir o modal de login
         window.fazerLogoutGlobal = function() {
             // 1. Limpa os dados de login da memória
