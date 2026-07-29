@@ -1183,19 +1183,26 @@
                 if(window.renderizarTabelaMotoristas) window.renderizarTabelaMotoristas();
             });
 
-            // Escuta Credenciais de Fornecedores (Com Restauração dos 60)
+         // Escuta Credenciais de Fornecedores (Com Mesclagem Segura para não perder os 70)
             onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
                 const data = snapshot.val();
                 if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
-                    window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
+                    const listaFirebase = Array.isArray(data) ? data : Object.values(data);
+                    
+                    // Mescla o que veio do Firebase com a lista padrão sem apagar fornecedores extras
+                    const mapaMesclado = new Map();
+                    listaPadrao60Fornecedores.forEach(item => mapaMesclado.set(window.limparNomeFornecedor(item.empresa), item));
+                    listaFirebase.forEach(item => mapaMesclado.set(window.limparNomeFornecedor(item.empresa), item));
+                    
+                    window.mapaCredenciaisFornecedores = Array.from(mapaMesclado.values());
                 } else {
                     window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
                     window.salvarCredenciaisFornecedoresNaMemoria();
                 }
+                
                 window.garantirTodosFornecedoresNaLista();
                 if(window.atualizarTodasListasFornecedores) window.atualizarTodasListasFornecedores();
             });
-
             // Escuta Usuários Customizados
             onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
                 const data = snapshot.val();
