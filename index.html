@@ -1789,6 +1789,7 @@ window.confirmarLoginFornecedorEmpresa = function() {
         };
       // Valida o login de Operadores e Administrador (Torre de Controle)
       // Valida o login de Operadores e Administrador (Torre de Controle)
+     // Valida o login de Operadores e Administrador (Torre de Controle)
         window.confirmarLoginComSenha = function() {
             const userDig = document.getElementById('inputUserLogin').value.trim();
             const pinDig = document.getElementById('inputPinLogin').value.trim();
@@ -1815,29 +1816,24 @@ window.confirmarLoginFornecedorEmpresa = function() {
                 alert("🚫 Usuário ou Senha incorretos!\n\nCredenciais de Administrador:\n• Usuário: admin\n• Senha: 1234 (ou admin / 123)");
             }
         };
-   // Função para encerrar a sessão, resetar a tela e abrir o modal de login
+
+        // Função para encerrar a sessão, resetar a tela e abrir o modal de login
         window.fazerLogoutGlobal = function() {
-            // 1. Limpa os dados de login da memória
             window.ymsStore.usuarioLogado = null;
             window.ymsStore.empresaFornecedorLogada = null;
             window.ymsStore.fornecedorSelecionadoTemp = null;
 
-            // 2. Remove as sessões salvas no navegador
             localStorage.removeItem('yms_sessao_usuario');
             localStorage.removeItem('yms_empresa_fornecedor_logada');
 
-            // 3. Reseta o texto do botão no topo de volta para "Sair"
             const lbl = document.getElementById('lblNomeUsuarioLogado');
             if (lbl) lbl.textContent = "Sair";
 
-            // 4. Esconde a barra de navegação de módulos
             const nav = document.getElementById('navBarPerfis');
             if (nav) nav.classList.add('hidden');
 
-            // 5. Esconde todas as telas de módulos do fundo
             document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
 
-            // 6. Limpa e oculta os campos de senha do modal
             if (document.getElementById('inputSenhaFornecedor')) document.getElementById('inputSenhaFornecedor').value = '';
             if (document.getElementById('inputUserLogin')) document.getElementById('inputUserLogin').value = '';
             if (document.getElementById('inputPinLogin')) document.getElementById('inputPinLogin').value = '';
@@ -1847,11 +1843,19 @@ window.confirmarLoginFornecedorEmpresa = function() {
             const boxEmp = document.getElementById('boxEmpresaFornecedorLogin');
             if (boxEmp) boxEmp.classList.add('hidden');
 
-            // 7. Força a exibição do Modal Global de Login
             const modal = document.getElementById('modalLoginGlobal');
             if (modal) modal.classList.remove('hidden');
 
             if (window.exibirToast) window.exibirToast("Sessão Encerrada", "Você desconectou com sucesso.", "🔴");
+        };
+
+        // Função de restauração de sessão local
+        window.restaurarSessaoLocal = function() {
+            const modalLogin = document.getElementById('modalLoginGlobal');
+            if (modalLogin) {
+                modalLogin.classList.remove('hidden');
+            }
+            return false;
         };
         window.obterDataHojeISO = function() {
             const hoje = new Date();
