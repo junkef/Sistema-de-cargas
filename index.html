@@ -1787,23 +1787,33 @@ window.confirmarLoginFornecedorEmpresa = function() {
                 }
             }
         };
+      // Valida o login de Operadores e Administrador (Torre de Controle)
         window.confirmarLoginComSenha = function() {
             const userDig = document.getElementById('inputUserLogin').value.trim();
             const pinDig = document.getElementById('inputPinLogin').value.trim();
             const perfilSel = window.ymsStore.perfilSolicitadoTemp;
 
+            // Login de Administrador Mestre (Usuário: admin / Senha: 1234, admin ou 123)
             if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
-                window.concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
+                const targetAba = (perfilSel === 'admin' || perfilSel === 'torre') ? 'torre' : (perfilSel || 'torre');
+                window.concluirLoginPerfil('admin', 'Administrador', ['torre', 'pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas'], targetAba);
                 return;
             }
 
+            // Login de Usuários Customizados do Banco
             const usrEncontrado = window.ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
 
             if (usrEncontrado) {
-                if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
+                if (perfilSel && perfilSel !== 'admin' && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
                     alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
                     return;
                 }
+                const targetAba = (perfilSel === 'admin' || perfilSel === 'torre') ? 'torre' : (perfilSel || usrEncontrado.modulos[0]);
+                window.concluirLoginPerfil(usrEncontrado.modulos.includes('torre') ? 'admin' : perfilSel, usrEncontrado.nome, usrEncontrado.modulos, targetAba);
+            } else {
+                alert("🚫 Usuário ou Senha incorretos!\n\nCredenciais de Administrador:\n• Usuário: admin\n• Senha: 1234 (ou admin / 123)");
+            }
+        };
                 window.concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
             } else {
                 alert("Usuário ou Senha incorretos!");
