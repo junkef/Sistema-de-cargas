@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
-    <!-- Evita o erro 404 do favicon.ico no console -->
     <link rel="icon" href="data:,">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -64,7 +63,6 @@
                 <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
             </div>
 
-            <!-- GRID DE PERFIS -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <button type="button" onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
@@ -100,7 +98,6 @@
                 </button>
             </div>
 
-            <!-- LOGIN FORNECEDOR COM PESQUISA E LISTA FIXA DEDUPLICADA -->
             <div id="boxEmpresaFornecedorLogin" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 hidden space-y-3">
                 <div class="border-b border-slate-800 pb-1.5 flex justify-between items-center">
                     <span class="text-xs font-bold text-indigo-400 uppercase">🏢 LOGIN SEGURO DE FORNECEDOR</span>
@@ -128,7 +125,6 @@
                 </div>
             </div>
 
-            <!-- LOGIN OPERADOR -->
             <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
@@ -196,14 +192,12 @@
                         <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
                     </div>
 
-                    <!-- FORMULÁRIO MANUAL -->
                     <div id="conteudoIndividual" class="space-y-3.5">
                         <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
                             <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
                             <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
                         </div>
 
-                        <!-- 🟢🟡🔴 BOTÕES DO TIPO DE OPERAÇÃO -->
                         <div>
                             <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -245,7 +239,6 @@
                             </div>
                         </div>
 
-                        <!-- BOXES CONDICIONAIS -->
                         <div id="boxMotivoExtra" class="hidden bg-amber-950/20 p-3 rounded-2xl border border-amber-500/40 space-y-1.5">
                             <label class="block text-[10px] font-bold text-amber-400 uppercase mb-0.5">📋 Motivo da Carga Extra *</label>
                             <select id="pcpMotivoExtra" class="w-full bg-slate-900 border border-amber-500/50 rounded-xl p-2 text-xs text-white font-bold outline-none cursor-pointer">
@@ -334,13 +327,18 @@
                     </div>
                 </div>
 
-                <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 grid grid-cols-12 gap-3">
-                    <button type="button" onclick="limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5">
-                        <span>🗑️</span> LIMPAR RASCUNHO
+                <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 space-y-2">
+                    <button type="button" id="btnAlertaEmailCritico" onclick="abrirEmailCargaCriticaPendente()" class="hidden w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-3 rounded-xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-2">
+                        <span>🚨</span> DISPARAR ALERTA DE E-MAIL (CARGAS CRÍTICAS)
                     </button>
-                    <button type="button" onclick="confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
-                        <span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
-                    </button>
+                    <div class="grid grid-cols-12 gap-3">
+                        <button type="button" onclick="limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5">
+                            <span>🗑️</span> LIMPAR RASCUNHO
+                        </button>
+                        <button type="button" onclick="confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
+                            <span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1115,25 +1113,6 @@
             perfilSolicitadoTemp: null
         };
 
-        window.dispararEmailCargaCritica = function(item) {
-            const destinatario = "fernando_junkes@whirlpool.com,edemar_h_heidemann@whirlpool.com";
-            const assunto = encodeURIComponent(`🚨 ALERTA YMS: CARGA CRÍTICA AGENDADA [${item.ordem}] - ${item.fornecedor}`);
-            const corpo = encodeURIComponent(
-                `Atenção,\n\n` +
-                `Uma nova CARGA CRÍTICA foi programada no YMS Ecosystem e necessita de acompanhamento prioritário:\n\n` +
-                `• Ordem: ${item.ordem}\n` +
-                `• Fornecedor: ${item.fornecedor}\n` +
-                `• Data: ${item.data} | Horário: ${item.horaIni} às ${item.horaFim}\n` +
-                `• Doca de Recebimento: ${item.doca}\n` +
-                `• Part Number / Material: ${item.codigoCritico || 'N/I'}\n` +
-                `• Motivo / Risco de Parada: ${item.motivoCritico || 'N/I'}\n\n` +
-                `Favor providenciar prioridade na portaria e descarga.\n` +
-                `Sistema Integrado de Logística & PCP - YMS.`
-            );
-            window.open(`mailto:${destinatario}?subject=${assunto}&body=${corpo}`, '_blank');
-            window.exibirToast("Alerta de Carga Crítica!", "Solicitação de e-mail gerada para a supervisão.", "🚨");
-        };
-
         window.mapaCredenciaisFornecedores = [];
 
         window.limparNomeFornecedor = function(nome) {
@@ -1231,7 +1210,147 @@
         let instanceChartDocas = null;
         let instanceChartMediaTempo = null;
 
-        // --- RENDERIZAÇÃO E DECLARAÇÃO ANTECIPADA DE FUNÇÕES NO WINDOW ---
+        // --- RENDERIZAÇÃO ANTECIPADA (E DISPARO DE EMAIL VIA BOTÃO EXPLÍCITO) ---
+        window.dispararEmailCargaCritica = function(item) {
+            const destinatario = "fernando_junkes@whirlpool.com,edemar_h_heidemann@whirlpool.com";
+            const assunto = encodeURIComponent(`🚨 ALERTA YMS: CARGA CRÍTICA AGENDADA [${item.ordem}] - ${item.fornecedor}`);
+            const corpo = encodeURIComponent(
+                `Atenção,\n\n` +
+                `Uma nova CARGA CRÍTICA foi programada no YMS Ecosystem e necessita de acompanhamento prioritário:\n\n` +
+                `• Ordem: ${item.ordem}\n` +
+                `• Fornecedor: ${item.fornecedor}\n` +
+                `• Data: ${item.data} | Horário: ${item.horaIni} às ${item.horaFim}\n` +
+                `• Doca de Recebimento: ${item.doca}\n` +
+                `• Part Number / Material: ${item.codigoCritico || 'N/I'}\n` +
+                `• Motivo / Risco de Parada: ${item.motivoCritico || 'N/I'}\n\n` +
+                `Favor providenciar prioridade na portaria e descarga.\n` +
+                `Sistema Integrado de Logística & PCP - YMS.`
+            );
+            window.open(`mailto:${destinatario}?subject=${assunto}&body=${corpo}`, '_blank');
+            window.exibirToast("Alerta de Carga Crítica!", "Solicitação de e-mail gerada para a supervisão.", "🚨");
+        };
+
+        window.abrirEmailCargaCriticaPendente = function() {
+            const janelasCriticas = window.ymsStore.rascunhoAgendamentos.filter(i => i.tipo === 'CRITICA');
+            if (janelasCriticas.length > 0) {
+                window.dispararEmailCargaCritica(janelasCriticas[0]);
+            } else {
+                alert("Não há nenhuma janela classificada como CRÍTICA na grade de rascunho.");
+            }
+        };
+
+        window.renderizarModuloFornecedor = function() {
+            const containerBoxSeletor = document.getElementById('boxSeletorFornecedorPortal');
+            const container = document.getElementById('listaOrdensFornecedor');
+            if (!container) return;
+            container.innerHTML = "";
+
+            const filtroEl = document.getElementById('filtroDataFornecedor');
+            if (!filtroEl || !filtroEl.value) return;
+
+            const rawDataSel = filtroEl.value.split('-');
+            const dataFiltroFormatted = `${rawDataSel[2]}/${rawDataSel[1]}/${rawDataSel[0]}`;
+
+            let empresaFiltroAlvo = "";
+            const empresaLogada = window.ymsStore.empresaFornecedorLogada || 
+                                  localStorage.getItem('yms_empresa_fornecedor_logada') || 
+                                  localStorage.getItem('yms_usuario_logado');
+
+            const ehFornecedorRestrito = empresaLogada && (!window.ymsStore.usuarioLogado || window.ymsStore.usuarioLogado.key === 'fornecedor');
+
+            if (ehFornecedorRestrito) {
+                empresaFiltroAlvo = window.limparNomeFornecedor(empresaLogada);
+                if (containerBoxSeletor) {
+                    containerBoxSeletor.innerHTML = `
+                        <div class="bg-slate-900 text-white font-black text-xs p-2.5 rounded-xl border border-emerald-500/40 flex justify-between items-center shadow select-none">
+                            <span class="truncate text-emerald-400 font-mono">${empresaFiltroAlvo}</span>
+                            <span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔒 SIGILO ATIVO</span>
+                        </div>
+                    `;
+                }
+            } else {
+                const fornecedoresCadastrados = window.obterListaNomesFornecedores();
+                let selHtml = `<select id="selFornFiltroPortal" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-xl p-2 text-xs font-black text-amber-300 outline-none cursor-pointer">`;
+                fornecedoresCadastrados.forEach(f => {
+                    selHtml += `<option value="${f}">${f}</option>`;
+                });
+                selHtml += `</select>`;
+                
+                const valAnterior = document.getElementById('selFornFiltroPortal')?.value;
+                if (containerBoxSeletor) containerBoxSeletor.innerHTML = selHtml;
+                
+                const selectAtual = document.getElementById('selFornFiltroPortal');
+                if (valAnterior && selectAtual?.querySelector(`option[value="${valAnterior}"]`)) {
+                    selectAtual.value = valAnterior;
+                }
+                empresaFiltroAlvo = selectAtual ? selectAtual.value : (fornecedoresCadastrados[0] || "");
+            }
+
+            const empAlvoNorm = window.normalizarTexto(empresaFiltroAlvo);
+            const filtradosData = window.ymsStore.agendamentos.filter(i => {
+                const bateData = window.normalizarTexto(i.data) === window.normalizarTexto(dataFiltroFormatted);
+                let bateEmpresa = false;
+                if (empAlvoNorm) {
+                    const fornItemNorm = window.normalizarTexto(window.limparNomeFornecedor(i.fornecedor));
+                    bateEmpresa = fornItemNorm.includes(empAlvoNorm) || empAlvoNorm.includes(fornItemNorm);
+                }
+                return bateData && bateEmpresa;
+            });
+
+            let ordensExibicao = [];
+            if (window.ymsStore.abaFornecedorAtual === 'pendentes') {
+                ordensExibicao = filtradosData.filter(i => i.status === 'AGENDADO');
+            } else {
+                ordensExibicao = filtradosData.filter(i => i.status !== 'AGENDADO');
+            }
+
+            if (ordensExibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem publicada para ${empresaFiltroAlvo || 'esta empresa'} na data ${dataFiltroFormatted}.</p>`;
+                document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
+                document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
+                document.getElementById('fornNf').value = '';
+                document.getElementById('fornTransp').value = '';
+                document.getElementById('fornCavalo').value = '';
+                document.getElementById('fornCarreta').value = '';
+                document.getElementById('fornMotorista').value = '';
+                document.getElementById('fornCpf').value = '';
+                document.getElementById('fornCelular').value = '';
+                return;
+            }
+
+            if (!window.ymsStore.ordemAtivaFornecedor || !ordensExibicao.some(i => i.ordem === window.ymsStore.ordemAtivaFornecedor)) {
+                window.ymsStore.ordemAtivaFornecedor = ordensExibicao[0].ordem;
+            }
+
+            ordensExibicao.forEach(item => {
+                const isSel = item.ordem === window.ymsStore.ordemAtivaFornecedor;
+                const card = `
+                    <div onclick="selecionarOrdemFornecedor('${item.ordem}')" class="${isSel ? 'bg-indigo-950 border-2 border-indigo-500' : 'bg-slate-900 border border-slate-700'} p-3 rounded-xl cursor-pointer transition">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="bg-indigo-600 text-white font-mono text-[10px] px-2 py-0.5 rounded">${item.ordem}</span>
+                            <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">${item.status}</span>
+                        </div>
+                        <p class="text-xs font-black text-white mt-1">${window.limparNomeFornecedor(item.fornecedor)}</p>
+                        <p class="text-[11px] text-indigo-300">🕒 ${item.horaIni} às ${item.horaFim} (${item.doca})</p>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+
+            const ativa = window.ymsStore.agendamentos.find(i => i.ordem === window.ymsStore.ordemAtivaFornecedor);
+            if (ativa) {
+                document.getElementById('txtOrdemSelecionada').textContent = `ORDEM: ${ativa.ordem} (${window.limparNomeFornecedor(ativa.fornecedor)})`;
+                document.getElementById('txtStatusOrdem').textContent = ativa.status;
+                document.getElementById('fornNf').value = ativa.nf || '';
+                document.getElementById('fornTransp').value = ativa.transp || '';
+                document.getElementById('fornCavalo').value = ativa.cavalo || '';
+                document.getElementById('fornCarreta').value = ativa.carreta || '';
+                document.getElementById('fornMotorista').value = ativa.motorista || '';
+                document.getElementById('fornCpf').value = ativa.cpf || '';
+                document.getElementById('fornCelular').value = ativa.celular || '';
+            }
+        };
+
         window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
@@ -1591,7 +1710,6 @@
             set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
         };
 
-        // --- FUNÇÃO PARA SELECIONAR TIPO DE CARGA NO WINDOW ---
         window.selecionarTipoCarga = function(tipo) {
             const btnCot = document.getElementById('btnTipoCotidiano');
             const btnExt = document.getElementById('btnTipoExtra');
@@ -1638,7 +1756,6 @@
             }
         };
 
-        // --- EXCLUSÃO DE FORNECEDOR (SEM CORTAR NÚMEROS DE FINAL DE STRING) ---
         window.excluirFornecedorDinamico = function(empresa) {
             if (!confirm(`Excluir a empresa "${empresa}" da base?`)) return;
             const alvo = String(empresa).trim().toUpperCase();
@@ -1650,7 +1767,6 @@
             window.exibirToast("Fornecedor Excluído", `${empresa} removida da base.`, "🗑️");
         };
 
-        // --- EXCLUSÃO DE MOTORISTA MANUAL NO WINDOW ---
         window.excluirMotoristaManual = function(cpf) {
             if (!confirm('Tem certeza que deseja excluir este motorista?')) return;
             if (!Array.isArray(window.ymsStore.baseMotoristas)) {
@@ -2464,12 +2580,24 @@
                 return;
             }
 
+            const janelasCriticasRascunho = window.ymsStore.rascunhoAgendamentos.filter(i => i.tipo === 'CRITICA');
+            const btnEmailCritico = document.getElementById('btnAlertaEmailCritico');
+
             if (window.ymsStore.rascunhoAgendamentos.length > 0) {
                 document.getElementById('painelAcaoSubir').classList.remove('hidden');
                 document.getElementById('subtituloGrade').textContent = `⚠️ ${window.ymsStore.rascunhoAgendamentos.length} Janela(s) em Rascunho - Clique no Botão Verde para Subir ao Sistema`;
+                
+                if (btnEmailCritico) {
+                    if (janelasCriticasRascunho.length > 0) {
+                        btnEmailCritico.classList.remove('hidden');
+                    } else {
+                        btnEmailCritico.classList.add('hidden');
+                    }
+                }
             } else {
                 document.getElementById('painelAcaoSubir').classList.add('hidden');
                 document.getElementById('subtituloGrade').textContent = "🟢 Todas as janelas listadas estão ativas e sincronizadas no YMS";
+                if (btnEmailCritico) btnEmailCritico.classList.add('hidden');
             }
 
             todasJanelasExibicao.forEach(item => {
