@@ -2931,18 +2931,6 @@
         };
 
         // --- MOTORISTAS ---
-        
-        window.excluirMotoristaManual = function(cpf) {
-            if (confirm('Tem certeza que deseja excluir este motorista?')) {
-                if (Array.isArray(window.ymsStore.baseMotoristas)) {
-                    window.ymsStore.baseMotoristas = window.ymsStore.baseMotoristas.filter(m => String(m.cpf).replace(/\D/g, '') !== cpf.replace(/\D/g, ''));
-                    window.salvarBaseMotoristasNaMemoria();
-                    window.renderizarTabelaMotoristas();
-                    alert('✅ Motorista excluído com sucesso!');
-                }
-            }
-        };
-
         window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
@@ -2967,13 +2955,22 @@
                         <td class="p-3 font-bold text-white">${m.nome}</td>
                         <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
                         <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
-                        <td class="p-3 text-center flex gap-1.5 justify-center">
-                            <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
-                                ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
-                            </button>
-                            <button type="button" onclick="excluirMotoristaManual('${m.cpf}')" class="bg-red-700 hover:bg-red-800 text-white p-1.5 rounded-lg text-xs cursor-pointer">
-                                🗑️ Excluir
-                            </button>
+                        <td class="p-3 text-center">
+                            <div class="flex gap-1.5 justify-center">
+
+                                <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
+
+                                    ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
+
+                                </button>
+
+                                <button type="button" onclick="excluirMotoristaManual('${m.cpf}')" class="bg-red-700 hover:bg-red-800 text-white p-1.5 rounded-lg text-xs cursor-pointer">
+
+                                    🗑️ Excluir
+
+                                </button>
+
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -3444,6 +3441,31 @@
         window.addEventListener('load', function() {
             window.inicializarSistema();
         });
+
+        
+        // FUNÇÃO DE EXCLUSÃO DE MOTORISTA
+        window.excluirMotoristaManual = function(cpf) {
+            if (!confirm('Tem certeza que deseja excluir este motorista?')) return;
+            
+            if (!Array.isArray(window.ymsStore.baseMotoristas)) {
+                alert('Erro: Base de motoristas não inicializada');
+                return;
+            }
+            
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const indexOriginal = window.ymsStore.baseMotoristas.findIndex(m => 
+                String(m.cpf).replace(/\D/g, '') === cpfLimpo
+            );
+            
+            if (indexOriginal !== -1) {
+                window.ymsStore.baseMotoristas.splice(indexOriginal, 1);
+                window.salvarBaseMotoristasNaMemoria();
+                window.renderizarTabelaMotoristas();
+                alert('✅ Motorista excluído com sucesso!');
+            } else {
+                alert('❌ Motorista não encontrado');
+            }
+        };
 
         </script>
 </body>
