@@ -1246,7 +1246,48 @@
         let instanceChartDocas = null;
         let instanceChartMediaTempo = null;
 
-        // --- RENDERIZAÇÃO DO MÓDULO FORNECEDOR RESTAURADA ---
+        // --- RENDERIZAÇÃO DE MOTORISTAS ---
+        window.renderizarTabelaMotoristas = function() {
+            const tbody = document.getElementById('tblCorpoMotoristas');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+            const termoBusca = (document.getElementById('filtroMotoristaTabela')?.value || '').toLowerCase().trim();
+            const listData = Array.isArray(window.ymsStore.baseMotoristas) ? window.ymsStore.baseMotoristas : [];
+            const filtrados = listData.filter(m => String(m.cpf).includes(termoBusca) || String(m.nome).toLowerCase().includes(termoBusca));
+
+            const badgeQtd = document.getElementById('badgeQtdMotoristas');
+            if (badgeQtd) badgeQtd.textContent = listData.length;
+
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(m => {
+                const isBloqueado = m.status === 'BLOQUEADO';
+                const row = `
+                    <tr class="hover:bg-slate-900/60 transition">
+                        <td class="p-3 font-mono font-bold text-emerald-400">${m.cpf}</td>
+                        <td class="p-3 font-bold text-white">${m.nome}</td>
+                        <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
+                        <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
+                        <td class="p-3 text-center">
+                            <div class="flex gap-1.5 justify-center">
+                                <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
+                                    ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
+                                </button>
+                                <button type="button" onclick="excluirMotoristaManual('${m.cpf}')" class="bg-red-700 hover:bg-red-800 text-white p-1.5 rounded-lg text-xs cursor-pointer">
+                                    🗑️ Excluir
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        };
+
+        // --- RENDERIZAÇÃO DO MÓDULO FORNECEDOR ---
         window.renderizarModuloFornecedor = function() {
             const containerBoxSeletor = document.getElementById('boxSeletorFornecedorPortal');
             const container = document.getElementById('listaOrdensFornecedor');
@@ -1363,6 +1404,7 @@
         // --- RENDERIZAÇÃO E CARREGAMENTO COMPLETO DA TORRE ---
         window.carregarGraficosTorre = function() {
             setTimeout(() => {
+                // 1. Limpeza prévia de instâncias dos gráficos
                 if (instanceChartCheckin) { instanceChartCheckin.destroy(); instanceChartCheckin = null; }
                 if (instanceChartDocas) { instanceChartDocas.destroy(); instanceChartDocas = null; }
                 if (instanceChartMediaTempo) { instanceChartMediaTempo.destroy(); instanceChartMediaTempo = null; }
@@ -1379,6 +1421,7 @@
                 ).length;
                 const outros = Math.max(0, totalAg - emPatio - concluidos - pendentes);
 
+                // 2. Gráfico 1: Status Real
                 const canvasCheckin = document.getElementById('chartCheckin');
                 if (canvasCheckin) {
                     instanceChartCheckin = new Chart(canvasCheckin, {
@@ -1394,6 +1437,7 @@
                     });
                 }
 
+                // 3. Gráfico 2: Ocupação por Doca
                 const contagemDocas = {};
                 listaTodasDocas.forEach(d => contagemDocas[d] = 0);
 
@@ -1419,6 +1463,7 @@
                     });
                 }
 
+                // 4. Gráfico 3: Média de Tempo de Janela
                 const somaTemposDoca = {};
                 const qtdAgendamentosDoca = {};
                 listaTodasDocas.forEach(d => { somaTemposDoca[d] = 0; qtdAgendamentosDoca[d] = 0; });
@@ -1455,6 +1500,7 @@
                     });
                 }
 
+                // 5. Tabela do Relatório
                 const tbody = document.getElementById('tblPreviewRelatorio');
                 if (tbody) {
                     tbody.innerHTML = "";
@@ -1567,7 +1613,9 @@
                         { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
                     ];
                 }
-                window.renderizarTabelaMotoristas();
+                if (typeof window.renderizarTabelaMotoristas === 'function') {
+                    window.renderizarTabelaMotoristas();
+                }
             });
 
             onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
@@ -1867,8 +1915,12 @@
             window.popularSelectLoginEmpresas(fornecedoresLimpos);
             window.popularSelectCadastroEmpresasUsr();
             window.renderizarTabelaFornecedores();
-            window.renderizarTabelaMotoristas();
-            window.renderizarTabelaUsuariosCustom();
+            if (typeof window.renderizarTabelaMotoristas === 'function') {
+                window.renderizarTabelaMotoristas();
+            }
+            if (typeof window.renderizarTabelaUsuariosCustom === 'function') {
+                window.renderizarTabelaUsuariosCustom();
+            }
             const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
             if (badgeTotal) badgeTotal.textContent = `${fornecedoresLimpos.length} Empresas`;
         };
@@ -2136,18 +2188,20 @@
 
             window.sincronizarTodosModulos();
             if (perfilId === 'torre') window.carregarGraficosTorre();
-            if (perfilId === 'motoristas') window.renderizarTabelaMotoristas();
+            if (perfilId === 'motoristas' && typeof window.renderizarTabelaMotoristas === 'function') {
+                window.renderizarTabelaMotoristas();
+            }
         };
 
         window.sincronizarTodosModulos = function() {
             window.garantirTodosFornecedoresNaLista();
-            window.renderizarGradePCP();
-            window.renderizarModuloFornecedor();
-            window.renderizarModuloFiscal();
-            window.renderizarModuloCheckout();
-            window.renderizarTabelaMotoristas();
-            window.atualizarPainelDoca();
-            window.carregarGraficosTorre();
+            if (typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
+            if (typeof window.renderizarModuloFornecedor === 'function') window.renderizarModuloFornecedor();
+            if (typeof window.renderizarModuloFiscal === 'function') window.renderizarModuloFiscal();
+            if (typeof window.renderizarModuloCheckout === 'function') window.renderizarModuloCheckout();
+            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
+            if (typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
+            if (typeof window.carregarGraficosTorre === 'function') window.carregarGraficosTorre();
         };
 
         window.alternarAbaPCP = function(aba) {
