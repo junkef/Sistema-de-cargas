@@ -1010,7 +1010,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
+<!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -1246,248 +1246,219 @@
         let instanceChartDocas = null;
         let instanceChartMediaTempo = null;
 
-        // --- FUNÇÕES DO MÓDULO PCP (TODAS NO WINDOW) ---
-        window.alternarAbaPCP = function(aba) {
-            const btnInd = document.getElementById('tabIndividualBtn');
-            const btnMas = document.getElementById('tabMassaBtn');
-            const btnTxt = document.getElementById('tabTextoBtn');
-            if (btnInd) btnInd.className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
-            if (btnMas) btnMas.className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
-            if (btnTxt) btnTxt.className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
+        // --- DECLARAÇÕES DE TODAS AS FUNÇÕES DE RENDERIZAÇÃO NO TOPO ---
 
-            if (document.getElementById('conteudoIndividual')) document.getElementById('conteudoIndividual').classList.add('hidden');
-            if (document.getElementById('conteudoMassa')) document.getElementById('conteudoMassa').classList.add('hidden');
-            if (document.getElementById('conteudoTexto')) document.getElementById('conteudoTexto').classList.add('hidden');
+        window.renderizarTabelaFornecedores = function() {
+            const tbody = document.getElementById('tblCorpoFornecedores');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+            const termo = (document.getElementById('filtroFornTabela')?.value || '').toLowerCase().trim();
+            const fornecedoresUnicos = window.obterListaNomesFornecedores();
+            const filtrados = fornecedoresUnicos.filter(item => item.toLowerCase().includes(termo));
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-500 italic">Nenhum fornecedor encontrado.</td></tr>`;
+                return;
+            }
+            filtrados.forEach(empresaNome => {
+                const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === empresaNome);
+                const senhaExibicao = cadForn ? cadForn.senha : `${empresaNome.toLowerCase().replace(/\s+/g, '')}@2026`;
+                const row = `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white uppercase">${empresaNome}</td>
+                        <td class="p-2.5 font-mono text-yellow-300">${senhaExibicao}</td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="excluirFornecedorDinamico('${empresaNome}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        };
 
-            if (aba === 'individual') {
-                if (btnInd) btnInd.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
-                if (document.getElementById('conteudoIndividual')) document.getElementById('conteudoIndividual').classList.remove('hidden');
-            } else if (aba === 'massa') {
-                if (btnMas) btnMas.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
-                if (document.getElementById('conteudoMassa')) document.getElementById('conteudoMassa').classList.remove('hidden');
+        window.renderizarTabelaMotoristas = function() {
+            const tbody = document.getElementById('tblCorpoMotoristas');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+            const termoBusca = (document.getElementById('filtroMotoristaTabela')?.value || '').toLowerCase().trim();
+            const listData = Array.isArray(window.ymsStore.baseMotoristas) ? window.ymsStore.baseMotoristas : [];
+            const filtrados = listData.filter(m => String(m.cpf).includes(termoBusca) || String(m.nome).toLowerCase().includes(termoBusca));
+
+            const badgeQtd = document.getElementById('badgeQtdMotoristas');
+            if (badgeQtd) badgeQtd.textContent = listData.length;
+
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">Nenhum motorista encontrado.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(m => {
+                const isBloqueado = m.status === 'BLOQUEADO';
+                const row = `
+                    <tr class="hover:bg-slate-900/60 transition">
+                        <td class="p-3 font-mono font-bold text-emerald-400">${m.cpf}</td>
+                        <td class="p-3 font-bold text-white">${m.nome}</td>
+                        <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
+                        <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
+                        <td class="p-3 text-center">
+                            <div class="flex gap-1.5 justify-center">
+                                <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
+                                    ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
+                                </button>
+                                <button type="button" onclick="excluirMotoristaManual('${m.cpf}')" class="bg-red-700 hover:bg-red-800 text-white p-1.5 rounded-lg text-xs cursor-pointer">
+                                    🗑️ Excluir
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        };
+
+        window.renderizarModuloFornecedor = function() {
+            const containerBoxSeletor = document.getElementById('boxSeletorFornecedorPortal');
+            const container = document.getElementById('listaOrdensFornecedor');
+            if (!container) return;
+            container.innerHTML = "";
+
+            const filtroEl = document.getElementById('filtroDataFornecedor');
+            if (!filtroEl || !filtroEl.value) return;
+
+            const rawDataSel = filtroEl.value.split('-');
+            const dataFiltroFormatted = `${rawDataSel[2]}/${rawDataSel[1]}/${rawDataSel[0]}`;
+
+            let empresaFiltroAlvo = "";
+            const empresaLogada = window.ymsStore.empresaFornecedorLogada || 
+                                  localStorage.getItem('yms_empresa_fornecedor_logada') || 
+                                  localStorage.getItem('yms_usuario_logado');
+
+            const ehFornecedorRestrito = empresaLogada && (!window.ymsStore.usuarioLogado || window.ymsStore.usuarioLogado.key === 'fornecedor');
+
+            if (ehFornecedorRestrito) {
+                empresaFiltroAlvo = window.limparNomeFornecedor(empresaLogada);
+                if (containerBoxSeletor) {
+                    containerBoxSeletor.innerHTML = `
+                        <div class="bg-slate-900 text-white font-black text-xs p-2.5 rounded-xl border border-emerald-500/40 flex justify-between items-center shadow select-none">
+                            <span class="truncate text-emerald-400 font-mono">${empresaFiltroAlvo}</span>
+                            <span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔒 SIGILO ATIVO</span>
+                        </div>
+                    `;
+                }
             } else {
-                if (btnTxt) btnTxt.className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
-                if (document.getElementById('conteudoTexto')) document.getElementById('conteudoTexto').classList.remove('hidden');
-            }
-        };
-
-        window.horaParaMinutos = function(horaStr) {
-            if (!horaStr || horaStr === '---') return 0;
-            const partes = String(horaStr).trim().split(':');
-            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
-        };
-
-        window.criarJanelaManual = function(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            const rawData = document.getElementById('inpData').value;
-            
-            if (window.dataEhPassada(rawData)) {
-                alert("🚫 OPERAÇÃO BLOQUEADA!\n\nVocê não pode ofertar janelas para DATAS RETROATIVAS (passadas).\nSelecione a data de hoje em diante.");
-                return;
-            }
-
-            const partes = rawData.split('-');
-            const proximoId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
-            const novaOrdem = `ORD-${proximoId}`;
-            const horaIni = document.getElementById('inpHora').value;
-            const horaFim = document.getElementById('inpHoraFim').value;
-            const fornSel = window.limparNomeFornecedor(document.getElementById('inpFornecedor').value);
-
-            if (!fornSel) { alert("Selecione um fornecedor."); return; }
-
-            const tipoAtual = window.tipoCargaSelecionado || 'cotidiano';
-
-            const item = {
-                ordem: novaOrdem,
-                data: `${partes[2]}/${partes[1]}/${partes[0]}`,
-                fornecedor: fornSel,
-                doca: document.getElementById('inpDoca').value,
-                horaIni: horaIni,
-                horaFim: horaFim,
-                status: "AGENDADO",
-                tipo: tipoAtual.toUpperCase(),
-                motivoExtra: (tipoAtual === 'extra') ? (document.getElementById('pcpMotivoExtra')?.value || '') : '',
-                codigoCritico: (tipoAtual === 'critica') ? (document.getElementById('pcpCodigoCritico')?.value || '') : '',
-                motivoCritico: (tipoAtual === 'critica') ? (document.getElementById('pcpMotivoCritico')?.value || '') : '',
-                isRascunho: true,
-                nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
-                timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
-            };
-
-            window.ymsStore.rascunhoAgendamentos.push(item);
-
-            if (document.getElementById('pcpCodigoCritico')) document.getElementById('pcpCodigoCritico').value = '';
-            if (document.getElementById('pcpMotivoCritico')) document.getElementById('pcpMotivoCritico').value = '';
-
-            window.garantirTodosFornecedoresNaLista();
-            window.renderizarGradePCP();
-            window.exibirToast("Adicionado ao Rascunho!", `Ordem ${novaOrdem} [${item.tipo}] aguardando subida no botão verde.`, "📝");
-        };
-
-        // --- FUNÇÕES DO PORTAL DO FORNECEDOR ---
-        window.alternarAbaFornecedor = function(aba) {
-            window.ymsStore.abaFornecedorAtual = aba;
-            const btnPen = document.getElementById('btnAbaPendentes');
-            const btnCon = document.getElementById('btnAbaConfirmadas');
-            if (btnPen && btnCon) {
-                if (aba === 'pendentes') {
-                    btnPen.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white cursor-pointer";
-                    btnCon.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer";
-                } else {
-                    btnCon.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white cursor-pointer";
-                    btnPen.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer";
+                const fornecedoresCadastrados = window.obterListaNomesFornecedores();
+                let selHtml = `<select id="selFornFiltroPortal" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-xl p-2 text-xs font-black text-amber-300 outline-none cursor-pointer">`;
+                fornecedoresCadastrados.forEach(f => {
+                    selHtml += `<option value="${f}">${f}</option>`;
+                });
+                selHtml += `</select>`;
+                
+                const valAnterior = document.getElementById('selFornFiltroPortal')?.value;
+                if (containerBoxSeletor) containerBoxSeletor.innerHTML = selHtml;
+                
+                const selectAtual = document.getElementById('selFornFiltroPortal');
+                if (valAnterior && selectAtual?.querySelector(`option[value="${valAnterior}"]`)) {
+                    selectAtual.value = valAnterior;
                 }
+                empresaFiltroAlvo = selectAtual ? selectAtual.value : (fornecedoresCadastrados[0] || "");
             }
-            window.renderizarModuloFornecedor();
-        };
 
-        window.selecionarOrdemFornecedor = function(ordem) {
-            window.ymsStore.ordemAtivaFornecedor = ordem;
-            window.renderizarModuloFornecedor();
-        };
-
-        window.buscarMotoristaPorCpf = function() {
-            const cpfDig = (document.getElementById('fornCpf')?.value || '').replace(/\D/g, '');
-            if (!cpfDig) {
-                alert("Digite o CPF do motorista.");
-                return;
-            }
-            const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfDig);
-            if (motorista) {
-                if (motorista.status === 'BLOQUEADO') {
-                    alert(`🚫 ATENÇÃO: O motorista ${motorista.nome} está BLOQUEADO no sistema!\n\nMotivo: ${motorista.obs || 'Restrição cadastral'}`);
-                    return;
+            const empAlvoNorm = window.normalizarTexto(empresaFiltroAlvo);
+            const agendamentos = window.ymsStore.agendamentos || [];
+            const filtradosData = agendamentos.filter(i => {
+                const bateData = window.normalizarTexto(i.data) === window.normalizarTexto(dataFiltroFormatted);
+                let bateEmpresa = false;
+                if (empAlvoNorm) {
+                    const fornItemNorm = window.normalizarTexto(window.limparNomeFornecedor(i.fornecedor));
+                    bateEmpresa = fornItemNorm.includes(empAlvoNorm) || empAlvoNorm.includes(fornItemNorm);
                 }
-                if (document.getElementById('fornMotorista')) document.getElementById('fornMotorista').value = motorista.nome || '';
-                if (document.getElementById('fornCelular')) document.getElementById('fornCelular').value = motorista.celular || '';
-                window.exibirToast("Motorista Encontrado!", motorista.nome, "👤");
+                return bateData && bateEmpresa;
+            });
+
+            let ordensExibicao = [];
+            if (window.ymsStore.abaFornecedorAtual === 'pendentes') {
+                ordensExibicao = filtradosData.filter(i => i.status === 'AGENDADO');
             } else {
-                window.exibirToast("Não Encontrado", "Preencha o nome e celular manualmente.", "⚠️");
+                ordensExibicao = filtradosData.filter(i => i.status !== 'AGENDADO');
             }
-        };
 
-        window.salvarConfirmacaoFornecedor = function(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            const ordem = window.ymsStore.ordemAtivaFornecedor;
-            if (!ordem) {
-                alert("Selecione uma ordem agendada na lista ao lado.");
+            if (ordensExibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem publicada para ${empresaFiltroAlvo || 'esta empresa'} na data ${dataFiltroFormatted}.</p>`;
+                document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
+                document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
+                document.getElementById('fornNf').value = '';
+                document.getElementById('fornTransp').value = '';
+                document.getElementById('fornCavalo').value = '';
+                document.getElementById('fornCarreta').value = '';
+                document.getElementById('fornMotorista').value = '';
+                document.getElementById('fornCpf').value = '';
+                document.getElementById('fornCelular').value = '';
                 return;
             }
 
-            const nf = document.getElementById('fornNf').value.trim();
-            const transp = document.getElementById('fornTransp').value.trim();
-            const cavalo = document.getElementById('fornCavalo').value.trim().toUpperCase();
-            const carreta = document.getElementById('fornCarreta').value.trim().toUpperCase();
-            const cpf = document.getElementById('fornCpf').value.trim().replace(/\D/g, '');
-            const motorista = document.getElementById('fornMotorista').value.trim();
-            const celular = document.getElementById('fornCelular').value.trim().replace(/\D/g, '');
-
-            if (!nf || !transp || !cavalo || !cpf || !motorista || !celular) {
-                alert("Preencha todos os campos obrigatórios (*): Nota Fiscal, Transportadora, Placa Cavalo, CPF, Motorista e Celular.");
-                return;
+            if (!window.ymsStore.ordemAtivaFornecedor || !ordensExibicao.some(i => i.ordem === window.ymsStore.ordemAtivaFornecedor)) {
+                window.ymsStore.ordemAtivaFornecedor = ordensExibicao[0].ordem;
             }
 
-            const motoristaExistente = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpf);
-            if (motoristaExistente && motoristaExistente.status === 'BLOQUEADO') {
-                alert(`🚫 O motorista ${motoristaExistente.nome} está BLOQUEADO para carregamento na fábrica.`);
-                return;
-            }
+            ordensExibicao.forEach(item => {
+                const isSel = item.ordem === window.ymsStore.ordemAtivaFornecedor;
+                const card = `
+                    <div onclick="selecionarOrdemFornecedor('${item.ordem}')" class="${isSel ? 'bg-indigo-950 border-2 border-indigo-500' : 'bg-slate-900 border border-slate-700'} p-3 rounded-xl cursor-pointer transition">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="bg-indigo-600 text-white font-mono text-[10px] px-2 py-0.5 rounded">${item.ordem}</span>
+                            <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">${item.status}</span>
+                        </div>
+                        <p class="text-xs font-black text-white mt-1">${window.limparNomeFornecedor(item.fornecedor)}</p>
+                        <p class="text-[11px] text-indigo-300">🕒 ${item.horaIni} às ${item.horaFim} (${item.doca})</p>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
 
-            const index = window.ymsStore.agendamentos.findIndex(i => i.ordem === ordem);
-            if (index !== -1) {
-                window.ymsStore.agendamentos[index].nf = nf;
-                window.ymsStore.agendamentos[index].transp = transp;
-                window.ymsStore.agendamentos[index].cavalo = cavalo;
-                window.ymsStore.agendamentos[index].carreta = carreta;
-                window.ymsStore.agendamentos[index].cpf = cpf;
-                window.ymsStore.agendamentos[index].motorista = motorista;
-                window.ymsStore.agendamentos[index].celular = celular;
-                window.ymsStore.agendamentos[index].status = "CONFIRMADO_FORNECEDOR";
-
-                if (!motoristaExistente) {
-                    window.ymsStore.baseMotoristas.push({
-                        cpf: cpf,
-                        nome: motorista,
-                        celular: celular,
-                        status: "ATIVO",
-                        obs: "Cadastrado via Portal Fornecedor"
-                    });
-                    window.salvarBaseMotoristasNaMemoria();
-                }
-
-                window.salvarAgendamentosNaMemoria();
-                window.dispararSmsEtapa(window.ymsStore.agendamentos[index], 'CONFIRMADO_FORNECEDOR');
-                window.renderizarModuloFornecedor();
-                window.exibirToast("Ordem Confirmada!", `Ordem ${ordem} pré-cadastrada com sucesso.`, "✅");
+            const ativa = agendamentos.find(i => i.ordem === window.ymsStore.ordemAtivaFornecedor);
+            if (ativa) {
+                document.getElementById('txtOrdemSelecionada').textContent = `ORDEM: ${ativa.ordem} (${window.limparNomeFornecedor(ativa.fornecedor)})`;
+                document.getElementById('txtStatusOrdem').textContent = ativa.status;
+                document.getElementById('fornNf').value = ativa.nf || '';
+                document.getElementById('fornTransp').value = ativa.transp || '';
+                document.getElementById('fornCavalo').value = ativa.cavalo || '';
+                document.getElementById('fornCarreta').value = ativa.carreta || '';
+                document.getElementById('fornMotorista').value = ativa.motorista || '';
+                document.getElementById('fornCpf').value = ativa.cpf || '';
+                document.getElementById('fornCelular').value = ativa.celular || '';
             }
         };
 
-        // --- FUNÇÕES DO TOTEM ---
-        window.digitarTotem = function(num) {
-            const display = document.getElementById('displayTotem');
-            if (display && display.value.length < 11) {
-                display.value += num;
-            }
-        };
+        window.renderizarTabelaUsuariosCustom = function() {
+            const tbody = document.getElementById('tblCorpoUsuariosCustom');
+            if (!tbody) return;
+            tbody.innerHTML = "";
 
-        window.limparTotem = function() {
-            const display = document.getElementById('displayTotem');
-            if (display) display.value = "";
-        };
+            const usuarios = Array.isArray(window.ymsStore.baseUsuariosCustom) ? window.ymsStore.baseUsuariosCustom : [];
 
-        window.apagarTotem = function() {
-            const display = document.getElementById('displayTotem');
-            if (display) display.value = display.value.slice(0, -1);
-        };
+            const badgeEl = document.getElementById('badgeQtdUsuarios');
+            if (badgeEl) badgeEl.textContent = `${usuarios.length} Cadastrados`;
 
-        window.finalizarCheckinTotem = function() {
-            const cpfDig = (document.getElementById('displayTotem')?.value || '').replace(/\D/g, '');
-            if (!cpfDig) {
-                alert("Digite seu CPF para realizar o check-in.");
+            if (usuarios.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-500 italic">Nenhum usuário cadastrado.</td></tr>`;
                 return;
             }
 
-            const motoristaCad = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfDig);
-            if (motoristaCad && motoristaCad.status === 'BLOQUEADO') {
-                alert(`🚫 CHECK-IN RECUSADO!\n\nMotorista bloqueado pela segurança da fábrica.`);
-                return;
-            }
-
-            const agendamento = (window.ymsStore.agendamentos || []).find(i => String(i.cpf).replace(/\D/g, '') === cpfDig && (i.status === 'CONFIRMADO_FORNECEDOR' || i.status === 'AGENDADO'));
-            if (!agendamento) {
-                alert("🚫 NENHUM AGENDAMENTO ENCONTRADO!\n\nVerifique se a sua empresa fez o pré-cadastro no Portal do Fornecedor para a data de hoje.");
-                return;
-            }
-
-            const ticketId = `T-${Math.floor(100 + Math.random() * 900)}`;
-            agendamento.ticket = ticketId;
-            agendamento.timeCheckin = new Date().toISOString();
-            agendamento.status = "CHECKIN_PATIO";
-            agendamento.statusSlaTicket = window.calcularSlaTicket ? window.calcularSlaTicket(agendamento) : "NO HORÁRIO";
-
-            window.salvarAgendamentosNaMemoria();
-
-            document.getElementById('ticketImpressaoId').textContent = ticketId;
-            document.getElementById('ticketImpressaoNome').textContent = agendamento.motorista || "-";
-            document.getElementById('ticketImpressaoCpf').textContent = agendamento.cpf || "-";
-            document.getElementById('ticketImpressaoPlaca').textContent = agendamento.cavalo || "-";
-            document.getElementById('ticketImpressaoTransp').textContent = agendamento.transp || "-";
-            document.getElementById('ticketImpressaoSla').textContent = agendamento.statusSlaTicket;
-
-            const qrContainer = document.getElementById('qrcodeTicket');
-            if (qrContainer) {
-                qrContainer.innerHTML = "";
-                if (typeof QRCode !== 'undefined') {
-                    new QRCode(qrContainer, { text: ticketId, width: 80, height: 80 });
-                }
-            }
-
-            window.dispararSmsEtapa(agendamento, 'CHECKIN_PATIO');
-            window.limparTotem();
-            setTimeout(() => { window.print(); }, 500);
+            usuarios.forEach(u => {
+                const modulosBadges = (u.modulos || []).map(m => `<span class="bg-purple-950 text-purple-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-purple-800 mr-1">${m.toUpperCase()}</span>`).join('');
+                const row = `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white">${u.nome}</td>
+                        <td class="p-2.5 font-mono text-indigo-300">${u.login}</td>
+                        <td class="p-2.5 flex flex-wrap gap-1">${modulosBadges}</td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs cursor-pointer">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
         };
 
-        // --- RENDERIZAÇÃO DAS TABELAS E TORRE ---
         window.carregarGraficosTorre = function() {
             setTimeout(() => {
                 if (instanceChartCheckin) { instanceChartCheckin.destroy(); instanceChartCheckin = null; }
@@ -1506,7 +1477,6 @@
                 ).length;
                 const outros = Math.max(0, totalAg - emPatio - concluidos - pendentes);
 
-                // 1. Gráfico PIE Chart (Status Real)
                 const canvasCheckin = document.getElementById('chartCheckin');
                 if (canvasCheckin) {
                     instanceChartCheckin = new Chart(canvasCheckin, {
@@ -1522,7 +1492,6 @@
                     });
                 }
 
-                // 2. Gráfico BAR Chart (Ocupação por Doca)
                 const contagemDocas = {};
                 listaTodasDocas.forEach(d => contagemDocas[d] = 0);
 
@@ -1548,7 +1517,6 @@
                     });
                 }
 
-                // 3. Gráfico BAR Chart (Média Real de Tempo por Doca)
                 const somaTemposDoca = {};
                 const qtdAgendamentosDoca = {};
                 listaTodasDocas.forEach(d => { somaTemposDoca[d] = 0; qtdAgendamentosDoca[d] = 0; });
@@ -1590,7 +1558,6 @@
                     });
                 }
 
-                // 4. Tabela de Relatório
                 const tbody = document.getElementById('tblPreviewRelatorio');
                 if (tbody) {
                     tbody.innerHTML = "";
@@ -1624,6 +1591,23 @@
                     });
                 }
             }, 150);
+        };
+
+        // --- MANIPULADORES DE FORNECEDOR E MOTORISTA ---
+        window.atualizarTodasListasFornecedores = function() {
+            const fornecedoresLimpos = window.obterListaNomesFornecedores();
+            window.popularSelectFornecedores(fornecedoresLimpos);
+            window.popularSelectLoginEmpresas(fornecedoresLimpos);
+            window.popularSelectCadastroEmpresasUsr();
+            window.renderizarTabelaFornecedores();
+            if (typeof window.renderizarTabelaMotoristas === 'function') {
+                window.renderizarTabelaMotoristas();
+            }
+            if (typeof window.renderizarTabelaUsuariosCustom === 'function') {
+                window.renderizarTabelaUsuariosCustom();
+            }
+            const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
+            if (badgeTotal) badgeTotal.textContent = `${fornecedoresLimpos.length} Empresas`;
         };
 
         // --- INTEGRAÇÃO COM FIREBASE ---
@@ -1940,22 +1924,6 @@
             window.popularSelectFornecedores(filtrados);
         };
 
-        window.atualizarTodasListasFornecedores = function() {
-            const fornecedoresLimpos = window.obterListaNomesFornecedores();
-            window.popularSelectFornecedores(fornecedoresLimpos);
-            window.popularSelectLoginEmpresas(fornecedoresLimpos);
-            window.popularSelectCadastroEmpresasUsr();
-            window.renderizarTabelaFornecedores();
-            if (typeof window.renderizarTabelaMotoristas === 'function') {
-                window.renderizarTabelaMotoristas();
-            }
-            if (typeof window.renderizarTabelaUsuariosCustom === 'function') {
-                window.renderizarTabelaUsuariosCustom();
-            }
-            const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
-            if (badgeTotal) badgeTotal.textContent = `${fornecedoresLimpos.length} Empresas`;
-        };
-
         window.salvarUsuarioCustomizado = function(e) {
             if (e && e.preventDefault) e.preventDefault();
             const nome = document.getElementById('usrNome').value.trim();
@@ -2201,6 +2169,320 @@
             if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
             if (typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
             if (typeof window.carregarGraficosTorre === 'function') window.carregarGraficosTorre();
+        };
+
+        // --- INTEGRAÇÃO COM FIREBASE ---
+        function inicializarEscutadoresFirebase() {
+            onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
+                const data = snapshot.val();
+                window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                window.garantirTodosFornecedoresNaLista();
+                window.sincronizarTodosModulos();
+            });
+
+            onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.ymsStore.baseMotoristas = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.ymsStore.baseMotoristas = [
+                        { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
+                        { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
+                    ];
+                }
+                if (typeof window.renderizarTabelaMotoristas === 'function') {
+                    window.renderizarTabelaMotoristas();
+                }
+            });
+
+            onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
+                }
+                window.garantirTodosFornecedoresNaLista();
+                window.atualizarTodasListasFornecedores();
+            });
+
+            onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.ymsStore.baseUsuariosCustom = [
+                        { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
+                        { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
+                    ];
+                }
+                if (typeof window.renderizarTabelaUsuariosCustom === 'function') {
+                    window.renderizarTabelaUsuariosCustom();
+                }
+            });
+
+            onValue(ref(db, 'yms_config_api'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.ymsStore.configApi = data;
+                    window.preencherFormularioConfigApi();
+                }
+            });
+        }
+
+        window.garantirTodosFornecedoresNaLista = function() {
+            if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
+                window.mapaCredenciaisFornecedores = [];
+            }
+            let alterou = false;
+            const listaLimpaUnica = window.obterListaNomesFornecedores();
+            listaLimpaUnica.forEach(nomeForn => {
+                if (!window.mapaCredenciaisFornecedores.some(f => window.limparNomeFornecedor(f.empresa) === nomeForn)) {
+                    window.mapaCredenciaisFornecedores.push({
+                        empresa: nomeForn,
+                        senha: `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`
+                    });
+                    alterou = true;
+                }
+            });
+            if (alterou) {
+                window.salvarCredenciaisFornecedoresNaMemoria();
+                window.atualizarTodasListasFornecedores();
+            }
+        };
+
+        window.salvarAgendamentosNaMemoria = function() {
+            set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos);
+        };
+        window.salvarCredenciaisFornecedoresNaMemoria = function() {
+            set(ref(db, 'yms_credenciais_fornecedores'), window.mapaCredenciaisFornecedores);
+        };
+        window.salvarUsuariosCustomizadosNaMemoria = function() {
+            set(ref(db, 'yms_usuarios_customizados'), window.ymsStore.baseUsuariosCustom);
+        };
+        window.salvarBaseMotoristasNaMemoria = function() {
+            set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
+        };
+
+        window.selecionarTipoCarga = function(tipo) {
+            const btnCot = document.getElementById('btnTipoCotidiano');
+            const btnExt = document.getElementById('btnTipoExtra');
+            const btnCri = document.getElementById('btnTipoCritica');
+            
+            if (btnCot) {
+                btnCot.classList.remove('bg-emerald-600', 'border-emerald-400', 'text-white', 'shadow');
+                btnCot.classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
+            }
+            if (btnExt) {
+                btnExt.classList.remove('bg-amber-600', 'border-amber-400', 'text-white', 'shadow');
+                btnExt.classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
+            }
+            if (btnCri) {
+                btnCri.classList.remove('bg-red-600', 'border-red-400', 'text-white', 'shadow');
+                btnCri.classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
+            }
+            
+            const boxExt = document.getElementById('boxMotivoExtra');
+            const boxMot = document.getElementById('boxDadosMotorista');
+            const boxCri = document.getElementById('boxCamposCriticos');
+
+            if (boxExt) boxExt.classList.add('hidden');
+            if (boxMot) boxMot.classList.add('hidden');
+            if (boxCri) boxCri.classList.add('hidden');
+            
+            if (tipo === 'cotidiano' && btnCot) {
+                btnCot.classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                btnCot.classList.add('bg-emerald-600', 'border-emerald-400', 'text-white', 'shadow');
+                window.tipoCargaSelecionado = 'cotidiano';
+            } 
+            else if (tipo === 'extra' && btnExt) {
+                btnExt.classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                btnExt.classList.add('bg-amber-600', 'border-amber-400', 'text-white', 'shadow');
+                if (boxExt) boxExt.classList.remove('hidden');
+                if (boxMot) boxMot.classList.remove('hidden');
+                window.tipoCargaSelecionado = 'extra';
+            } 
+            else if (tipo === 'critica' && btnCri) {
+                btnCri.classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                btnCri.classList.add('bg-red-600', 'border-red-400', 'text-white', 'shadow');
+                if (boxCri) boxCri.classList.remove('hidden');
+                window.tipoCargaSelecionado = 'critica';
+            }
+        };
+
+        window.excluirFornecedorDinamico = function(empresa) {
+            if (!confirm(`Excluir a empresa "${empresa}" da base?`)) return;
+            const alvo = String(empresa).trim().toUpperCase();
+            window.mapaCredenciaisFornecedores = window.mapaCredenciaisFornecedores.filter(
+                f => String(f.empresa).trim().toUpperCase() !== alvo
+            );
+            window.salvarCredenciaisFornecedoresNaMemoria();
+            window.renderizarTabelaFornecedores();
+            window.exibirToast("Fornecedor Excluído", `${empresa} removida da base.`, "🗑️");
+        };
+
+        window.excluirMotoristaManual = function(cpf) {
+            if (!confirm('Tem certeza que deseja excluir este motorista?')) return;
+            if (!Array.isArray(window.ymsStore.baseMotoristas)) {
+                alert('Erro: Base de motoristas não inicializada');
+                return;
+            }
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const indexOriginal = window.ymsStore.baseMotoristas.findIndex(m => 
+                String(m.cpf).replace(/\D/g, '') === cpfLimpo
+            );
+            if (indexOriginal !== -1) {
+                window.ymsStore.baseMotoristas.splice(indexOriginal, 1);
+                window.salvarBaseMotoristasNaMemoria();
+                window.renderizarTabelaMotoristas();
+                window.exibirToast("Motorista Excluído", "Registro removido com sucesso.", "🗑️");
+            } else {
+                alert('❌ Motorista não encontrado');
+            }
+        };
+
+        window.salvarConfiguracaoApi = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const config = {
+                ativo: document.getElementById('apiStatusAtivo').value,
+                tipo: document.getElementById('apiTipoProvedor').value,
+                urlEndpoint: document.getElementById('apiUrlEndpoint').value.trim(),
+                authToken: document.getElementById('apiAuthToken').value.trim()
+            };
+            window.ymsStore.configApi = config;
+            set(ref(db, 'yms_config_api'), config);
+            window.exibirToast("API Salva!", "Configuração de mensagens atualizada no Firebase.", "📲");
+        };
+
+        window.preencherFormularioConfigApi = function() {
+            const cfg = window.ymsStore.configApi;
+            if (!cfg) return;
+            if (document.getElementById('apiStatusAtivo')) document.getElementById('apiStatusAtivo').value = cfg.ativo || "NAO";
+            if (document.getElementById('apiTipoProvedor')) document.getElementById('apiTipoProvedor').value = cfg.tipo || "whatsapp_zapi";
+            if (document.getElementById('apiUrlEndpoint')) document.getElementById('apiUrlEndpoint').value = cfg.urlEndpoint || "";
+            if (document.getElementById('apiAuthToken')) document.getElementById('apiAuthToken').value = cfg.authToken || "";
+        };
+
+        window.enviarMensagemApiReal = async function(numeroTelefone, textoMensagem) {
+            const cfg = window.ymsStore.configApi;
+            if (!cfg || cfg.ativo !== 'SIM' || !cfg.urlEndpoint) return false;
+            let numFormatado = String(numeroTelefone).replace(/\D/g, '');
+            if (!numFormatado.startsWith('55') && numFormatado.length <= 11) {
+                numFormatado = '55' + numFormatado;
+            }
+            try {
+                let payload = {};
+                let headers = { "Content-Type": "application/json" };
+                if (cfg.authToken) {
+                    headers["Client-Token"] = cfg.authToken;
+                    headers["Authorization"] = `Bearer ${cfg.authToken}`;
+                }
+                if (cfg.tipo === 'whatsapp_zapi' || cfg.tipo === 'webhook_custom') {
+                    payload = { phone: numFormatado, number: numFormatado, message: textoMensagem };
+                } else if (cfg.tipo === 'twilio_sms') {
+                    payload = { To: `+${numFormatado}`, Body: textoMensagem };
+                } else if (cfg.tipo === 'zenvia_sms') {
+                    payload = { from: "YMS SYSTEM", to: numFormatado, contents: [{ type: "text", text: textoMensagem }] };
+                }
+                const response = await fetch(cfg.urlEndpoint, { method: 'POST', headers: headers, body: JSON.stringify(payload) });
+                if (response.ok) {
+                    window.exibirToast("Mensagem Enviada!", `Enviada para +${numFormatado}`, "📲");
+                    return true;
+                }
+            } catch (err) {
+                console.error("Falha de conexão com a API de mensagens:", err);
+            }
+            return false;
+        };
+
+        window.testarEnvioMensagemApi = function() {
+            const numTest = document.getElementById('inputTestNum').value.trim();
+            if (!numTest) { alert("Digite o número de telefone com DDD para o teste."); return; }
+            window.enviarMensagemApiReal(numTest, "YMS ECOSYSTEM: Teste de integração de API de mensagens bem-sucedido! 🚚🏭");
+        };
+
+        const configPerfisAcesso = {
+            'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
+            'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
+            'totem': { nome: "Totem Autoatendimento", precisaSenha: false, modulos: ['totem'] },
+            'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, modulos: ['fiscal'] },
+            'doca': { nome: "Operador de Doca", precisaSenha: true, modulos: ['doca'] },
+            'checkout': { nome: "Check-out Portaria", precisaSenha: true, modulos: ['checkout'] },
+            'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, modulos: ['motoristas'] },
+            'admin': { nome: "Torre / Administrador", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
+        };
+
+        window.solicitarAcessoPerfil = function(keyPerfil) {
+            window.ymsStore.perfilSolicitadoTemp = keyPerfil;
+            const cfg = configPerfisAcesso[keyPerfil];
+            if (!cfg) return;
+
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+
+            if (cfg.eFornecedor) {
+                if (document.getElementById('filtroLoginForn')) document.getElementById('filtroLoginForn').value = '';
+                window.popularSelectLoginEmpresas();
+                document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
+            } else if (!cfg.precisaSenha) {
+                window.concluirLoginPerfil(keyPerfil, cfg.nome, cfg.modulos);
+            } else {
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = `AUTENTICAÇÃO: ${cfg.nome.toUpperCase()}`;
+                document.getElementById('boxSenhaLogin').classList.remove('hidden');
+                document.getElementById('inputUserLogin').focus();
+            }
+        };
+
+        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
+            const sel = document.getElementById('selEmpresaFornecedorLogin');
+            if (!sel) return;
+            sel.innerHTML = "";
+            const lista = listaParaExibir || window.obterListaNomesFornecedores();
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
+                if (idx === 0) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        };
+
+        window.filtrarLoginEmpresas = function() {
+            const termo = document.getElementById('filtroLoginForn').value.toLowerCase().trim();
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectLoginEmpresas(filtrados);
+        };
+
+        window.popularSelectCadastroEmpresasUsr = function() {
+            const sel = document.getElementById('selUsrEmpresa');
+            if (!sel) return;
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
+            window.obterListaNomesFornecedores().forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = f;
+                sel.appendChild(opt);
+            });
+        };
+
+        window.popularSelectFornecedores = function(lista) {
+            const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
+            selForn.innerHTML = "";
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
+        };
+
+        window.filtrarOpcoesFornecedor = function() {
+            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectFornecedores(filtrados);
         };
 
         window.inicializarAplicacao = function() {
