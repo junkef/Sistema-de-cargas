@@ -1010,7 +1010,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
+<!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -1115,6 +1115,7 @@
 
         window.mapaCredenciaisFornecedores = [];
 
+        // --- FUNÇÕES UTILITÁRIAS BASE ---
         window.limparNomeFornecedor = function(nome) {
             let str = String(nome || '').trim().toUpperCase();
             if (!str) return '';
@@ -1198,7 +1199,6 @@
             return `${dia}/${mes}/${ano}`;
         };
 
-        // --- FUNÇÕES AUXILIARES DE FORMATAÇÃO DE DATA E HORA ---
         window.obterDiaSemanaPtBR = function(dataStr) {
             if (!dataStr) return "-";
             let dia, mes, ano;
@@ -1246,7 +1246,8 @@
         let instanceChartDocas = null;
         let instanceChartMediaTempo = null;
 
-        // --- RENDERIZAÇÃO DE MOTORISTAS ---
+        // --- 1. DECLARAÇÃO DE TODAS AS FUNÇÕES DE RENDERIZAÇÃO NO TOPO ---
+
         window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
@@ -1287,7 +1288,6 @@
             });
         };
 
-        // --- RENDERIZAÇÃO DO MÓDULO FORNECEDOR ---
         window.renderizarModuloFornecedor = function() {
             const containerBoxSeletor = document.getElementById('boxSeletorFornecedorPortal');
             const container = document.getElementById('listaOrdensFornecedor');
@@ -1401,10 +1401,66 @@
             }
         };
 
-        // --- RENDERIZAÇÃO E CARREGAMENTO COMPLETO DA TORRE ---
+        window.renderizarTabelaUsuariosCustom = function() {
+            const tbody = document.getElementById('tblCorpoUsuariosCustom');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            const usuarios = Array.isArray(window.ymsStore.baseUsuariosCustom) ? window.ymsStore.baseUsuariosCustom : [];
+
+            const badgeEl = document.getElementById('badgeQtdUsuarios');
+            if (badgeEl) badgeEl.textContent = `${usuarios.length} Cadastrados`;
+
+            if (usuarios.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-500 italic">Nenhum usuário cadastrado.</td></tr>`;
+                return;
+            }
+
+            usuarios.forEach(u => {
+                const modulosBadges = (u.modulos || []).map(m => `<span class="bg-purple-950 text-purple-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-purple-800 mr-1">${m.toUpperCase()}</span>`).join('');
+                const row = `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white">${u.nome}</td>
+                        <td class="p-2.5 font-mono text-indigo-300">${u.login}</td>
+                        <td class="p-2.5 flex flex-wrap gap-1">${modulosBadges}</td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs cursor-pointer">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        };
+
+        window.renderizarTabelaFornecedores = function() {
+            const tbody = document.getElementById('tblCorpoFornecedores');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+            const termo = (document.getElementById('filtroFornTabela')?.value || '').toLowerCase().trim();
+            const fornecedoresUnicos = window.obterListaNomesFornecedores();
+            const filtrados = fornecedoresUnicos.filter(item => item.toLowerCase().includes(termo));
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-500 italic">Nenhum fornecedor encontrado.</td></tr>`;
+                return;
+            }
+            filtrados.forEach(empresaNome => {
+                const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === empresaNome);
+                const senhaExibicao = cadForn ? cadForn.senha : `${empresaNome.toLowerCase().replace(/\s+/g, '')}@2026`;
+                const row = `
+                    <tr class="hover:bg-slate-900 transition">
+                        <td class="p-2.5 font-bold text-white uppercase">${empresaNome}</td>
+                        <td class="p-2.5 font-mono text-yellow-300">${senhaExibicao}</td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="excluirFornecedorDinamico('${empresaNome}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        };
+
         window.carregarGraficosTorre = function() {
             setTimeout(() => {
-                // 1. Limpeza prévia de instâncias dos gráficos
                 if (instanceChartCheckin) { instanceChartCheckin.destroy(); instanceChartCheckin = null; }
                 if (instanceChartDocas) { instanceChartDocas.destroy(); instanceChartDocas = null; }
                 if (instanceChartMediaTempo) { instanceChartMediaTempo.destroy(); instanceChartMediaTempo = null; }
@@ -1421,7 +1477,6 @@
                 ).length;
                 const outros = Math.max(0, totalAg - emPatio - concluidos - pendentes);
 
-                // 2. Gráfico 1: Status Real
                 const canvasCheckin = document.getElementById('chartCheckin');
                 if (canvasCheckin) {
                     instanceChartCheckin = new Chart(canvasCheckin, {
@@ -1437,7 +1492,6 @@
                     });
                 }
 
-                // 3. Gráfico 2: Ocupação por Doca
                 const contagemDocas = {};
                 listaTodasDocas.forEach(d => contagemDocas[d] = 0);
 
@@ -1463,7 +1517,6 @@
                     });
                 }
 
-                // 4. Gráfico 3: Média de Tempo de Janela
                 const somaTemposDoca = {};
                 const qtdAgendamentosDoca = {};
                 listaTodasDocas.forEach(d => { somaTemposDoca[d] = 0; qtdAgendamentosDoca[d] = 0; });
@@ -1500,7 +1553,6 @@
                     });
                 }
 
-                // 5. Tabela do Relatório
                 const tbody = document.getElementById('tblPreviewRelatorio');
                 if (tbody) {
                     tbody.innerHTML = "";
@@ -1536,65 +1588,7 @@
             }, 150);
         };
 
-        window.renderizarTabelaFornecedores = function() {
-            const tbody = document.getElementById('tblCorpoFornecedores');
-            if (!tbody) return;
-            tbody.innerHTML = "";
-            const termo = (document.getElementById('filtroFornTabela')?.value || '').toLowerCase().trim();
-            const fornecedoresUnicos = window.obterListaNomesFornecedores();
-            const filtrados = fornecedoresUnicos.filter(item => item.toLowerCase().includes(termo));
-            if (filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-500 italic">Nenhum fornecedor encontrado.</td></tr>`;
-                return;
-            }
-            filtrados.forEach(empresaNome => {
-                const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === empresaNome);
-                const senhaExibicao = cadForn ? cadForn.senha : `${empresaNome.toLowerCase().replace(/\s+/g, '')}@2026`;
-                const row = `
-                    <tr class="hover:bg-slate-900 transition">
-                        <td class="p-2.5 font-bold text-white uppercase">${empresaNome}</td>
-                        <td class="p-2.5 font-mono text-yellow-300">${senhaExibicao}</td>
-                        <td class="p-2.5 text-center">
-                            <button type="button" onclick="excluirFornecedorDinamico('${empresaNome}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg transition text-xs cursor-pointer">🗑️</button>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        };
-
-        window.renderizarTabelaUsuariosCustom = function() {
-            const tbody = document.getElementById('tblCorpoUsuariosCustom');
-            if (!tbody) return;
-            tbody.innerHTML = "";
-
-            const usuarios = Array.isArray(window.ymsStore.baseUsuariosCustom) ? window.ymsStore.baseUsuariosCustom : [];
-
-            const badgeEl = document.getElementById('badgeQtdUsuarios');
-            if (badgeEl) badgeEl.textContent = `${usuarios.length} Cadastrados`;
-
-            if (usuarios.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-500 italic">Nenhum usuário cadastrado.</td></tr>`;
-                return;
-            }
-
-            usuarios.forEach(u => {
-                const modulosBadges = (u.modulos || []).map(m => `<span class="bg-purple-950 text-purple-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-purple-800 mr-1">${m.toUpperCase()}</span>`).join('');
-                const row = `
-                    <tr class="hover:bg-slate-900 transition">
-                        <td class="p-2.5 font-bold text-white">${u.nome}</td>
-                        <td class="p-2.5 font-mono text-indigo-300">${u.login}</td>
-                        <td class="p-2.5 flex flex-wrap gap-1">${modulosBadges}</td>
-                        <td class="p-2.5 text-center">
-                            <button type="button" onclick="excluirUsuarioCustom('${u.id}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-1 rounded-lg text-xs cursor-pointer">🗑️</button>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        };
-
-        // --- INTEGRAÇÃO COM FIREBASE (SINCRONIZAÇÃO) ---
+        // --- 2. INTEGRAÇÃO COM FIREBASE (SINCRONIZAÇÃO) ---
         function inicializarEscutadoresFirebase() {
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                 const data = snapshot.val();
@@ -2187,7 +2181,9 @@
             }
 
             window.sincronizarTodosModulos();
-            if (perfilId === 'torre') window.carregarGraficosTorre();
+            if (perfilId === 'torre' && typeof window.carregarGraficosTorre === 'function') {
+                window.carregarGraficosTorre();
+            }
             if (perfilId === 'motoristas' && typeof window.renderizarTabelaMotoristas === 'function') {
                 window.renderizarTabelaMotoristas();
             }
