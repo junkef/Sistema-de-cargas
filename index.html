@@ -1010,7 +1010,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
+<!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -1246,7 +1246,7 @@
         let instanceChartDocas = null;
         let instanceChartMediaTempo = null;
 
-        // --- FUNÇÕES DO PORTAL DO FORNECEDOR (DECLARAÇÕES NO WINDOW) ---
+        // --- FUNÇÕES DO PORTAL DO FORNECEDOR ---
         window.alternarAbaFornecedor = function(aba) {
             window.ymsStore.abaFornecedorAtual = aba;
             const btnPen = document.getElementById('btnAbaPendentes');
@@ -1760,7 +1760,7 @@
             }, 150);
         };
 
-        // --- INTEGRAÇÃO COM FIREBASE (SINCRONIZAÇÃO) ---
+        // --- INTEGRAÇÃO COM FIREBASE (DECLARADA UMA ÚNICA VEZ) ---
         function inicializarEscutadoresFirebase() {
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                 const data = snapshot.val();
