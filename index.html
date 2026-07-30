@@ -3467,6 +3467,47 @@
             }
         };
 
+        
+        // FUNÇÃO PARA SELECIONAR TIPO DE CARGA (COTIDIANO, EXTRA, CRÍTICA)
+        window.selecionarTipoCarga = function(tipo) {
+            // Remover seleção anterior
+            document.getElementById('btnTipoCotidiano').classList.remove('bg-emerald-600', 'border-emerald-400', 'text-white', 'shadow');
+            document.getElementById('btnTipoCotidiano').classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
+            
+            document.getElementById('btnTipoExtra').classList.remove('bg-amber-600', 'border-amber-400', 'text-white', 'shadow');
+            document.getElementById('btnTipoExtra').classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
+            
+            document.getElementById('btnTipoCritica').classList.remove('bg-red-600', 'border-red-400', 'text-white', 'shadow');
+            document.getElementById('btnTipoCritica').classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
+            
+            // Ocultar todos os boxes condicionais
+            document.getElementById('boxMotivoExtra').classList.add('hidden');
+            document.getElementById('boxDadosMotorista').classList.add('hidden');
+            document.getElementById('boxCamposCriticos').classList.add('hidden');
+            
+            // Aplicar estilo ao botão selecionado e mostrar campos
+            if (tipo === 'cotidiano') {
+                document.getElementById('btnTipoCotidiano').classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                document.getElementById('btnTipoCotidiano').classList.add('bg-emerald-600', 'border-emerald-400', 'text-white', 'shadow');
+                window.tipoCargaSelecionado = 'cotidiano';
+            } 
+            else if (tipo === 'extra') {
+                document.getElementById('btnTipoExtra').classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                document.getElementById('btnTipoExtra').classList.add('bg-amber-600', 'border-amber-400', 'text-white', 'shadow');
+                document.getElementById('boxMotivoExtra').classList.remove('hidden');
+                document.getElementById('boxDadosMotorista').classList.remove('hidden');
+                window.tipoCargaSelecionado = 'extra';
+            } 
+            else if (tipo === 'critica') {
+                document.getElementById('btnTipoCritica').classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                document.getElementById('btnTipoCritica').classList.add('bg-red-600', 'border-red-400', 'text-white', 'shadow');
+                document.getElementById('boxCamposCriticos').classList.remove('hidden');
+                window.tipoCargaSelecionado = 'critica';
+            }
+            
+            console.log('✅ Tipo de carga selecionado:', tipo);
+        };
+
         </script>
 </body>
 </html>
