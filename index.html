@@ -1113,6 +1113,25 @@
             perfilSolicitadoTemp: null
         };
 
+        window.dispararEmailCargaCritica = function(item) {
+            const destinatario = "fernando_junkes@whirlpool.com,edemar_h_heidemann@whirlpool.com";
+            const assunto = encodeURIComponent(`🚨 ALERTA YMS: CARGA CRÍTICA AGENDADA [${item.ordem}] - ${item.fornecedor}`);
+            const corpo = encodeURIComponent(
+                `Atenção,\n\n` +
+                `Uma nova CARGA CRÍTICA foi programada no YMS Ecosystem e necessita de acompanhamento prioritário:\n\n` +
+                `• Ordem: ${item.ordem}\n` +
+                `• Fornecedor: ${item.fornecedor}\n` +
+                `• Data: ${item.data} | Horário: ${item.horaIni} às ${item.horaFim}\n` +
+                `• Doca de Recebimento: ${item.doca}\n` +
+                `• Part Number / Material: ${item.codigoCritico || 'N/I'}\n` +
+                `• Motivo / Risco de Parada: ${item.motivoCritico || 'N/I'}\n\n` +
+                `Favor providenciar prioridade na portaria e descarga.\n` +
+                `Sistema Integrado de Logística & PCP - YMS.`
+            );
+            window.open(`mailto:${destinatario}?subject=${assunto}&body=${corpo}`, '_blank');
+            window.exibirToast("Alerta de Carga Crítica!", "Solicitação de e-mail gerada para a supervisão.", "🚨");
+        };
+
         window.mapaCredenciaisFornecedores = [];
 
         window.limparNomeFornecedor = function(nome) {
@@ -2242,6 +2261,8 @@
 
             if (!fornSel) { alert("Selecione um fornecedor."); return; }
 
+            const tipoAtual = window.tipoCargaSelecionado || 'cotidiano';
+
             const item = {
                 ordem: novaOrdem,
                 data: `${partes[2]}/${partes[1]}/${partes[0]}`,
@@ -2250,6 +2271,10 @@
                 horaIni: horaIni,
                 horaFim: horaFim,
                 status: "AGENDADO",
+                tipo: tipoAtual.toUpperCase(),
+                motivoExtra: (tipoAtual === 'extra') ? (document.getElementById('pcpMotivoExtra')?.value || '') : '',
+                codigoCritico: (tipoAtual === 'critica') ? (document.getElementById('pcpCodigoCritico')?.value || '') : '',
+                motivoCritico: (tipoAtual === 'critica') ? (document.getElementById('pcpMotivoCritico')?.value || '') : '',
                 isRascunho: true,
                 nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
                 timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
@@ -2257,9 +2282,12 @@
 
             window.ymsStore.rascunhoAgendamentos.push(item);
 
+            if (document.getElementById('pcpCodigoCritico')) document.getElementById('pcpCodigoCritico').value = '';
+            if (document.getElementById('pcpMotivoCritico')) document.getElementById('pcpMotivoCritico').value = '';
+
             window.garantirTodosFornecedoresNaLista();
             window.renderizarGradePCP();
-            window.exibirToast("Adicionado ao Rascunho!", `Ordem ${novaOrdem} aguardando subida no botão verde.`, "📝");
+            window.exibirToast("Adicionado ao Rascunho!", `Ordem ${novaOrdem} [${item.tipo}] aguardando subida no botão verde.`, "📝");
         };
 
         window.tratarDragOver = function(e) {
@@ -2332,6 +2360,7 @@
                         horaIni: window.formatarHoraExcel(kIni ? row[kIni] : '08:00'),
                         horaFim: window.formatarHoraExcel(kFim ? row[kFim] : '09:00'),
                         status: "AGENDADO",
+                        tipo: "COTIDIANO",
                         isRascunho: true,
                         nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
                         timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
@@ -2380,6 +2409,7 @@
                     horaIni: match[4],
                     horaFim: match[5],
                     status: "AGENDADO",
+                    tipo: "COTIDIANO",
                     isRascunho: true,
                     nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
                     timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
@@ -2449,15 +2479,24 @@
                     badgeTag = `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status}</span>`;
                 }
 
+                let tipoBadge = '';
+                if (item.tipo === 'CRITICA') {
+                    tipoBadge = `<span class="bg-red-500 text-white font-black text-[9px] px-2 py-0.5 rounded-full uppercase ml-1 animate-pulse">🚨 CRÍTICA</span>`;
+                } else if (item.tipo === 'EXTRA') {
+                    tipoBadge = `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase ml-1">🟡 EXTRA</span>`;
+                }
+
                 const card = `
-                    <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md hover:border-indigo-400 transition">
+                    <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : (item.tipo === 'CRITICA' ? 'border-red-500' : 'border-slate-700')} p-4 rounded-2xl flex justify-between items-center shadow-md hover:border-indigo-400 transition">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
                                 ${badgeTag}
+                                ${tipoBadge}
                                 <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
                             </div>
-                            <p class="text-sm font-black text-white">📍 ${item.doca}</p>
+                            <p class="text-sm font-black text-white">📍 ${item.doca} ${item.codigoCritico ? `• <span class="text-red-400 font-mono text-xs">P/N: ${item.codigoCritico}</span>` : ''}</p>
+                            ${item.motivoCritico ? `<p class="text-[11px] text-red-300 italic mt-0.5">"${item.motivoCritico}"</p>` : ''}
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="text-right">
@@ -2482,16 +2521,24 @@
                 return;
             }
             const qtdSubida = window.ymsStore.rascunhoAgendamentos.length;
+            const janelasCriticas = window.ymsStore.rascunhoAgendamentos.filter(i => i.tipo === 'CRITICA');
+
             window.ymsStore.rascunhoAgendamentos.forEach(item => { delete item.isRascunho; });
             window.ymsStore.agendamentos.push(...window.ymsStore.rascunhoAgendamentos);
+            
             if (!window.ymsStore.ordemAtivaFornecedor && window.ymsStore.rascunhoAgendamentos.length > 0) {
                 window.ymsStore.ordemAtivaFornecedor = window.ymsStore.rascunhoAgendamentos[0].ordem;
             }
             window.ymsStore.rascunhoAgendamentos = [];
             window.garantirTodosFornecedoresNaLista();
             window.salvarAgendamentosNaMemoria();
+
+            if (janelasCriticas.length > 0) {
+                window.dispararEmailCargaCritica(janelasCriticas[0]);
+            }
+
             window.exibirToast("Janelas Publicadas!", `${qtdSubida} agendamentos foram oficialmente publicados no YMS.`, "🚀");
-            alert(`🚀 SUCESSO!\n\n${qtdSubida} janelas foram subidas e agora já estão SALVAS E ATIVAS no Portal do Fornecedor!`);
+            alert(`🚀 SUCESSO!\n\n${qtdSubida} janelas foram subidas e agora já estão SALVAS E ATIVAS no Portal do Fornecedor!${janelasCriticas.length > 0 ? '\n\n🚨 Alerta de CARGA CRÍTICA acionado por e-mail!' : ''}`);
         };
 
         // --- INICIALIZAÇÃO DO APP DO SISTEMA ---
