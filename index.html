@@ -1211,7 +1211,7 @@
         let instanceChartMediaTempo = null;
 
         // --- RENDERIZAÇÃO ANTECIPADA (E DISPARO DE EMAIL VIA BOTÃO EXPLÍCITO) ---
-        window.dispararEmailCargaCritica = function(item) {
+      window.dispararEmailCargaCritica = function(item) {
             const destinatario = "fernando_junkes@whirlpool.com,edemar_h_heidemann@whirlpool.com";
             const assunto = encodeURIComponent(`🚨 ALERTA YMS: CARGA CRÍTICA AGENDADA [${item.ordem}] - ${item.fornecedor}`);
             const corpo = encodeURIComponent(
@@ -1226,8 +1226,13 @@
                 `Favor providenciar prioridade na portaria e descarga.\n` +
                 `Sistema Integrado de Logística & PCP - YMS.`
             );
-            window.open(`mailto:${destinatario}?subject=${assunto}&body=${corpo}`, '_blank');
-            window.exibirToast("Alerta de Carga Crítica!", "Solicitação de e-mail gerada para a supervisão.", "🚨");
+            
+            // --- AQUI ESTÁ A CORREÇÃO: Usando a URL direta do Gmail Web ---
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${destinatario}&su=${assunto}&body=${corpo}`;
+            window.open(gmailUrl, '_blank');
+            // --------------------------------------------------------------
+
+            window.exibirToast("Alerta de Carga Crítica!", "Abrindo o Gmail para envio do e-mail...", "🚨");
         };
 
         window.abrirEmailCargaCriticaPendente = function() {
