@@ -2453,7 +2453,7 @@
             }
         };
 
-        window.renderizarModuloFornecedor = function() {
+      window.renderizarModuloFornecedor = function() {
             const containerBoxSeletor = document.getElementById('boxSeletorFornecedorPortal');
             const container = document.getElementById('listaOrdensFornecedor');
             if (!container) return;
@@ -2467,28 +2467,114 @@
 
             let empresaFiltroAlvo = "";
 
-            // TRAVA DE SEGURANÇA: Checa a memória ativa OU o localStorage do navegador
-            const empresaLogada = window.ymsStore.empresaFornecedorLogada || localStorage.getItem('yms_empresa_fornecedor_logada');
+            // TRAVA DE SEGURANÇA BLINDADA: Busca em todas as chaves possíveis de sessão/memória
+            const empresaLogada = window.ymsStore.empresaFornecedorLogada || 
+                                  window.fornecedorSelecionado ||
+                                  localStorage.getItem('yms_empresa_fornecedor_logada') || 
+                                  localStorage.getItem('yms_usuario_logado');
 
-            if (empresaLogada) {
-                // Se for um fornecedor logado, TRAVA a tela apenas na empresa dele
+            // Se existe empresa logada E o usuário NÃO logou como admin/operador interno
+            const ehFornecedorRestrito = empresaLogada && (window.perfilAtivo === 'fornecedor' || !window.ymsStore.usuarioLogado || window.ymsStore.usuarioLogado.key === 'fornecedor');
+
+            if (ehFornecedorRestrito) {
+                // TRAVA O VISUAL: Remove o <select> e exibe apenas a caixa fixa com o nome da empresa
                 empresaFiltroAlvo = window.limparNomeFornecedor(empresaLogada);
                 if (containerBoxSeletor) {
                     containerBoxSeletor.innerHTML = `
-                        <div class="bg-slate-900 text-white font-black text-xs p-2.5 rounded-xl border border-emerald-500/40 flex justify-between items-center shadow">
+                        <div class="bg-slate-900 text-white font-black text-xs p-2.5 rounded-xl border border-emerald-500/40 flex justify-between items-center shadow select-none">
                             <span class="truncate text-emerald-400 font-mono">${empresaFiltroAlvo}</span>
                             <span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔒 SIGILO ATIVO</span>
                         </div>
                     `;
                 }
             } else {
-                // Apenas Administradores ou PCP (sem empresa logada) veem a lista de todas as empresas
+                // Apenas Administradores / PCP veem a lista suspensa para consultar qualquer empresa
                 const fornecedoresCadastrados = window.obterListaNomesFornecedores();
                 let selHtml = `<select id="selFornFiltroPortal" onchange="renderizarModuloFornecedor()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-xl p-2 text-xs font-black text-amber-300 outline-none cursor-pointer">`;
                 
                 fornecedoresCadastrados.forEach(f => {
                     selHtml += `<option value="${f}">${f}</option>`;
                 });
+                selHtml += `</select>`;
+                
+                const valAnterior = document.getElementById('selFornFiltroPortal')?.value;
+                if (containerBoxSeletor) containerBoxSeletor.innerHTML = selHtml;
+                
+                const selectAtual = document.getElementById('selFornFiltroPortal');
+                if (valAnterior && selectAtual?.querySelector(`option[value="${valAnterior}"]`)) {
+                    selectAtual.value = valAnterior;
+                }
+                
+                empresaFiltroAlvo = selectAtual ? selectAtual.value : (fornecedoresCadastrados[0] || "");
+            }
+
+            const empAlvoNorm = window.normalizarTexto(empresaFiltroAlvo);
+
+            const filtradosData = window.ymsStore.agendamentos.filter(i => {
+                const bateData = window.normalizarTexto(i.data) === window.normalizarTexto(dataFiltroFormatted);
+                
+                let bateEmpresa = false;
+                if (empAlvoNorm) {
+                    const fornItemNorm = window.normalizarTexto(window.limparNomeFornecedor(i.fornecedor));
+                    bateEmpresa = fornItemNorm.includes(empAlvoNorm) || empAlvoNorm.includes(fornItemNorm);
+                }
+
+                return bateData && bateEmpresa;
+            });
+
+            let ordensExibicao = [];
+            if (window.ymsStore.abaFornecedorAtual === 'pendentes') {
+                ordensExibicao = filtradosData.filter(i => i.status === 'AGENDADO');
+            } else {
+                ordensExibicao = filtradosData.filter(i => i.status !== 'AGENDADO');
+            }
+
+            if (ordensExibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma ordem publicada para ${empresaFiltroAlvo || 'esta empresa'} na data ${dataFiltroFormatted}.</p>`;
+                document.getElementById('txtOrdemSelecionada').textContent = "SELECIONE UMA ORDEM";
+                document.getElementById('txtStatusOrdem').textContent = "Aguardando Escolha";
+                document.getElementById('fornNf').value = '';
+                document.getElementById('fornTransp').value = '';
+                document.getElementById('fornCavalo').value = '';
+                document.getElementById('fornCarreta').value = '';
+                document.getElementById('fornMotorista').value = '';
+                document.getElementById('fornCpf').value = '';
+                document.getElementById('fornCelular').value = '';
+                return;
+            }
+
+            if (!window.ymsStore.ordemAtivaFornecedor || !ordensExibicao.some(i => i.ordem === window.ymsStore.ordemAtivaFornecedor)) {
+                window.ymsStore.ordemAtivaFornecedor = ordensExibicao[0].ordem;
+            }
+
+            ordensExibicao.forEach(item => {
+                const isSel = item.ordem === window.ymsStore.ordemAtivaFornecedor;
+                const card = `
+                    <div onclick="selecionarOrdemFornecedor('${item.ordem}')" class="${isSel ? 'bg-indigo-950 border-2 border-indigo-500' : 'bg-slate-900 border border-slate-700'} p-3 rounded-xl cursor-pointer transition">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="bg-indigo-600 text-white font-mono text-[10px] px-2 py-0.5 rounded">${item.ordem}</span>
+                            <span class="text-[9px] font-bold border px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">${item.status}</span>
+                        </div>
+                        <p class="text-xs font-black text-white mt-1">${window.limparNomeFornecedor(item.fornecedor)}</p>
+                        <p class="text-[11px] text-indigo-300">🕒 ${item.horaIni} às ${item.horaFim} (${item.doca})</p>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+
+            const ativa = window.ymsStore.agendamentos.find(i => i.ordem === window.ymsStore.ordemAtivaFornecedor);
+            if (ativa) {
+                document.getElementById('txtOrdemSelecionada').textContent = `ORDEM: ${ativa.ordem} (${window.limparNomeFornecedor(ativa.fornecedor)})`;
+                document.getElementById('txtStatusOrdem').textContent = ativa.status;
+                document.getElementById('fornNf').value = ativa.nf || '';
+                document.getElementById('fornTransp').value = ativa.transp || '';
+                document.getElementById('fornCavalo').value = ativa.cavalo || '';
+                document.getElementById('fornCarreta').value = ativa.carreta || '';
+                document.getElementById('fornMotorista').value = ativa.motorista || '';
+                document.getElementById('fornCpf').value = ativa.cpf || '';
+                document.getElementById('fornCelular').value = ativa.celular || '';
+            }
+        };
                 selHtml += `</select>`;
                 
                 const valAnterior = document.getElementById('selFornFiltroPortal')?.value;
@@ -3300,23 +3386,25 @@
             // Admin, doca e fiscal veem todos os botões
         };
         
-        window.fazerLogoutGlobal = function() {
-            if (confirm('Deseja realmente sair do sistema?')) {
-                localStorage.removeItem('yms_usuario_logado');
-                localStorage.removeItem('yms_perfil_ativo');
-                
-                window.usuarioLogado = null;
-                window.perfilAtivo = null;
-                window.fornecedorSelecionado = null;
-                
-                document.getElementById('inputUserLogin').value = '';
-                document.getElementById('inputPinLogin').value = '';
-                document.getElementById('inputSenhaFornecedor').value = '';
-                document.getElementById('filtroLoginForn').value = '';
-                
-                document.getElementById('modalLoginGlobal').classList.remove('hidden');
-                window.inicializarSistema();
-            }
+       window.fazerLogoutGlobal = function() {
+            window.ymsStore.usuarioLogado = null;
+            window.ymsStore.empresaFornecedorLogada = null;
+            window.perfilAtivo = null;
+            window.fornecedorSelecionado = null;
+            
+            // Limpa absolutamente todos os registros de sessão salvos no navegador
+            localStorage.removeItem('yms_sessao_usuario');
+            localStorage.removeItem('yms_empresa_fornecedor_logada');
+            localStorage.removeItem('yms_usuario_logado');
+            localStorage.removeItem('yms_perfil_ativo');
+
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+            
+            const navBar = document.getElementById('navBarPerfis');
+            if (navBar) navBar.classList.remove('hidden');
+            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
         };
         
         window.solicitarAcessoPerfil = function(perfil) {
