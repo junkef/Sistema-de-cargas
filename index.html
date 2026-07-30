@@ -1011,6 +1011,7 @@
     </div>
 
     <!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
+  <!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -1211,7 +1212,7 @@
         let instanceChartMediaTempo = null;
 
         // --- RENDERIZAÇÃO ANTECIPADA (E DISPARO DE EMAIL VIA BOTÃO EXPLÍCITO) ---
-      window.dispararEmailCargaCritica = function(item) {
+        window.dispararEmailCargaCritica = function(item) {
             const destinatario = "fernando_junkes@whirlpool.com,edemar_h_heidemann@whirlpool.com";
             const assunto = encodeURIComponent(`🚨 ALERTA YMS: CARGA CRÍTICA AGENDADA [${item.ordem}] - ${item.fornecedor}`);
             const corpo = encodeURIComponent(
@@ -1227,10 +1228,8 @@
                 `Sistema Integrado de Logística & PCP - YMS.`
             );
             
-            // --- AQUI ESTÁ A CORREÇÃO: Usando a URL direta do Gmail Web ---
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${destinatario}&su=${assunto}&body=${corpo}`;
             window.open(gmailUrl, '_blank');
-            // --------------------------------------------------------------
 
             window.exibirToast("Alerta de Carga Crítica!", "Abrindo o Gmail para envio do e-mail...", "🚨");
         };
@@ -1448,9 +1447,8 @@
             }
         };
 
-  window.carregarGraficosTorre = function() {
+        window.carregarGraficosTorre = function() {
             setTimeout(() => {
-                // --- LIMPEZA PRÉVIA OBRIGATÓRIA DOS GRÁFICOS ANTIGOS ---
                 if (instanceChartCheckin) { instanceChartCheckin.destroy(); instanceChartCheckin = null; }
                 if (instanceChartDocas) { instanceChartDocas.destroy(); instanceChartDocas = null; }
                 if (instanceChartMediaTempo) { instanceChartMediaTempo.destroy(); instanceChartMediaTempo = null; }
@@ -1482,7 +1480,6 @@
                     });
                 }
 
-                // --- GRÁFICO 2: OCUPAÇÃO ATUAL POR DOCA ---
                 const contagemDocas = {};
                 listaTodasDocas.forEach(d => contagemDocas[d] = 0);
 
@@ -1508,7 +1505,6 @@
                     });
                 }
 
-                // --- GRÁFICO 3: MÉDIA REAL DO TEMPO POR DOCA ---
                 const somaTemposDoca = {};
                 const qtdAgendamentosDoca = {};
                 listaTodasDocas.forEach(d => { somaTemposDoca[d] = 0; qtdAgendamentosDoca[d] = 0; });
@@ -1545,104 +1541,7 @@
                     });
                 }
 
-                // --- ATUALIZA A TABELA DE PRÉ-VISUALIZAÇÃO DO EXCEL NO FINAL DA TELA ---
                 const itemsRelatorio = agendamentos;
-                const tbody = document.getElementById('tblPreviewRelatorio');
-                if (tbody) {
-                    tbody.innerHTML = "";
-
-                    if (itemsRelatorio.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-500 italic">Nenhum ticket processado no sistema.</td></tr>`;
-                        return;
-                    }
-
-                    itemsRelatorio.forEach(ag => {
-                        const row = `
-                            <tr class="hover:bg-slate-900/60 transition">
-                                <td class="p-2.5 font-bold text-indigo-400">${ag.ordem}</td>
-                                <td class="p-2.5 text-yellow-400 font-bold">${ag.cavalo || '-'}</td>
-                                <td class="p-2.5">${window.obterDiaSemanaPtBR(ag.data)}</td>
-                                <td class="p-2.5 font-bold">${window.limparNomeFornecedor(ag.fornecedor)}</td>
-                                <td class="p-2.5">${window.formatarHoraIso(ag.timeCheckin)}</td>
-                                <td class="p-2.5">${window.formatarHoraIso(ag.timeFiscal)}</td>
-                                <td class="p-2.5">${(ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" / ") : ag.doca}</td>
-                                <td class="p-2.5 text-emerald-400">${window.formatarHoraIso(ag.timeInicioDescarga)}</td>
-                                <td class="p-2.5 text-emerald-400">${window.formatarHoraIso(ag.timeCheckout || ag.timeFimDescarga)}</td>
-                                <td class="p-2.5 font-bold text-amber-400">${window.calcularDiferencaHorasFormatada(window.formatarHoraIso(ag.timeInicioDescarga), window.formatarHoraIso(ag.timeFimDescarga))}</td>
-                                <td class="p-2.5"><span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[9px] font-bold border border-slate-700">${ag.statusSlaTicket || ag.status}</span></td>
-                            </tr>
-                        `;
-                        tbody.insertAdjacentHTML('beforeend', row);
-                    });
-                }
-            }, 150);
-        };
-                }
-
-                const contagemDocas = {};
-                listaTodasDocas.forEach(d => contagemDocas[d] = 0);
-
-                window.ymsStore.agendamentos.forEach(item => {
-                    if (item.status === 'EM_DESCARGA' || item.status === 'TRIAGEM_FISCAL' || item.status === 'AGENDADO' || item.status === 'CONFIRMADO_FORNECEDOR') {
-                        const docaAtual = (item.docasSequencia && item.docasSequencia.length > 0) ? item.docasSequencia[item.indexDocaAtual || 0] : item.doca;
-                        const docaEncontrada = listaTodasDocas.find(d => window.normalizarTexto(d) === window.normalizarTexto(docaAtual));
-                        if (docaEncontrada && contagemDocas[docaEncontrada] !== undefined) {
-                            contagemDocas[docaEncontrada] += 1;
-                        }
-                    }
-                });
-
-                const canvasDocas = document.getElementById('chartDocas');
-                if (canvasDocas) {
-                    if (instanceChartDocas) instanceChartDocas.destroy();
-                    instanceChartDocas = new Chart(canvasDocas, {
-                        type: 'bar',
-                        data: {
-                            labels: listaTodasDocas,
-                            datasets: [{ label: 'Volume por Doca', data: listaTodasDocas.map(d => contagemDocas[d]), backgroundColor: '#6366f1', borderRadius: 8 }]
-                        },
-                        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } } } }
-                    });
-                }
-
-                const somaTemposDoca = {};
-                const qtdAgendamentosDoca = {};
-                listaTodasDocas.forEach(d => { somaTemposDoca[d] = 0; qtdAgendamentosDoca[d] = 0; });
-
-                window.ymsStore.agendamentos.forEach(item => {
-                    const minIni = window.horaParaMinutos(item.horaIni);
-                    let minFim = window.horaParaMinutos(item.horaFim);
-                    if (minFim < minIni) minFim += 1440;
-                    let duracaoMinutos = Math.max(0, minFim - minIni);
-
-                    const docasAfetadas = (item.docasSequencia && item.docasSequencia.length > 0) ? item.docasSequencia : [item.doca];
-                    docasAfetadas.forEach(dTarget => {
-                        const docaEncontrada = listaTodasDocas.find(d => window.normalizarTexto(d) === window.normalizarTexto(dTarget));
-                        if (docaEncontrada && somaTemposDoca[docaEncontrada] !== undefined) {
-                            somaTemposDoca[docaEncontrada] += duracaoMinutos;
-                            qtdAgendamentosDoca[docaEncontrada] += 1;
-                        }
-                    });
-                });
-
-                const mediasDuracaoReal = listaTodasDocas.map(d => {
-                    return qtdAgendamentosDoca[d] > 0 ? Math.round(somaTemposDoca[d] / qtdAgendamentosDoca[d]) : 0;
-                });
-
-                const canvasMedia = document.getElementById('chartMediaTempoDoca');
-                if (canvasMedia) {
-                    if (instanceChartMediaTempo) instanceChartMediaTempo.destroy();
-                    instanceChartMediaTempo = new Chart(canvasMedia, {
-                        type: 'bar',
-                        data: {
-                            labels: listaTodasDocas,
-                            datasets: [{ label: 'Duração Média Agendada (Minutos)', data: mediasDuracaoReal, backgroundColor: '#f59e0b', borderRadius: 8 }]
-                        },
-                        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, min: 0, ticks: { stepSize: 15 } } } }
-                    });
-                }
-
-                const itemsRelatorio = window.ymsStore.agendamentos;
                 const tbody = document.getElementById('tblPreviewRelatorio');
                 if (tbody) {
                     tbody.innerHTML = "";
@@ -1701,7 +1600,7 @@
             });
         };
 
-     window.renderizarTabelaUsuariosCustom = function() {
+        window.renderizarTabelaUsuariosCustom = function() {
             const tbody = document.getElementById('tblCorpoUsuariosCustom');
             if (!tbody) return;
             tbody.innerHTML = "";
@@ -1765,7 +1664,7 @@
                 window.atualizarTodasListasFornecedores();
             });
 
-          onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
+            onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
@@ -1776,11 +1675,11 @@
                         { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
                     ];
                 }
-                // --- ATUALIZA A TELA IMEDIATAMENTE ---
                 if (typeof window.renderizarTabelaUsuariosCustom === 'function') {
                     window.renderizarTabelaUsuariosCustom();
                 }
             });
+
             onValue(ref(db, 'yms_config_api'), (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
