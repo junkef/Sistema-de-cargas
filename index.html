@@ -2931,6 +2931,18 @@
         };
 
         // --- MOTORISTAS ---
+        
+        window.excluirMotoristaManual = function(cpf) {
+            if (confirm('Tem certeza que deseja excluir este motorista?')) {
+                if (Array.isArray(window.ymsStore.baseMotoristas)) {
+                    window.ymsStore.baseMotoristas = window.ymsStore.baseMotoristas.filter(m => String(m.cpf).replace(/\D/g, '') !== cpf.replace(/\D/g, ''));
+                    window.salvarBaseMotoristasNaMemoria();
+                    window.renderizarTabelaMotoristas();
+                    alert('✅ Motorista excluído com sucesso!');
+                }
+            }
+        };
+
         window.renderizarTabelaMotoristas = function() {
             const tbody = document.getElementById('tblCorpoMotoristas');
             if (!tbody) return;
@@ -2955,9 +2967,12 @@
                         <td class="p-3 font-bold text-white">${m.nome}</td>
                         <td class="p-3 font-mono text-yellow-400">${m.celular || '-'}</td>
                         <td class="p-3">${isBloqueado ? '<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🔴 BLOQUEADO</span>' : '<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold text-[10px]">🟢 LIBERADO</span>'}</td>
-                        <td class="p-3 text-center">
+                        <td class="p-3 text-center flex gap-1.5 justify-center">
                             <button type="button" onclick="alternarStatusMotorista('${m.cpf}')" class="${isBloqueado ? 'bg-emerald-600' : 'bg-red-600'} text-white p-1.5 rounded-lg text-xs cursor-pointer">
                                 ${isBloqueado ? '🔓 Liberar' : '🔒 Bloquear'}
+                            </button>
+                            <button type="button" onclick="excluirMotoristaManual('${m.cpf}')" class="bg-red-700 hover:bg-red-800 text-white p-1.5 rounded-lg text-xs cursor-pointer">
+                                🗑️ Excluir
                             </button>
                         </td>
                     </tr>
@@ -3428,331 +3443,6 @@
         
         window.addEventListener('load', function() {
             window.inicializarSistema();
-        });
-
-        
-        // ===== SISTEMA COMPLETO COM AUTENTICAÇÃO E EMAIL =====
-        window.usuarioLogado = null;
-        window.perfilAtivo = null;
-        window.fornecedorSelecionado = null;
-        
-        window.fornecedoresData = {"ADERE": "adere@2026", "ALEPLAST": "aleplast@2026", "ARAMART": "aramart@2026", "ARCELORMITTAL": "arcelormittal@2026", "ARMACELL": "armacell@2026", "AROTUBI CURITIBA": "arotubicuritiba@2026", "AROTUBI JOINVILLE": "arotubijoinville@2026", "ASIBRAS": "asibras@2026", "BELENUS": "belenus@2026", "BIGFER": "bigfer@2026", "BOLLHOFF": "bollhoff@2026", "BRASCABOS": "brascabos@2026", "BRASKEN": "brasken@2026", "BUNDY CURITIBA": "bundycuritiba@2026", "BUNDY PINDA": "bundypinda@2026", "CARIBOR": "caribor@2026", "CCL": "ccl@2026", "CISER": "ciser@2026", "COLORFIX": "colorfix@2026", "CREMER": "cremer@2026", "CSN": "csn@2026", "DENK": "denk@2026", "DUFERCO": "duferco@2026", "FOCUS": "focus@2026", "FORMPARTS": "formparts@2026", "GRÁFICA NACIONAL": "graficanacional@2026", "INJEQUALY": "injequaly@2026", "INNARA": "innara@2026", "INNOVA": "innova@2026", "ISHENG": "isheng@2026", "ISOFORMA": "isoforma@2026", "ISOTERM": "isoterm@2026", "KLABIN": "klabin@2026", "KNAUF": "knauf@2026", "LINKPLAS": "linkplas@2026", "MARCEGAGLIA": "marcegaglia@2026", "METALMA": "metalma@2026", "MICROJUNTAS": "microjuntas@2026", "MULTILOG": "multilog@2026", "NIDEC": "nidec@2026", "NIDEC ITAIÓPOLIS": "nidecitaiopolis@2026", "PARANAPANEMA": "paranapanema@2026", "PLASTICOVILLE": "plasticoville@2026", "REFREX": "refrex@2026", "RUDOLPH": "rudolph@2026", "SCHOTT": "schott@2026", "SG/LEAS": "sgleas@2026", "SINERGIA /CONBRAS": "sinergia@2026", "TERMOTECNICA": "termotecnica@2026", "TESA": "tesa@2026", "UNIPLAST": "uniplast@2026", "UNITAAL": "unitaal@2026", "USIMINAS": "usiminas@2026", "VEXILIOM": "vexiliom@2026", "VIPRADO": "viprado@2026", "VITROCOLOR": "vitrocolor@2026", "WEG MOTORES": "weg@2026", "WEG TINTAS": "wegtintas@2026", "WEST ROCK": "westrock@2026"};
-        window.usuariosData = {"doca": {"senha": "doca123", "perfil": "doca"}, "fiscal": {"senha": "fiscal123", "perfil": "fiscal"}, "admin": {"senha": "admin123", "perfil": "admin"}};
-        window.motoristas = [];
-        
-        // EMAIL PARA CARGAS CRÍTICAS
-        window.emailCargaCritica = 'fernando_junkes@whirlpool.com';
-        
-        window.inicializarSistema = function() {
-            const sessaoSalva = localStorage.getItem('yms_usuario_logado');
-            const perfilSalvo = localStorage.getItem('yms_perfil_ativo');
-            window.motoristas = JSON.parse(localStorage.getItem('yms_motoristas') || '[]');
-            
-            if (sessaoSalva && perfilSalvo) {
-                window.usuarioLogado = sessaoSalva;
-                window.perfilAtivo = perfilSalvo;
-                if (perfilSalvo === 'fornecedor') {
-                    window.fornecedorSelecionado = sessaoSalva;
-                }
-                document.getElementById('lblNomeUsuarioLogado').textContent = sessaoSalva;
-                document.getElementById('modalLoginGlobal').classList.add('hidden');
-                window.atualizarNavegacao();
-                window.mudarPerfil(perfilSalvo);
-            } else {
-                document.getElementById('modalLoginGlobal').classList.remove('hidden');
-                window.popularListaFornecedores();
-            }
-        };
-        
-        window.popularListaFornecedores = function() {
-            const select = document.getElementById('selEmpresaFornecedorLogin');
-            if (!select) return;
-            select.innerHTML = '';
-            
-            Object.keys(window.fornecedoresData).sort().forEach(fornecedor => {
-                const option = document.createElement('option');
-                option.value = fornecedor;
-                option.textContent = fornecedor;
-                select.appendChild(option);
-            });
-            
-            if (select.options.length > 0) {
-                select.selectedIndex = 0;
-            }
-        };
-        
-        window.filtrarLoginEmpresas = function() {
-            const filtro = document.getElementById('filtroLoginForn').value.toLowerCase();
-            const select = document.getElementById('selEmpresaFornecedorLogin');
-            if (!select) return;
-            
-            select.innerHTML = '';
-            Object.keys(window.fornecedoresData)
-                .filter(f => f.toLowerCase().includes(filtro))
-                .sort()
-                .forEach(fornecedor => {
-                    const option = document.createElement('option');
-                    option.value = fornecedor;
-                    option.textContent = fornecedor;
-                    select.appendChild(option);
-                });
-            
-            if (select.options.length > 0) {
-                select.selectedIndex = 0;
-            }
-        };
-        
-        window.confirmarLoginFornecedorEmpresa = function() {
-            const select = document.getElementById('selEmpresaFornecedorLogin');
-            const senha = document.getElementById('inputSenhaFornecedor').value;
-            
-            if (!select || !select.value) {
-                alert('⚠️ Selecione um fornecedor!');
-                return;
-            }
-            
-            if (!senha) {
-                alert('⚠️ Digite a senha!');
-                return;
-            }
-            
-            const fornecedor = select.value;
-            const senhaCorreta = window.fornecedoresData[fornecedor];
-            
-            if (senha === senhaCorreta) {
-                localStorage.setItem('yms_usuario_logado', fornecedor);
-                localStorage.setItem('yms_perfil_ativo', 'fornecedor');
-                
-                window.usuarioLogado = fornecedor;
-                window.perfilAtivo = 'fornecedor';
-                window.fornecedorSelecionado = fornecedor;
-                
-                document.getElementById('lblNomeUsuarioLogado').textContent = fornecedor;
-                document.getElementById('modalLoginGlobal').classList.add('hidden');
-                
-                document.getElementById('inputSenhaFornecedor').value = '';
-                document.getElementById('filtroLoginForn').value = '';
-                
-                window.atualizarNavegacao();
-                window.mudarPerfil('fornecedor');
-            } else {
-                alert('❌ Senha incorreta!');
-                document.getElementById('inputSenhaFornecedor').value = '';
-            }
-        };
-        
-        window.confirmarLoginComSenha = function() {
-            const usuario = document.getElementById('inputUserLogin').value;
-            const senha = document.getElementById('inputPinLogin').value;
-            
-            if (!usuario || !senha) {
-                alert('⚠️ Preencha usuário e senha!');
-                return;
-            }
-            
-            if (window.usuariosData[usuario]) {
-                const dadosUsuario = window.usuariosData[usuario];
-                if (senha === dadosUsuario.senha) {
-                    localStorage.setItem('yms_usuario_logado', usuario);
-                    localStorage.setItem('yms_perfil_ativo', dadosUsuario.perfil);
-                    
-                    window.usuarioLogado = usuario;
-                    window.perfilAtivo = dadosUsuario.perfil;
-                    
-                    document.getElementById('lblNomeUsuarioLogado').textContent = usuario.toUpperCase();
-                    document.getElementById('modalLoginGlobal').classList.add('hidden');
-                    
-                    document.getElementById('inputUserLogin').value = '';
-                    document.getElementById('inputPinLogin').value = '';
-                    
-                    window.atualizarNavegacao();
-                    window.mudarPerfil(dadosUsuario.perfil);
-                } else {
-                    alert('❌ Senha incorreta!');
-                    document.getElementById('inputPinLogin').value = '';
-                }
-            } else {
-                alert('❌ Usuário não encontrado!');
-                document.getElementById('inputUserLogin').value = '';
-            }
-        };
-        
-        window.atualizarNavegacao = function() {
-            const navBar = document.getElementById('navBarPerfis');
-            if (!navBar) return;
-            
-            const botoes = navBar.querySelectorAll('.btn-perfil');
-            
-            botoes.forEach(btn => {
-                btn.style.display = 'inline-block';
-            });
-            
-            if (window.perfilAtivo === 'fornecedor') {
-                botoes.forEach(btn => {
-                    const modulo = btn.getAttribute('data-modulo');
-                    if (modulo !== 'fornecedor') {
-                        btn.style.display = 'none';
-                    }
-                });
-            }
-        };
-        
-        window.fazerLogoutGlobal = function() {
-            if (confirm('Deseja realmente sair do sistema?')) {
-                localStorage.removeItem('yms_usuario_logado');
-                localStorage.removeItem('yms_perfil_ativo');
-                
-                window.usuarioLogado = null;
-                window.perfilAtivo = null;
-                window.fornecedorSelecionado = null;
-                
-                document.getElementById('inputUserLogin').value = '';
-                document.getElementById('inputPinLogin').value = '';
-                document.getElementById('inputSenhaFornecedor').value = '';
-                document.getElementById('filtroLoginForn').value = '';
-                
-                document.getElementById('modalLoginGlobal').classList.remove('hidden');
-                window.inicializarSistema();
-            }
-        };
-        
-        window.solicitarAcessoPerfil = function(perfil) {
-            if (perfil === 'fornecedor') {
-                document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
-                document.getElementById('boxSenhaLogin').classList.add('hidden');
-            } else {
-                document.getElementById('boxSenhaLogin').classList.remove('hidden');
-                document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
-                document.getElementById('lblPerfilSelecionadoLogin').textContent = 
-                    'AUTENTICAÇÃO - ' + perfil.toUpperCase();
-            }
-        };
-        
-        window.mudarPerfil = function(perfil) {
-            if (window.perfilAtivo === 'fornecedor' && perfil !== 'fornecedor') {
-                alert('❌ Fornecedores só podem acessar o Portal Fornecedor!');
-                return;
-            }
-            
-            document.querySelectorAll('.perfil-modulo').forEach(el => {
-                el.classList.add('hidden');
-            });
-            
-            const modulo = document.getElementById('perfil-' + perfil);
-            if (modulo) {
-                modulo.classList.remove('hidden');
-            }
-            
-            document.querySelectorAll('.btn-perfil').forEach(btn => {
-                if (btn.style.display !== 'none') {
-                    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
-                    btn.classList.add('text-slate-400', 'hover:text-white');
-                }
-            });
-            
-            const btnAtivo = document.getElementById('btn-' + perfil);
-            if (btnAtivo && btnAtivo.style.display !== 'none') {
-                btnAtivo.classList.remove('text-slate-400', 'hover:text-white');
-                btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow');
-            }
-        };
-        
-        // ===== FUNÇÕES DE MOTORISTAS =====
-        window.adicionarMotorista = function() {
-            const nome = document.getElementById('inputMotoristaName')?.value;
-            const cpf = document.getElementById('inputMotoristaCPF')?.value;
-            const celular = document.getElementById('inputMotoristaCelular')?.value;
-            
-            if (!nome || !cpf || !celular) {
-                alert('⚠️ Preencha todos os campos!');
-                return;
-            }
-            
-            const motorista = {
-                id: Date.now(),
-                nome: nome,
-                cpf: cpf,
-                celular: celular,
-                dataCadastro: new Date().toLocaleDateString('pt-BR')
-            };
-            
-            window.motoristas.push(motorista);
-            localStorage.setItem('yms_motoristas', JSON.stringify(window.motoristas));
-            
-            document.getElementById('inputMotoristaName').value = '';
-            document.getElementById('inputMotoristaCPF').value = '';
-            document.getElementById('inputMotoristaCelular').value = '';
-            
-            window.renderizarMotoristas();
-            alert('✅ Motorista cadastrado com sucesso!');
-        };
-        
-        window.excluirMotorista = function(id) {
-            if (confirm('Tem certeza que deseja excluir este motorista?')) {
-                window.motoristas = window.motoristas.filter(m => m.id !== id);
-                localStorage.setItem('yms_motoristas', JSON.stringify(window.motoristas));
-                window.renderizarMotoristas();
-                alert('✅ Motorista excluído com sucesso!');
-            }
-        };
-        
-        window.renderizarMotoristas = function() {
-            const container = document.getElementById('containerMotoristas');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            if (window.motoristas.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Nenhum motorista cadastrado.</p>';
-                return;
-            }
-            
-            window.motoristas.forEach(motorista => {
-                const card = document.createElement('div');
-                card.className = 'bg-slate-800 border border-slate-700 rounded-lg p-3 flex justify-between items-center';
-                card.innerHTML = `
-                    <div class="text-xs">
-                        <p class="font-bold text-white">${motorista.nome}</p>
-                        <p class="text-slate-400">CPF: ${motorista.cpf}</p>
-                        <p class="text-slate-400">Tel: ${motorista.celular}</p>
-                    </div>
-                    <button type="button" onclick="excluirMotorista(${motorista.id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-bold">🗑️ Excluir</button>
-                `;
-                container.appendChild(card);
-            });
-        };
-        
-        // ===== ENVIO DE EMAIL PARA CARGAS CRÍTICAS =====
-        window.enviarEmailCargaCritica = function(dados) {
-            const emailData = {
-                destinatario: window.emailCargaCritica,
-                assunto: '🚨 CARGA CRÍTICA CRIADA - ' + dados.fornecedor,
-                corpo: `
-                    <h2>ALERTA DE CARGA CRÍTICA</h2>
-                    <p><strong>Fornecedor:</strong> ${dados.fornecedor}</p>
-                    <p><strong>Doca:</strong> ${dados.doca}</p>
-                    <p><strong>Data:</strong> ${dados.data}</p>
-                    <p><strong>Horário:</strong> ${dados.horaIni} - ${dados.horaFim}</p>
-                    <p><strong>Código do Material:</strong> ${dados.codigoCritico}</p>
-                    <p><strong>Motivo:</strong> ${dados.motivoCritico}</p>
-                    <p style="color: red; font-weight: bold;">⚠️ Esta é uma carga crítica que requer atenção imediata!</p>
-                `
-            };
-            
-            // Usar EmailJS ou serviço similar
-            try {
-                // Simulando envio (em produção, usar EmailJS ou similar)
-                console.log('📧 Email enviado para:', window.emailCargaCritica);
-                console.log('Dados:', emailData);
-                alert('✅ Email de carga crítica enviado para ' + window.emailCargaCritica);
-            } catch (e) {
-                console.error('Erro ao enviar email:', e);
-            }
-        };
-        
-        window.addEventListener('load', function() {
-            window.inicializarSistema();
-            window.renderizarMotoristas();
         });
 
         </script>
