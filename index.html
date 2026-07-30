@@ -699,11 +699,11 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
                     <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase text-center tracking-wider">Status Real dos Agendamentos</h3>
-                    <div class="h-52"><canvas id="chartCheckin"></canvas></div>
+                    <div class="h-52 relative"><canvas id="chartCheckin"></canvas></div>
                 </div>
                 <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl col-span-2">
                     <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase text-center tracking-wider">Ocupação Atual por Doca</h3>
-                    <div class="h-52"><canvas id="chartDocas"></canvas></div>
+                    <div class="h-52 relative"><canvas id="chartDocas"></canvas></div>
                 </div>
             </div>
 
@@ -712,7 +712,7 @@
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">⏱️ Média Real do Tempo de Duração de Janela por Doca (Minutos)</h3>
                     <span class="text-[10px] font-bold bg-indigo-900/60 text-indigo-300 border border-indigo-500/40 px-3 py-1 rounded-full">Sincronizado Dinamicamente</span>
                 </div>
-                <div class="h-56"><canvas id="chartMediaTempoDoca"></canvas></div>
+                <div class="h-56 relative"><canvas id="chartMediaTempoDoca"></canvas></div>
             </div>
 
             <!-- PAINEL: CONFIGURAÇÃO DE API DE NOTIFICAÇÕES -->
@@ -1246,7 +1246,7 @@
         let instanceChartDocas = null;
         let instanceChartMediaTempo = null;
 
-        // --- FUNÇÕES DO MÓDULO PCP ---
+        // --- FUNÇÕES DO MÓDULO PCP (TODAS NO WINDOW) ---
         window.alternarAbaPCP = function(aba) {
             const btnInd = document.getElementById('tabIndividualBtn');
             const btnMas = document.getElementById('tabMassaBtn');
