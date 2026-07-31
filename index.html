@@ -1127,7 +1127,132 @@
         let instanceChartDocas = null;
         let instanceChartMediaTempo = null;
 
-        // --- 1. FUNÇÕES UTILITÁRIAS BASE E TEMPO ---
+        // --- 1. CONFIGURAÇÃO DE PERFIS E LOGIN NO TOPO ABSOLUTO DO SCRIPT ---
+        const configPerfisAcesso = {
+            'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
+            'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
+            'totem': { nome: "Totem Autoatendimento", precisaSenha: false, modulos: ['totem'] },
+            'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, modulos: ['fiscal'] },
+            'doca': { nome: "Operador de Doca", precisaSenha: true, modulos: ['doca'] },
+            'checkout': { nome: "Check-out Portaria", precisaSenha: true, modulos: ['checkout'] },
+            'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, modulos: ['motoristas'] },
+            'admin': { nome: "Torre / Administrador", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
+        };
+
+        window.solicitarAcessoPerfil = function(keyPerfil) {
+            window.ymsStore.perfilSolicitadoTemp = keyPerfil;
+            const cfg = configPerfisAcesso[keyPerfil];
+            if (!cfg) return;
+
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+
+            if (cfg.eFornecedor) {
+                if (document.getElementById('filtroLoginForn')) document.getElementById('filtroLoginForn').value = '';
+                if (typeof window.popularSelectLoginEmpresas === 'function') {
+                    window.popularSelectLoginEmpresas();
+                }
+                document.getElementById('boxEmpresaFornecedorLogin').classList.remove('hidden');
+            } else if (!cfg.precisaSenha) {
+                window.concluirLoginPerfil(keyPerfil, cfg.nome, cfg.modulos);
+            } else {
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = `AUTENTICAÇÃO: ${cfg.nome.toUpperCase()}`;
+                document.getElementById('boxSenhaLogin').classList.remove('hidden');
+                document.getElementById('inputUserLogin').focus();
+            }
+        };
+
+        window.confirmarLoginFornecedorEmpresa = function() {
+            const empSel = document.getElementById('selEmpresaFornecedorLogin').value;
+            if (!empSel) { alert("Selecione a sua empresa na lista."); return; }
+            const senhaForn = document.getElementById('inputSenhaFornecedor').value.trim();
+            const cadForn = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
+            if (senhaForn === (cadForn ? cadForn.senha : "123") || senhaForn === "admin" || senhaForn === "1234") {
+                window.ymsStore.empresaFornecedorLogada = empSel;
+                localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
+                window.concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
+            } else {
+                alert("Senha incorreta!");
+            }
+        };
+
+        window.confirmarLoginComSenha = function() {
+            const userDig = document.getElementById('inputUserLogin').value.trim();
+            const pinDig = document.getElementById('inputPinLogin').value.trim();
+            const perfilSel = window.ymsStore.perfilSolicitadoTemp;
+            if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
+                window.concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
+                return;
+            }
+            const usrEncontrado = window.ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
+            if (usrEncontrado) {
+                if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
+                    alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
+                    return;
+                }
+                window.concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
+            } else {
+                alert("Usuário ou Senha incorretos!");
+            }
+        };
+
+        window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos, abaParaAbrir = null) {
+            const targetAba = abaParaAbrir || modulosPermitidos[0];
+            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos, abaAtiva: targetAba };
+            window.ymsStore.usuarioLogado = sessaoData;
+            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessaoData));
+            document.getElementById('modalLoginGlobal').classList.add('hidden');
+            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
+
+            const navBar = document.getElementById('navBarPerfis');
+            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
+                if (navBar) navBar.classList.add('hidden');
+            } else {
+                if (navBar) navBar.classList.remove('hidden');
+                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
+                    const moduloBtn = btn.getAttribute('data-modulo');
+                    if (modulosPermitidos.includes(moduloBtn)) { btn.classList.remove('hidden'); } else { btn.classList.add('hidden'); }
+                });
+            }
+            window.mudarPerfil(targetAba);
+        };
+
+        window.restaurarSessaoLocal = function() {
+            try {
+                const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
+                const empForSalva = localStorage.getItem('yms_empresa_fornecedor_logada');
+                if (empForSalva) { window.ymsStore.empresaFornecedorLogada = empForSalva; }
+                if (sessaoSalva) {
+                    const parsed = JSON.parse(sessaoSalva);
+                    if (parsed && parsed.key && parsed.modulosCustom) {
+                        window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom, parsed.abaAtiva || parsed.modulosCustom[0]);
+                        return true;
+                    }
+                }
+            } catch(e) {
+                console.error("Erro ao restaurar sessão:", e);
+            }
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            return false;
+        };
+
+        window.fazerLogoutGlobal = function() {
+            window.ymsStore.usuarioLogado = null;
+            window.ymsStore.empresaFornecedorLogada = null;
+            localStorage.removeItem('yms_sessao_usuario');
+            localStorage.removeItem('yms_empresa_fornecedor_logada');
+            localStorage.removeItem('yms_usuario_logado');
+            localStorage.removeItem('yms_perfil_ativo');
+
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
+            const navBar = document.getElementById('navBarPerfis');
+            if (navBar) navBar.classList.remove('hidden');
+            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
+        };
+
+        // --- 2. FUNÇÕES UTILITÁRIAS BASE E TEMPO ---
         window.limparNomeFornecedor = function(nome) {
             let str = String(nome || '').trim().toUpperCase();
             if (!str) return '';
@@ -1252,18 +1377,7 @@
             return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}h`;
         };
 
-        window.calcularSlaTicket = function(agendamento) {
-            if (!agendamento || !agendamento.horaIni) return "NO HORÁRIO";
-            const agora = new Date();
-            const minAtuais = agora.getHours() * 60 + agora.getMinutes();
-            const minAgendado = window.horaParaMinutos(agendamento.horaIni);
-            const diff = minAtuais - minAgendado;
-            if (diff > 15) return "ATRASADO";
-            if (diff < -15) return "ADIANTADO";
-            return "NO HORÁRIO";
-        };
-
-        // --- 2. CONTROLE DE HORÁRIOS DO PCP ---
+        // --- 3. CONTROLE DE HORÁRIOS DO PCP ---
         window.atualizarHorariosDisponiveis = function() {
             const inpHora = document.getElementById('inpHora');
             const gridTimeline = document.getElementById('gridTimelineHorarios');
@@ -1347,7 +1461,7 @@
             }
         };
 
-        // --- 3. RENDERIZADORES DE TABELAS E MODULOS ---
+        // --- 4. RENDERIZADORES DE TABELAS E MODULOS ---
         window.renderizarTabelaFornecedores = function() {
             const tbody = document.getElementById('tblCorpoFornecedores');
             if (!tbody) return;
@@ -1704,75 +1818,8 @@
                 gridDocas.insertAdjacentHTML('beforeend', btn);
             });
 
-            window.atualizarDisplayRotaSequencial();
-        };
-
-        window.selecionarTicketFiscal = function(ticket) {
-            window.ymsStore.ticketAtivoFiscal = ticket;
-            window.ymsStore.sequenciaDocasSelecao = [];
-            window.renderizarModuloFiscal();
-        };
-
-        window.alternarSelecaoDocaFiscal = function(doca) {
-            if (!window.ymsStore.sequenciaDocasSelecao) window.ymsStore.sequenciaDocasSelecao = [];
-            const idx = window.ymsStore.sequenciaDocasSelecao.indexOf(doca);
-            if (idx !== -1) {
-                window.ymsStore.sequenciaDocasSelecao.splice(idx, 1);
-            } else {
-                window.ymsStore.sequenciaDocasSelecao.push(doca);
-            }
-            window.renderizarModuloFiscal();
-        };
-
-        window.resetarSequenciaDocas = function() {
-            window.ymsStore.sequenciaDocasSelecao = [];
-            window.renderizarModuloFiscal();
-        };
-
-        window.atualizarDisplayRotaSequencial = function() {
-            const display = document.getElementById('displayRotaSequencial');
-            if (!display) return;
-            const seq = window.ymsStore.sequenciaDocasSelecao || [];
-            if (seq.length === 0) {
-                display.innerHTML = `<span class="text-slate-500 italic">Nenhuma doca selecionada</span>`;
-            } else {
-                display.innerHTML = seq.map((d, i) => `<span class="bg-purple-900/80 border border-purple-500 text-white px-2 py-0.5 rounded font-mono text-xs">${i + 1}ª: ${d}</span>`).join(" ➔ ");
-            }
-        };
-
-        window.limparPainelDetalhesFiscal = function() {
-            document.getElementById('txtTicketFiscalAtivo').textContent = "Selecione um Ticket";
-            document.getElementById('fiscMotorista').textContent = "-";
-            document.getElementById('fiscPlaca').textContent = "-";
-            document.getElementById('fiscNf').textContent = "-";
-            window.ymsStore.ticketAtivoFiscal = null;
-            window.ymsStore.sequenciaDocasSelecao = [];
-        };
-
-        window.liberarParaDocaFiscal = function() {
-            const ticket = window.ymsStore.ticketAtivoFiscal;
-            if (!ticket) {
-                alert("Selecione um veículo da Fila do Pátio.");
-                return;
-            }
-            const rota = window.ymsStore.sequenciaDocasSelecao || [];
-            if (rota.length === 0) {
-                alert("Selecione pelo menos uma doca para formar a rota.");
-                return;
-            }
-
-            const index = window.ymsStore.agendamentos.findIndex(i => i.ticket === ticket);
-            if (index !== -1) {
-                window.ymsStore.agendamentos[index].docasSequencia = [...rota];
-                window.ymsStore.agendamentos[index].indexDocaAtual = 0;
-                window.ymsStore.agendamentos[index].timeFiscal = new Date().toISOString();
-                window.ymsStore.agendamentos[index].status = "TRIAGEM_FISCAL";
-
-                window.salvarAgendamentosNaMemoria();
-                window.dispararSmsEtapa(window.ymsStore.agendamentos[index], 'TRIAGEM_FISCAL');
-                window.limparPainelDetalhesFiscal();
-                window.renderizarModuloFiscal();
-                window.exibirToast("Rota Liberada!", `Ticket ${ticket} enviado para a ${rota[0]}`, "🚀");
+            if (typeof window.atualizarDisplayRotaSequencial === 'function') {
+                window.atualizarDisplayRotaSequencial();
             }
         };
 
@@ -1842,83 +1889,6 @@
             }
         };
 
-        window.chamarProximoSms = function() {
-            const selDoca = document.getElementById('selDocaOperador');
-            if (!selDoca) return;
-            const docaSel = selDoca.value;
-            const docaNorm = window.normalizarTexto(docaSel);
-            const agendamentos = window.ymsStore.agendamentos || [];
-
-            const jaEmDescarga = agendamentos.find(i => {
-                if (i.status !== 'EM_DESCARGA') return false;
-                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
-                return window.normalizarTexto(docaAtual) === docaNorm;
-            });
-
-            if (jaEmDescarga) {
-                alert(`Já existe o veículo ${jaEmDescarga.cavalo} (${jaEmDescarga.ticket}) em descarga nesta doca. Finalize a descarga atual primeiro.`);
-                return;
-            }
-
-            const proximo = agendamentos.find(i => {
-                if (i.status !== 'TRIAGEM_FISCAL' && i.status !== 'CHECKIN_PATIO') return false;
-                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
-                return window.normalizarTexto(docaAtual) === docaNorm;
-            });
-
-            if (!proximo) {
-                alert("Nenhum caminhão na fila para esta doca.");
-                return;
-            }
-
-            proximo.status = "EM_DESCARGA";
-            proximo.timeInicioDescarga = new Date().toISOString();
-
-            window.salvarAgendamentosNaMemoria();
-            window.dispararSmsEtapa(proximo, 'EM_DESCARGA');
-            window.atualizarPainelDoca();
-            window.exibirToast("Motorista Chamado!", `Ticket ${proximo.ticket} autorizado na ${docaSel}`, "📣");
-        };
-
-        window.finalizarDescargaDoca = function() {
-            const selDoca = document.getElementById('selDocaOperador');
-            if (!selDoca) return;
-            const docaSel = selDoca.value;
-            const docaNorm = window.normalizarTexto(docaSel);
-            const agendamentos = window.ymsStore.agendamentos || [];
-
-            const item = agendamentos.find(i => {
-                if (i.status !== 'EM_DESCARGA') return false;
-                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
-                return window.normalizarTexto(docaAtual) === docaNorm;
-            });
-
-            if (!item) {
-                alert("Nenhum veículo está em descarga nesta doca.");
-                return;
-            }
-
-            item.timeFimDescarga = new Date().toISOString();
-
-            if (item.docasSequencia && item.docasSequencia.length > 0 && item.indexDocaAtual + 1 < item.docasSequencia.length) {
-                item.indexDocaAtual += 1;
-                const proximaDoca = item.docasSequencia[item.indexDocaAtual];
-                item.status = "TRIAGEM_FISCAL";
-                window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Avançou Doca!", `Ticket ${item.ticket} direcionado para a próxima doca: ${proximaDoca}`, "➡️");
-            } else {
-                item.status = "AGUARDANDO_CHECKOUT";
-                window.salvarAgendamentosNaMemoria();
-                window.dispararSmsEtapa(item, 'AGUARDANDO_CHECKOUT');
-                window.exibirToast("Descarga Finalizada!", `Ticket ${item.ticket} liberado para a Portaria de Saída.`, "✅");
-            }
-
-            window.atualizarPainelDoca();
-            if (typeof window.renderizarModuloCheckout === 'function') {
-                window.renderizarModuloCheckout();
-            }
-        };
-
         window.renderizarModuloCheckout = function() {
             const container = document.getElementById('listaAguardandoCheckout');
             const badge = document.getElementById('badgeQtdCheckout');
@@ -1932,7 +1902,7 @@
 
             if (aguardando.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhum veículo aguardando saída.</p>`;
-                window.limparPainelCheckout();
+                if (typeof window.limparPainelCheckout === 'function') window.limparPainelCheckout();
                 return;
             }
 
@@ -1963,40 +1933,6 @@
                 document.getElementById('chkFornecedor').textContent = window.limparNomeFornecedor(ativo.fornecedor);
                 document.getElementById('chkHoraEntrada').textContent = ativo.timeCheckin ? window.formatarHoraIso(ativo.timeCheckin) : '-';
                 document.getElementById('chkRotaDocas').textContent = (ativo.docasSequencia && ativo.docasSequencia.length > 0) ? ativo.docasSequencia.join(" ➔ ") : (ativo.doca || '-');
-            }
-        };
-
-        window.selecionarTicketCheckout = function(ticket) {
-            window.ymsStore.ticketAtivoCheckout = ticket;
-            window.renderizarModuloCheckout();
-        };
-
-        window.limparPainelCheckout = function() {
-            document.getElementById('txtTicketCheckoutAtivo').textContent = "Selecione um Veículo";
-            document.getElementById('chkMotorista').textContent = "-";
-            document.getElementById('chkPlaca').textContent = "-";
-            document.getElementById('chkFornecedor').textContent = "-";
-            document.getElementById('chkHoraEntrada').textContent = "-";
-            document.getElementById('chkRotaDocas').textContent = "-";
-            window.ymsStore.ticketAtivoCheckout = null;
-        };
-
-        window.confirmarSaidaPortaria = function() {
-            const ticket = window.ymsStore.ticketAtivoCheckout;
-            if (!ticket) {
-                alert("Selecione um veículo na fila de Check-out.");
-                return;
-            }
-
-            const index = window.ymsStore.agendamentos.findIndex(i => i.ticket === ticket);
-            if (index !== -1) {
-                window.ymsStore.agendamentos[index].timeCheckout = new Date().toISOString();
-                window.ymsStore.agendamentos[index].status = "CONCLUIDO";
-
-                window.salvarAgendamentosNaMemoria();
-                window.limparPainelCheckout();
-                window.renderizarModuloCheckout();
-                window.exibirToast("Check-out Concluído!", `Ticket ${ticket} finalizado e saída registrada.`, "🚪");
             }
         };
 
@@ -2033,156 +1969,262 @@
             }
         };
 
-        // --- 4. FUNÇÕES DE SESSÃO E LOGIN ---
-        window.sincronizarTodosModulos = function() {
-            window.garantirTodosFornecedoresNaLista();
-            if (typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
-            if (typeof window.renderizarModuloFornecedor === 'function') window.renderizarModuloFornecedor();
-            if (typeof window.renderizarModuloFiscal === 'function') window.renderizarModuloFiscal();
-            if (typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
-            if (typeof window.renderizarModuloCheckout === 'function') window.renderizarModuloCheckout();
-            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-            if (typeof window.carregarGraficosTorre === 'function') window.carregarGraficosTorre();
-        };
-
-        window.mudarPerfil = function(perfilId) {
-            if (window.ymsStore.usuarioLogado && !window.ymsStore.usuarioLogado.modulosCustom.includes(perfilId)) {
-                alert("Acesso negado a este módulo!");
-                return;
-            }
-
-            if (window.ymsStore.usuarioLogado) {
-                window.ymsStore.usuarioLogado.abaAtiva = perfilId;
-                localStorage.setItem('yms_sessao_usuario', JSON.stringify(window.ymsStore.usuarioLogado));
-            }
-
-            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
-            document.querySelectorAll('.btn-perfil').forEach(btn => {
-                btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
+        // --- 5. BANCO DE DADOS FIREBASE E PERSISTÊNCIA ---
+        function inicializarEscutadoresFirebase() {
+            onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
+                const data = snapshot.val();
+                window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                window.garantirTodosFornecedoresNaLista();
+                window.sincronizarTodosModulos();
             });
 
-            document.getElementById(`perfil-${perfilId}`).classList.remove('hidden');
-            const btnAtivo = document.getElementById(`btn-${perfilId}`);
-            if (btnAtivo) {
-                btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow";
-            }
+            onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.ymsStore.baseMotoristas = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.ymsStore.baseMotoristas = [
+                        { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
+                        { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
+                    ];
+                }
+                if (typeof window.renderizarTabelaMotoristas === 'function') {
+                    window.renderizarTabelaMotoristas();
+                }
+            });
 
-            window.sincronizarTodosModulos();
-            if (perfilId === 'torre' && typeof window.carregarGraficosTorre === 'function') {
-                window.carregarGraficosTorre();
-            }
-            if (perfilId === 'motoristas' && typeof window.renderizarTabelaMotoristas === 'function') {
-                window.renderizarTabelaMotoristas();
-            }
-            if (perfilId === 'fiscal' && typeof window.renderizarModuloFiscal === 'function') {
-                window.renderizarModuloFiscal();
-            }
-            if (perfilId === 'doca' && typeof window.atualizarPainelDoca === 'function') {
-                window.atualizarPainelDoca();
-            }
-            if (perfilId === 'checkout' && typeof window.renderizarModuloCheckout === 'function') {
-                window.renderizarModuloCheckout();
-            }
-        };
+            onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
+                }
+                window.garantirTodosFornecedoresNaLista();
+                window.atualizarTodasListasFornecedores();
+            });
 
-        window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos, abaParaAbrir = null) {
-            const targetAba = abaParaAbrir || modulosPermitidos[0];
-            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos, abaAtiva: targetAba };
-            window.ymsStore.usuarioLogado = sessaoData;
-            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessaoData));
-            document.getElementById('modalLoginGlobal').classList.add('hidden');
-            document.getElementById('lblNomeUsuarioLogado').textContent = `Sair (${nomeExibicao})`;
+            onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
+                } else {
+                    window.ymsStore.baseUsuariosCustom = [
+                        { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
+                        { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
+                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
+                    ];
+                }
+                if (typeof window.renderizarTabelaUsuariosCustom === 'function') {
+                    window.renderizarTabelaUsuariosCustom();
+                }
+            });
 
-            const navBar = document.getElementById('navBarPerfis');
-            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
-                if (navBar) navBar.classList.add('hidden');
-            } else {
-                if (navBar) navBar.classList.remove('hidden');
-                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
-                    const moduloBtn = btn.getAttribute('data-modulo');
-                    if (modulosPermitidos.includes(moduloBtn)) { btn.classList.remove('hidden'); } else { btn.classList.add('hidden'); }
-                });
-            }
-            window.mudarPerfil(targetAba);
-        };
-
-        window.restaurarSessaoLocal = function() {
-            try {
-                const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
-                const empForSalva = localStorage.getItem('yms_empresa_fornecedor_logada');
-                if (empForSalva) { window.ymsStore.empresaFornecedorLogada = empForSalva; }
-                if (sessaoSalva) {
-                    const parsed = JSON.parse(sessaoSalva);
-                    if (parsed && parsed.key && parsed.modulosCustom) {
-                        window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom, parsed.abaAtiva || parsed.modulosCustom[0]);
-                        return true;
+            onValue(ref(db, 'yms_config_api'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.ymsStore.configApi = data;
+                    if (typeof window.preencherFormularioConfigApi === 'function') {
+                        window.preencherFormularioConfigApi();
                     }
                 }
-            } catch(e) {
-                console.error("Erro ao restaurar sessão:", e);
+            });
+        }
+
+        window.salvarAgendamentosNaMemoria = function() {
+            set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos);
+        };
+        window.salvarCredenciaisFornecedoresNaMemoria = function() {
+            set(ref(db, 'yms_credenciais_fornecedores'), window.mapaCredenciaisFornecedores);
+        };
+        window.salvarUsuariosCustomizadosNaMemoria = function() {
+            set(ref(db, 'yms_usuarios_customizados'), window.ymsStore.baseUsuariosCustom);
+        };
+        window.salvarBaseMotoristasNaMemoria = function() {
+            set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
+        };
+
+        window.popularSelectFornecedores = function(lista) {
+            const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
+            selForn.innerHTML = "";
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
+        };
+
+        window.filtrarOpcoesFornecedor = function() {
+            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectFornecedores(filtrados);
+        };
+
+        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
+            const sel = document.getElementById('selEmpresaFornecedorLogin');
+            if (!sel) return;
+            sel.innerHTML = "";
+            const lista = listaParaExibir || window.obterListaNomesFornecedores();
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
+                if (idx === 0) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        };
+
+        window.popularSelectCadastroEmpresasUsr = function() {
+            const sel = document.getElementById('selUsrEmpresa');
+            if (!sel) return;
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
+            window.obterListaNomesFornecedores().forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = f;
+                sel.appendChild(opt);
+            });
+        };
+
+        // --- 6. FUNÇÕES AUXILIARES DE MODAIS E CLIQUES ---
+        window.selecionarTipoCarga = function(tipo) {
+            const btnCot = document.getElementById('btnTipoCotidiano');
+            const btnExt = document.getElementById('btnTipoExtra');
+            const btnCri = document.getElementById('btnTipoCritica');
+            
+            if (btnCot) {
+                btnCot.classList.remove('bg-emerald-600', 'border-emerald-400', 'text-white', 'shadow');
+                btnCot.classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
             }
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            if (btnExt) {
+                btnExt.classList.remove('bg-amber-600', 'border-amber-400', 'text-white', 'shadow');
+                btnExt.classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
+            }
+            if (btnCri) {
+                btnCri.classList.remove('bg-red-600', 'border-red-400', 'text-white', 'shadow');
+                btnCri.classList.add('bg-slate-900', 'border-slate-800', 'text-slate-400');
+            }
+            
+            const boxExt = document.getElementById('boxMotivoExtra');
+            const boxMot = document.getElementById('boxDadosMotorista');
+            const boxCri = document.getElementById('boxCamposCriticos');
+
+            if (boxExt) boxExt.classList.add('hidden');
+            if (boxMot) boxMot.classList.add('hidden');
+            if (boxCri) boxCri.classList.add('hidden');
+            
+            if (tipo === 'cotidiano' && btnCot) {
+                btnCot.classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                btnCot.classList.add('bg-emerald-600', 'border-emerald-400', 'text-white', 'shadow');
+                window.tipoCargaSelecionado = 'cotidiano';
+            } 
+            else if (tipo === 'extra' && btnExt) {
+                btnExt.classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                btnExt.classList.add('bg-amber-600', 'border-amber-400', 'text-white', 'shadow');
+                if (boxExt) boxExt.classList.remove('hidden');
+                if (boxMot) boxMot.classList.remove('hidden');
+                window.tipoCargaSelecionado = 'extra';
+            } 
+            else if (tipo === 'critica' && btnCri) {
+                btnCri.classList.remove('bg-slate-900', 'border-slate-800', 'text-slate-400');
+                btnCri.classList.add('bg-red-600', 'border-red-400', 'text-white', 'shadow');
+                if (boxCri) boxCri.classList.remove('hidden');
+                window.tipoCargaSelecionado = 'critica';
+            }
+        };
+
+        window.excluirFornecedorDinamico = function(empresa) {
+            if (!confirm(`Excluir a empresa "${empresa}" da base?`)) return;
+            const alvo = String(empresa).trim().toUpperCase();
+            window.mapaCredenciaisFornecedores = window.mapaCredenciaisFornecedores.filter(
+                f => String(f.empresa).trim().toUpperCase() !== alvo
+            );
+            window.salvarCredenciaisFornecedoresNaMemoria();
+            window.renderizarTabelaFornecedores();
+            window.exibirToast("Fornecedor Excluído", `${empresa} removida da base.`, "🗑️");
+        };
+
+        window.excluirMotoristaManual = function(cpf) {
+            if (!confirm('Tem certeza que deseja excluir este motorista?')) return;
+            if (!Array.isArray(window.ymsStore.baseMotoristas)) {
+                alert('Erro: Base de motoristas não inicializada');
+                return;
+            }
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const indexOriginal = window.ymsStore.baseMotoristas.findIndex(m => 
+                String(m.cpf).replace(/\D/g, '') === cpfLimpo
+            );
+            if (indexOriginal !== -1) {
+                window.ymsStore.baseMotoristas.splice(indexOriginal, 1);
+                window.salvarBaseMotoristasNaMemoria();
+                window.renderizarTabelaMotoristas();
+                window.exibirToast("Motorista Excluído", "Registro removido com sucesso.", "🗑️");
+            } else {
+                alert('❌ Motorista não encontrado');
+            }
+        };
+
+        window.salvarConfiguracaoApi = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const config = {
+                ativo: document.getElementById('apiStatusAtivo').value,
+                tipo: document.getElementById('apiTipoProvedor').value,
+                urlEndpoint: document.getElementById('apiUrlEndpoint').value.trim(),
+                authToken: document.getElementById('apiAuthToken').value.trim()
+            };
+            window.ymsStore.configApi = config;
+            set(ref(db, 'yms_config_api'), config);
+            window.exibirToast("API Salva!", "Configuração de mensagens atualizada no Firebase.", "📲");
+        };
+
+        window.preencherFormularioConfigApi = function() {
+            const cfg = window.ymsStore.configApi;
+            if (!cfg) return;
+            if (document.getElementById('apiStatusAtivo')) document.getElementById('apiStatusAtivo').value = cfg.ativo || "NAO";
+            if (document.getElementById('apiTipoProvedor')) document.getElementById('apiTipoProvedor').value = cfg.tipo || "whatsapp_zapi";
+            if (document.getElementById('apiUrlEndpoint')) document.getElementById('apiUrlEndpoint').value = cfg.urlEndpoint || "";
+            if (document.getElementById('apiAuthToken')) document.getElementById('apiAuthToken').value = cfg.authToken || "";
+        };
+
+        window.enviarMensagemApiReal = async function(numeroTelefone, textoMensagem) {
+            const cfg = window.ymsStore.configApi;
+            if (!cfg || cfg.ativo !== 'SIM' || !cfg.urlEndpoint) return false;
+            let numFormatado = String(numeroTelefone).replace(/\D/g, '');
+            if (!numFormatado.startsWith('55') && numFormatado.length <= 11) {
+                numFormatado = '55' + numFormatado;
+            }
+            try {
+                let payload = {};
+                let headers = { "Content-Type": "application/json" };
+                if (cfg.authToken) {
+                    headers["Client-Token"] = cfg.authToken;
+                    headers["Authorization"] = `Bearer ${cfg.authToken}`;
+                }
+                if (cfg.tipo === 'whatsapp_zapi' || cfg.tipo === 'webhook_custom') {
+                    payload = { phone: numFormatado, number: numFormatado, message: textoMensagem };
+                } else if (cfg.tipo === 'twilio_sms') {
+                    payload = { To: `+${numFormatado}`, Body: textoMensagem };
+                } else if (cfg.tipo === 'zenvia_sms') {
+                    payload = { from: "YMS SYSTEM", to: numFormatado, contents: [{ type: "text", text: textoMensagem }] };
+                }
+                const response = await fetch(cfg.urlEndpoint, { method: 'POST', headers: headers, body: JSON.stringify(payload) });
+                if (response.ok) {
+                    window.exibirToast("Mensagem Enviada!", `Enviada para +${numFormatado}`, "📲");
+                    return true;
+                }
+            } catch (err) {
+                console.error("Falha de conexão com a API de mensagens:", err);
+            }
             return false;
         };
 
-        window.fazerLogoutGlobal = function() {
-            window.ymsStore.usuarioLogado = null;
-            window.ymsStore.empresaFornecedorLogada = null;
-            localStorage.removeItem('yms_sessao_usuario');
-            localStorage.removeItem('yms_empresa_fornecedor_logada');
-            localStorage.removeItem('yms_usuario_logado');
-            localStorage.removeItem('yms_perfil_ativo');
-
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
-            document.getElementById('boxSenhaLogin').classList.add('hidden');
-            document.getElementById('boxEmpresaFornecedorLogin').classList.add('hidden');
-            const navBar = document.getElementById('navBarPerfis');
-            if (navBar) navBar.classList.remove('hidden');
-            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
-        };
-
-        window.removerJanelaIndividual = function(ordem) {
-            if (!confirm(`Remover agendamento ${ordem}?`)) return;
-            window.ymsStore.agendamentos = (window.ymsStore.agendamentos || []).filter(i => i.ordem !== ordem);
-            window.ymsStore.rascunhoAgendamentos = (window.ymsStore.rascunhoAgendamentos || []).filter(i => i.ordem !== ordem);
-            window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-            window.exibirToast("Removida", `Agendamento ${ordem} apagado.`, "🗑️");
-        };
-
-        window.limparJanelasSubidas = function() {
-            if (!confirm("Atenção: Excluir TODOS os agendamentos salvos no sistema?")) return;
-            window.ymsStore.agendamentos = [];
-            window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-            window.exibirToast("Limpo", "Base de agendamentos zerada.", "🗑️");
-        };
-
-        window.limparGradeTotal = function() {
-            if (!confirm("Limpar os agendamentos em rascunho?")) return;
-            window.ymsStore.rascunhoAgendamentos = [];
-            window.renderizarGradePCP();
-            window.exibirToast("Rascunho Limpo", "Todos os itens de rascunho removidos.", "🗑️");
-        };
-
-        window.confirmarLoginComSenha = function() {
-            const userDig = document.getElementById('inputUserLogin').value.trim();
-            const pinDig = document.getElementById('inputPinLogin').value.trim();
-            const perfilSel = window.ymsStore.perfilSolicitadoTemp;
-            if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
-                window.concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
-                return;
-            }
-            const usrEncontrado = window.ymsStore.baseUsuariosCustom.find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
-            if (usrEncontrado) {
-                if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
-                    alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
-                    return;
-                }
-                window.concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
-            } else {
-                alert("Usuário ou Senha incorretos!");
-            }
+        window.testarEnvioMensagemApi = function() {
+            const numTest = document.getElementById('inputTestNum')?.value.trim();
+            if (!numTest) { alert("Digite o número de telefone com DDD para o teste."); return; }
+            window.enviarMensagemApiReal(numTest, "YMS ECOSYSTEM: Teste de integração de API de mensagens bem-sucedido! 🚚🏭");
         };
 
         window.alternarStatusMotorista = function(cpf) {
@@ -2227,13 +2269,76 @@
             window.exibirToast("Motorista Salvo!", `Cadastro de ${nome} atualizado.`, "🪪");
         };
 
-        window.testarEnvioMensagemApi = function() {
-            const numTest = document.getElementById('inputTestNum')?.value.trim();
-            if (!numTest) { alert("Digite o número de telefone com DDD para o teste."); return; }
-            window.enviarMensagemApiReal(numTest, "YMS ECOSYSTEM: Teste de integração de API de mensagens bem-sucedido! 🚚🏭");
+        window.salvarNovoFornecedorDinamico = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const nomeForn = window.limparNomeFornecedor(document.getElementById('cadFornNome').value);
+            let senhaForn = document.getElementById('cadFornSenha').value.trim();
+            if (!nomeForn) return;
+            if (!senhaForn) senhaForn = `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`;
+            const jaExiste = window.mapaCredenciaisFornecedores.find(item => window.limparNomeFornecedor(item.empresa) === nomeForn);
+            if (jaExiste) { jaExiste.senha = senhaForn; } else { window.mapaCredenciaisFornecedores.push({ empresa: nomeForn, senha: senhaForn }); }
+            window.salvarCredenciaisFornecedoresNaMemoria();
+            document.getElementById('cadFornNome').value = "";
+            document.getElementById('cadFornSenha').value = "";
+            window.exibirToast("Fornecedor Salvo!", `Empresa ${nomeForn} atualizada.`, "🏢");
         };
 
-        // --- 5. TORRE DE CONTROLE ---
+        window.salvarUsuarioCustomizado = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const nome = document.getElementById('usrNome').value.trim();
+            const login = document.getElementById('usrLogin').value.trim();
+            const senha = document.getElementById('usrSenha').value.trim();
+            const empresa = document.getElementById('selUsrEmpresa').value || null;
+            const modulosSelecionados = [];
+            document.querySelectorAll('.chk-modulo-usr:checked').forEach(chk => {
+                modulosSelecionados.push(chk.value);
+            });
+            if (!nome || !login || !senha) { alert("Preencha Nome, Login e Senha."); return; }
+            if (modulosSelecionados.length === 0) { alert("Selecione pelo menos um módulo permitido para o usuário!"); return; }
+            const novoUsr = { id: `usr_${Date.now()}`, nome: nome, login: login, senha: senha, modulos: modulosSelecionados, fornecedorEmpresa: empresa };
+            window.ymsStore.baseUsuariosCustom.push(novoUsr);
+            window.salvarUsuariosCustomizadosNaMemoria();
+            document.getElementById('usrNome').value = "";
+            document.getElementById('usrLogin').value = "";
+            document.getElementById('usrSenha').value = "";
+            document.querySelectorAll('.chk-modulo-usr').forEach(chk => chk.checked = false);
+            window.renderizarTabelaUsuariosCustom();
+            window.exibirToast("Usuário Salvo!", `${nome} foi cadastrado com sucesso.`, "🔑");
+        };
+
+        window.excluirUsuarioCustom = function(id) {
+            if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+            window.ymsStore.baseUsuariosCustom = window.ymsStore.baseUsuariosCustom.filter(u => u.id !== id);
+            window.salvarUsuariosCustomizadosNaMemoria();
+            window.renderizarTabelaUsuariosCustom();
+            window.exibirToast("Usuário Removido", "Operador excluído do sistema.", "🗑️");
+        };
+
+        window.removerJanelaIndividual = function(ordem) {
+            if (!confirm(`Remover agendamento ${ordem}?`)) return;
+            window.ymsStore.agendamentos = (window.ymsStore.agendamentos || []).filter(i => i.ordem !== ordem);
+            window.ymsStore.rascunhoAgendamentos = (window.ymsStore.rascunhoAgendamentos || []).filter(i => i.ordem !== ordem);
+            window.salvarAgendamentosNaMemoria();
+            window.renderizarGradePCP();
+            window.exibirToast("Removida", `Agendamento ${ordem} apagado.`, "🗑️");
+        };
+
+        window.limparJanelasSubidas = function() {
+            if (!confirm("Atenção: Excluir TODOS os agendamentos salvos no sistema?")) return;
+            window.ymsStore.agendamentos = [];
+            window.salvarAgendamentosNaMemoria();
+            window.renderizarGradePCP();
+            window.exibirToast("Limpo", "Base de agendamentos zerada.", "🗑️");
+        };
+
+        window.limparGradeTotal = function() {
+            if (!confirm("Limpar os agendamentos em rascunho?")) return;
+            window.ymsStore.rascunhoAgendamentos = [];
+            window.renderizarGradePCP();
+            window.exibirToast("Rascunho Limpo", "Todos os itens de rascunho removidos.", "🗑️");
+        };
+
+        // --- 7. TORRE DE CONTROLE ---
         window.carregarGraficosTorre = function() {
             setTimeout(() => {
                 if (instanceChartCheckin) { instanceChartCheckin.destroy(); instanceChartCheckin = null; }
@@ -2338,7 +2443,7 @@
                     tbody.innerHTML = "";
 
                     if (agendamentos.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-500 italic">Nenhum ticket processado no sistema.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-500 italic">Nenhum ticket processado no período selecionado.</td></tr>`;
                         return;
                     }
 
@@ -2368,148 +2473,7 @@
             }, 150);
         };
 
-        // --- 6. BANCO DE DADOS FIREBASE E PERSISTÊNCIA ---
-        function inicializarEscutadoresFirebase() {
-            onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
-                const data = snapshot.val();
-                window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                window.garantirTodosFornecedoresNaLista();
-                window.sincronizarTodosModulos();
-            });
-
-            onValue(ref(db, 'yms_base_motoristas'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.ymsStore.baseMotoristas = Array.isArray(data) ? data : Object.values(data);
-                } else {
-                    window.ymsStore.baseMotoristas = [
-                        { cpf: "10847778940", nome: "Fernando Junkes", celular: "47992424703", status: "ATIVO", obs: "Liberado Padrão" },
-                        { cpf: "49210839200", nome: "Carlos Eduardo Silva", celular: "47988776655", status: "BLOQUEADO", obs: "Falta de EPI" }
-                    ];
-                }
-                if (typeof window.renderizarTabelaMotoristas === 'function') {
-                    window.renderizarTabelaMotoristas();
-                }
-            });
-
-            onValue(ref(db, 'yms_credenciais_fornecedores'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.mapaCredenciaisFornecedores = Array.isArray(data) ? data : Object.values(data);
-                } else {
-                    window.mapaCredenciaisFornecedores = [...listaPadrao60Fornecedores];
-                }
-                window.garantirTodosFornecedoresNaLista();
-                window.atualizarTodasListasFornecedores();
-            });
-
-            onValue(ref(db, 'yms_usuarios_customizados'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.ymsStore.baseUsuariosCustom = Array.isArray(data) ? data : Object.values(data);
-                } else {
-                    window.ymsStore.baseUsuariosCustom = [
-                        { id: "usr_1", nome: "Operador de Doca 01", login: "doca1", senha: "123", modulos: ["doca"], fornecedorEmpresa: null },
-                        { id: "usr_2", nome: "Triagem Fiscal 01", login: "fiscal1", senha: "123", modulos: ["fiscal"], fornecedorEmpresa: null },
-                        { id: "usr_3", nome: "Kelvin de oliveira Bastos", login: "kelvin_oliveira@whirlpool.com", senha: "123", modulos: ["doca"], fornecedorEmpresa: null }
-                    ];
-                }
-                if (typeof window.renderizarTabelaUsuariosCustom === 'function') {
-                    window.renderizarTabelaUsuariosCustom();
-                }
-            });
-
-            onValue(ref(db, 'yms_config_api'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.ymsStore.configApi = data;
-                    if (typeof window.preencherFormularioConfigApi === 'function') {
-                        window.preencherFormularioConfigApi();
-                    }
-                }
-            });
-        }
-
-        window.garantirTodosFornecedoresNaLista = function() {
-            if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
-                window.mapaCredenciaisFornecedores = [];
-            }
-            let alterou = false;
-            const listaLimpaUnica = window.obterListaNomesFornecedores();
-            listaLimpaUnica.forEach(nomeForn => {
-                if (!window.mapaCredenciaisFornecedores.some(f => window.limparNomeFornecedor(f.empresa) === nomeForn)) {
-                    window.mapaCredenciaisFornecedores.push({
-                        empresa: nomeForn,
-                        senha: `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`
-                    });
-                    alterou = true;
-                }
-            });
-            if (alterou) {
-                window.salvarCredenciaisFornecedoresNaMemoria();
-                window.atualizarTodasListasFornecedores();
-            }
-        };
-
-        window.salvarAgendamentosNaMemoria = function() {
-            set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos);
-        };
-        window.salvarCredenciaisFornecedoresNaMemoria = function() {
-            set(ref(db, 'yms_credenciais_fornecedores'), window.mapaCredenciaisFornecedores);
-        };
-        window.salvarUsuariosCustomizadosNaMemoria = function() {
-            set(ref(db, 'yms_usuarios_customizados'), window.ymsStore.baseUsuariosCustom);
-        };
-        window.salvarBaseMotoristasNaMemoria = function() {
-            set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
-        };
-
-        window.popularSelectFornecedores = function(lista) {
-            const selForn = document.getElementById('inpFornecedor');
-            if (!selForn) return;
-            selForn.innerHTML = "";
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
-                if (idx === 0) opt.selected = true;
-                selForn.appendChild(opt);
-            });
-            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
-        };
-
-        window.filtrarOpcoesFornecedor = function() {
-            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
-            window.popularSelectFornecedores(filtrados);
-        };
-
-        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
-            const sel = document.getElementById('selEmpresaFornecedorLogin');
-            if (!sel) return;
-            sel.innerHTML = "";
-            const lista = listaParaExibir || window.obterListaNomesFornecedores();
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
-                if (idx === 0) opt.selected = true;
-                sel.appendChild(opt);
-            });
-        };
-
-        window.popularSelectCadastroEmpresasUsr = function() {
-            const sel = document.getElementById('selUsrEmpresa');
-            if (!sel) return;
-            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
-            window.obterListaNomesFornecedores().forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = f;
-                sel.appendChild(opt);
-            });
-        };
-
-        // --- 7. STARTUP DA APLICAÇÃO ---
+        // --- 8. STARTUP DA APLICAÇÃO ---
         window.inicializarAplicacao = function() {
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
