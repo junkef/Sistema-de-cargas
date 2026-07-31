@@ -1010,8 +1010,87 @@
         </div>
     </div>
 
-    <!-- SCRIPT GERAL E DE INTERFACE (SEM TYPE MODULE PARA EVITAR BLOQUEIO DE CLICK/REFERENCE ERROR) -->
-    <script>
+    <!-- SCRIPT CENTRAL UNIFICADO COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCljoMUprqBfj9k8y0w7dE3MW7bWdjZlgA",
+            authDomain: "yms-patio-6ba8c.firebaseapp.com",
+            databaseURL: "https://yms-patio-6ba8c-default-rtdb.firebaseio.com",
+            projectId: "yms-patio-6ba8c",
+            storageBucket: "yms-patio-6ba8c.firebasestorage.app",
+            messagingSenderId: "789675229632",
+            appId: "1:789675229632:web:b209d3dc57b702c8710825"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const listaPadrao60Fornecedores = [
+            { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
+            { empresa: "ADERE", senha: "adere@2026" },
+            { empresa: "ALEPLAST", senha: "aleplast@2026" },
+            { empresa: "ARAMART", senha: "aramart@2026" },
+            { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" },
+            { empresa: "ARMACELL", senha: "armacell@2026" },
+            { empresa: "AROTUBI CURITIBA", senha: "arotubicuritiba@2026" },
+            { empresa: "AROTUBI JOINVILLE", senha: "arotubijoinville@2026" },
+            { empresa: "ASIBRAS", senha: "asibras@2026" },
+            { empresa: "BELENUS", senha: "belenus@2026" },
+            { empresa: "BIGFER", senha: "bigfer@2026" },
+            { empresa: "BOLLHOFF", senha: "bollhoff@2026" },
+            { empresa: "BRASCABOS", senha: "brascabos@2026" },
+            { empresa: "BRASKEN", senha: "brasken@2026" },
+            { empresa: "BUNDY CURITIBA", senha: "bundycuritiba@2026" },
+            { empresa: "BUNDY PINDA", senha: "bundypinda@2026" },
+            { empresa: "CARIBOR", senha: "caribor@2026" },
+            { empresa: "CCL", senha: "ccl@2026" },
+            { empresa: "CISER", senha: "ciser@2026" },
+            { empresa: "COLORFIX", senha: "colorfix@2026" },
+            { empresa: "CREMER", senha: "cremer@2026" },
+            { empresa: "CSN", senha: "csn@2026" },
+            { empresa: "DENK", senha: "denk@2026" },
+            { empresa: "DUFERCO", senha: "duferco@2026" },
+            { empresa: "FOCUS", senha: "focus@2026" },
+            { empresa: "FORMPARTS", senha: "formparts@2026" },
+            { empresa: "GRÁFICA NACIONAL", senha: "graficanacional@2026" },
+            { empresa: "INJEQUALY", senha: "injequaly@2026" },
+            { empresa: "INNARA", senha: "innara@2026" },
+            { empresa: "INNOVA", senha: "innova@2026" },
+            { empresa: "ISHENG", senha: "isheng@2026" },
+            { empresa: "ISOFORMA", senha: "isoforma@2026" },
+            { empresa: "ISOTERM", senha: "isoterm@2026" },
+            { empresa: "KLABIN", senha: "klabin@2026" },
+            { empresa: "KNAUF", senha: "knauf@2026" },
+            { empresa: "LINKPLAS", senha: "linkplas@2026" },
+            { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" },
+            { empresa: "METALMA", senha: "metalma@2026" },
+            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" },
+            { empresa: "MULTILOG", senha: "multilog@2026" },
+            { empresa: "NIDEC", senha: "nidec@2026" },
+            { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
+            { empresa: "PARANAPANEMA", senha: "paranapanema@2026" },
+            { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
+            { empresa: "REFREX", senha: "refrex@2026" },
+            { empresa: "RUDOLPH", senha: "rudolph@2026" },
+            { empresa: "SCHOTT", senha: "schott@2026" },
+            { empresa: "SG/LEAS", senha: "sgleas@2026" },
+            { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" },
+            { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
+            { empresa: "TESA", senha: "tesa@2026" },
+            { empresa: "UNIPLAST", senha: "uniplast@2026" },
+            { empresa: "UNITAAL", senha: "unitaal@2026" },
+            { empresa: "USIMINAS", senha: "usiminas@2026" },
+            { empresa: "VEXILIOM", senha: "vexiliom@2026" },
+            { empresa: "VIPRADO", senha: "viprado@2026" },
+            { empresa: "VITROCOLOR", senha: "vitrocolor@2026" },
+            { empresa: "WEG MOTORES", senha: "weg@2026" },
+            { empresa: "WEG TINTAS", senha: "wegtintas@2026" },
+            { empresa: "WEST ROCK", senha: "westrock@2026" }
+        ];
+
         window.ymsStore = {
             agendamentos: [],
             rascunhoAgendamentos: [],
@@ -1035,6 +1114,155 @@
 
         window.mapaCredenciaisFornecedores = [];
 
+        const listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
+        const slotsDia24h = [];
+        for (let h = 0; h < 24; h++) {
+            for (let m of [0, 30]) {
+                slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+            }
+        }
+
+        let instanceChartCheckin = null;
+        let instanceChartDocas = null;
+        let instanceChartMediaTempo = null;
+
+        // --- 1. FUNÇÕES UTILITÁRIAS BASE ---
+        window.limparNomeFornecedor = function(nome) {
+            let str = String(nome || '').trim().toUpperCase();
+            if (!str) return '';
+            if (!str.match(/^5\s+ESTRELAS/i)) {
+                str = str.replace(/[\s\-_]*\d+$/, '').trim();
+            }
+            return str;
+        };
+
+        window.obterListaNomesFornecedores = function() {
+            const conjuntoUnico = new Set();
+            listaPadrao60Fornecedores.forEach(item => {
+                const limpo = window.limparNomeFornecedor(item.empresa);
+                if (limpo) conjuntoUnico.add(limpo);
+            });
+            if (Array.isArray(window.mapaCredenciaisFornecedores)) {
+                window.mapaCredenciaisFornecedores.forEach(item => {
+                    const limpo = window.limparNomeFornecedor(item.empresa);
+                    if (limpo) conjuntoUnico.add(limpo);
+                });
+            }
+            const todos = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
+            todos.forEach(ag => {
+                if (ag && ag.fornecedor) {
+                    const limpo = window.limparNomeFornecedor(ag.fornecedor);
+                    if (limpo) conjuntoUnico.add(limpo);
+                }
+            });
+            return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        };
+
+        window.normalizarTexto = function(txt) {
+            return String(txt || '').toLowerCase().replace(/\s+/g, '').trim();
+        };
+
+        window.horaParaMinutos = function(horaStr) {
+            if (!horaStr || horaStr === '---') return 0;
+            const partes = String(horaStr).trim().split(':');
+            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
+        };
+
+        window.exibirToast = function(titulo, sub, icone = "✨") {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            document.getElementById('toastIcon').textContent = icone;
+            document.getElementById('toastTitulo').textContent = titulo;
+            document.getElementById('toastSub').textContent = sub;
+            toast.className = "fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-100 z-50 min-w-[320px]";
+            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
+        };
+
+        window.atualizarRelogioDigital = function() {
+            const relogio = document.getElementById('relogioGlobal');
+            if (relogio) {
+                relogio.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
+            }
+        };
+
+        window.dataEhPassada = function(dataStr) {
+            if (!dataStr) return false;
+            let ano, mes, dia;
+            if (dataStr.includes('/')) {
+                const partes = dataStr.split('/');
+                dia = parseInt(partes[0], 10); mes = parseInt(partes[1], 10) - 1; ano = parseInt(partes[2], 10);
+            } else if (dataStr.includes('-')) {
+                const partes = dataStr.split('-');
+                ano = parseInt(partes[0], 10); mes = parseInt(partes[1], 10) - 1; dia = parseInt(partes[2], 10);
+            } else { return false; }
+            const dataAgendada = new Date(ano, mes, dia);
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+            return dataAgendada < hoje;
+        };
+
+        window.obterDataHojeISO = function() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        };
+
+        window.obterDataHojePtBR = function() {
+            const hoje = new Date();
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const ano = hoje.getFullYear();
+            return `${dia}/${mes}/${ano}`;
+        };
+
+        window.obterDiaSemanaPtBR = function(dataStr) {
+            if (!dataStr) return "-";
+            let dia, mes, ano;
+            if (dataStr.includes('/')) {
+                const p = dataStr.split('/');
+                dia = parseInt(p[0], 10); mes = parseInt(p[1], 10) - 1; ano = parseInt(p[2], 10);
+            } else if (dataStr.includes('-')) {
+                const p = dataStr.split('-');
+                ano = parseInt(p[0], 10); mes = parseInt(p[1], 10) - 1; dia = parseInt(p[2], 10);
+            } else { return "-"; }
+            const d = new Date(ano, mes, dia);
+            const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            return dias[d.getDay()] || "-";
+        };
+
+        window.formatarHoraIso = function(isoStr) {
+            if (!isoStr) return "-";
+            try {
+                const d = new Date(isoStr);
+                if (isNaN(d.getTime())) return String(isoStr);
+                return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            } catch(e) { return "-"; }
+        };
+
+        window.calcularDiferencaHorasFormatada = function(horaIniStr, horaFimStr) {
+            if (!horaIniStr || !horaFimStr || horaIniStr === '-' || horaFimStr === '-') return "-";
+            const minIni = window.horaParaMinutos(horaIniStr);
+            let minFim = window.horaParaMinutos(horaFimStr);
+            if (minFim < minIni) minFim += 1440;
+            const diff = Math.max(0, minFim - minIni);
+            const h = Math.floor(diff / 60);
+            const m = diff % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}h`;
+        };
+
+        window.calcularSlaTicket = function(agendamento) {
+            if (!agendamento || !agendamento.horaIni) return "NO HORÁRIO";
+            const agora = new Date();
+            const minAtuais = agora.getHours() * 60 + agora.getMinutes();
+            const minAgendado = window.horaParaMinutos(agendamento.horaIni);
+            const diff = minAtuais - minAgendado;
+            if (diff > 15) return "ATRASADO";
+            if (diff < -15) return "ADIANTADO";
+            return "NO HORÁRIO";
+        };
+
+        // --- 2. GERENCIAMENTO DE PERFIS E LOGIN ---
         const configPerfisAcesso = {
             'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
             'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
@@ -1214,238 +1442,8 @@
                 window.renderizarModuloCheckout();
             }
         };
-    </script>
 
-    <!-- SCRIPT CENTRAL COM INTEGRAÇÃO FIREBASE REALTIME DATABASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCljoMUprqBfj9k8y0w7dE3MW7bWdjZlgA",
-            authDomain: "yms-patio-6ba8c.firebaseapp.com",
-            databaseURL: "https://yms-patio-6ba8c-default-rtdb.firebaseio.com",
-            projectId: "yms-patio-6ba8c",
-            storageBucket: "yms-patio-6ba8c.firebasestorage.app",
-            messagingSenderId: "789675229632",
-            appId: "1:789675229632:web:b209d3dc57b702c8710825"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        const listaPadrao60Fornecedores = [
-            { empresa: "5 ESTRELAS", senha: "5estrelas@2026" },
-            { empresa: "ADERE", senha: "adere@2026" },
-            { empresa: "ALEPLAST", senha: "aleplast@2026" },
-            { empresa: "ARAMART", senha: "aramart@2026" },
-            { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" },
-            { empresa: "ARMACELL", senha: "armacell@2026" },
-            { empresa: "AROTUBI CURITIBA", senha: "arotubicuritiba@2026" },
-            { empresa: "AROTUBI JOINVILLE", senha: "arotubijoinville@2026" },
-            { empresa: "ASIBRAS", senha: "asibras@2026" },
-            { empresa: "BELENUS", senha: "belenus@2026" },
-            { empresa: "BIGFER", senha: "bigfer@2026" },
-            { empresa: "BOLLHOFF", senha: "bollhoff@2026" },
-            { empresa: "BRASCABOS", senha: "brascabos@2026" },
-            { empresa: "BRASKEN", senha: "brasken@2026" },
-            { empresa: "BUNDY CURITIBA", senha: "bundycuritiba@2026" },
-            { empresa: "BUNDY PINDA", senha: "bundypinda@2026" },
-            { empresa: "CARIBOR", senha: "caribor@2026" },
-            { empresa: "CCL", senha: "ccl@2026" },
-            { empresa: "CISER", senha: "ciser@2026" },
-            { empresa: "COLORFIX", senha: "colorfix@2026" },
-            { empresa: "CREMER", senha: "cremer@2026" },
-            { empresa: "CSN", senha: "csn@2026" },
-            { empresa: "DENK", senha: "denk@2026" },
-            { empresa: "DUFERCO", senha: "duferco@2026" },
-            { empresa: "FOCUS", senha: "focus@2026" },
-            { empresa: "FORMPARTS", senha: "formparts@2026" },
-            { empresa: "GRÁFICA NACIONAL", senha: "graficanacional@2026" },
-            { empresa: "INJEQUALY", senha: "injequaly@2026" },
-            { empresa: "INNARA", senha: "innara@2026" },
-            { empresa: "INNOVA", senha: "innova@2026" },
-            { empresa: "ISHENG", senha: "isheng@2026" },
-            { empresa: "ISOFORMA", senha: "isoforma@2026" },
-            { empresa: "ISOTERM", senha: "isoterm@2026" },
-            { empresa: "KLABIN", senha: "klabin@2026" },
-            { empresa: "KNAUF", senha: "knauf@2026" },
-            { empresa: "LINKPLAS", senha: "linkplas@2026" },
-            { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" },
-            { empresa: "METALMA", senha: "metalma@2026" },
-            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" },
-            { empresa: "MULTILOG", senha: "multilog@2026" },
-            { empresa: "NIDEC", senha: "nidec@2026" },
-            { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
-            { empresa: "PARANAPANEMA", senha: "paranapanema@2026" },
-            { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
-            { empresa: "REFREX", senha: "refrex@2026" },
-            { empresa: "RUDOLPH", senha: "rudolph@2026" },
-            { empresa: "SCHOTT", senha: "schott@2026" },
-            { empresa: "SG/LEAS", senha: "sgleas@2026" },
-            { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" },
-            { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
-            { empresa: "TESA", senha: "tesa@2026" },
-            { empresa: "UNIPLAST", senha: "uniplast@2026" },
-            { empresa: "UNITAAL", senha: "unitaal@2026" },
-            { empresa: "USIMINAS", senha: "usiminas@2026" },
-            { empresa: "VEXILIOM", senha: "vexiliom@2026" },
-            { empresa: "VIPRADO", senha: "viprado@2026" },
-            { empresa: "VITROCOLOR", senha: "vitrocolor@2026" },
-            { empresa: "WEG MOTORES", senha: "weg@2026" },
-            { empresa: "WEG TINTAS", senha: "wegtintas@2026" },
-            { empresa: "WEST ROCK", senha: "westrock@2026" }
-        ];
-
-        const listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
-        const slotsDia24h = [];
-        for (let h = 0; h < 24; h++) {
-            for (let m of [0, 30]) {
-                slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-            }
-        }
-
-        let instanceChartCheckin = null;
-        let instanceChartDocas = null;
-        let instanceChartMediaTempo = null;
-
-        // --- 1. FUNÇÕES UTILITÁRIAS BASE E TEMPO ---
-        window.limparNomeFornecedor = function(nome) {
-            let str = String(nome || '').trim().toUpperCase();
-            if (!str) return '';
-            if (!str.match(/^5\s+ESTRELAS/i)) {
-                str = str.replace(/[\s\-_]*\d+$/, '').trim();
-            }
-            return str;
-        };
-
-        window.obterListaNomesFornecedores = function() {
-            const conjuntoUnico = new Set();
-            listaPadrao60Fornecedores.forEach(item => {
-                const limpo = window.limparNomeFornecedor(item.empresa);
-                if (limpo) conjuntoUnico.add(limpo);
-            });
-            if (Array.isArray(window.mapaCredenciaisFornecedores)) {
-                window.mapaCredenciaisFornecedores.forEach(item => {
-                    const limpo = window.limparNomeFornecedor(item.empresa);
-                    if (limpo) conjuntoUnico.add(limpo);
-                });
-            }
-            const todos = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
-            todos.forEach(ag => {
-                if (ag && ag.fornecedor) {
-                    const limpo = window.limparNomeFornecedor(ag.fornecedor);
-                    if (limpo) conjuntoUnico.add(limpo);
-                }
-            });
-            return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-        };
-
-        window.normalizarTexto = function(txt) {
-            return String(txt || '').toLowerCase().replace(/\s+/g, '').trim();
-        };
-
-        window.horaParaMinutos = function(horaStr) {
-            if (!horaStr || horaStr === '---') return 0;
-            const partes = String(horaStr).trim().split(':');
-            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
-        };
-
-        window.exibirToast = function(titulo, sub, icone = "✨") {
-            const toast = document.getElementById('toast');
-            if (!toast) return;
-            document.getElementById('toastIcon').textContent = icone;
-            document.getElementById('toastTitulo').textContent = titulo;
-            document.getElementById('toastSub').textContent = sub;
-            toast.className = "fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-100 z-50 min-w-[320px]";
-            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
-        };
-
-        window.atualizarRelogioDigital = function() {
-            const relogio = document.getElementById('relogioGlobal');
-            if (relogio) {
-                relogio.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
-            }
-        };
-
-        window.dataEhPassada = function(dataStr) {
-            if (!dataStr) return false;
-            let ano, mes, dia;
-            if (dataStr.includes('/')) {
-                const partes = dataStr.split('/');
-                dia = parseInt(partes[0], 10); mes = parseInt(partes[1], 10) - 1; ano = parseInt(partes[2], 10);
-            } else if (dataStr.includes('-')) {
-                const partes = dataStr.split('-');
-                ano = parseInt(partes[0], 10); mes = parseInt(partes[1], 10) - 1; dia = parseInt(partes[2], 10);
-            } else { return false; }
-            const dataAgendada = new Date(ano, mes, dia);
-            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
-            return dataAgendada < hoje;
-        };
-
-        window.obterDataHojeISO = function() {
-            const hoje = new Date();
-            const ano = hoje.getFullYear();
-            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-            const dia = String(hoje.getDate()).padStart(2, '0');
-            return `${ano}-${mes}-${dia}`;
-        };
-
-        window.obterDataHojePtBR = function() {
-            const hoje = new Date();
-            const dia = String(hoje.getDate()).padStart(2, '0');
-            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-            const ano = hoje.getFullYear();
-            return `${dia}/${mes}/${ano}`;
-        };
-
-        window.obterDiaSemanaPtBR = function(dataStr) {
-            if (!dataStr) return "-";
-            let dia, mes, ano;
-            if (dataStr.includes('/')) {
-                const p = dataStr.split('/');
-                dia = parseInt(p[0], 10); mes = parseInt(p[1], 10) - 1; ano = parseInt(p[2], 10);
-            } else if (dataStr.includes('-')) {
-                const p = dataStr.split('-');
-                ano = parseInt(p[0], 10); mes = parseInt(p[1], 10) - 1; dia = parseInt(p[2], 10);
-            } else { return "-"; }
-            const d = new Date(ano, mes, dia);
-            const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-            return dias[d.getDay()] || "-";
-        };
-
-        window.formatarHoraIso = function(isoStr) {
-            if (!isoStr) return "-";
-            try {
-                const d = new Date(isoStr);
-                if (isNaN(d.getTime())) return String(isoStr);
-                return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            } catch(e) { return "-"; }
-        };
-
-        window.calcularDiferencaHorasFormatada = function(horaIniStr, horaFimStr) {
-            if (!horaIniStr || !horaFimStr || horaIniStr === '-' || horaFimStr === '-') return "-";
-            const minIni = window.horaParaMinutos(horaIniStr);
-            let minFim = window.horaParaMinutos(horaFimStr);
-            if (minFim < minIni) minFim += 1440;
-            const diff = Math.max(0, minFim - minIni);
-            const h = Math.floor(diff / 60);
-            const m = diff % 60;
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}h`;
-        };
-
-        window.calcularSlaTicket = function(agendamento) {
-            if (!agendamento || !agendamento.horaIni) return "NO HORÁRIO";
-            const agora = new Date();
-            const minAtuais = agora.getHours() * 60 + agora.getMinutes();
-            const minAgendado = window.horaParaMinutos(agendamento.horaIni);
-            const diff = minAtuais - minAgendado;
-            if (diff > 15) return "ATRASADO";
-            if (diff < -15) return "ADIANTADO";
-            return "NO HORÁRIO";
-        };
-
-        // --- 2. CONTROLE DE HORÁRIOS DO PCP ---
+        // --- 3. CONTROLE DE HORÁRIOS DO PCP ---
         window.atualizarHorariosDisponiveis = function() {
             const inpHora = document.getElementById('inpHora');
             const gridTimeline = document.getElementById('gridTimelineHorarios');
@@ -1529,7 +1527,7 @@
             }
         };
 
-        // --- 3. RENDERIZADORES DE TABELAS E MODULOS ---
+        // --- 4. RENDERIZADORES DE TABELAS E MODULOS ---
         window.renderizarTabelaFornecedores = function() {
             const tbody = document.getElementById('tblCorpoFornecedores');
             if (!tbody) return;
@@ -2037,65 +2035,307 @@
             }
         };
 
-        window.salvarAgendamentosNaMemoria = function() {
-            set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos);
-        };
-        window.salvarCredenciaisFornecedoresNaMemoria = function() {
-            set(ref(db, 'yms_credenciais_fornecedores'), window.mapaCredenciaisFornecedores);
-        };
-        window.salvarUsuariosCustomizadosNaMemoria = function() {
-            set(ref(db, 'yms_usuarios_customizados'), window.ymsStore.baseUsuariosCustom);
-        };
-        window.salvarBaseMotoristasNaMemoria = function() {
-            set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
+        window.sincronizarTodosModulos = function() {
+            window.garantirTodosFornecedoresNaLista();
+            if (typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
+            if (typeof window.renderizarModuloFornecedor === 'function') window.renderizarModuloFornecedor();
+            if (typeof window.renderizarModuloFiscal === 'function') window.renderizarModuloFiscal();
+            if (typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
+            if (typeof window.renderizarModuloCheckout === 'function') window.renderizarModuloCheckout();
+            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
+            if (typeof window.carregarGraficosTorre === 'function') window.carregarGraficosTorre();
         };
 
-        window.popularSelectFornecedores = function(lista) {
-            const selForn = document.getElementById('inpFornecedor');
-            if (!selForn) return;
-            selForn.innerHTML = "";
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
-                if (idx === 0) opt.selected = true;
-                selForn.appendChild(opt);
+        // --- 5. COMPLEMENTOS DE PCP, FISCAL, DOCA E PLANILHA ---
+        window.lerPlanilhaExcel = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                json.forEach(row => {
+                    const proximoId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
+                    const item = {
+                        ordem: row['ORDEM'] || `ORD-${proximoId}`,
+                        data: row['DATA'] || window.obterDataHojePtBR(),
+                        fornecedor: window.limparNomeFornecedor(row['FORNECEDOR'] || 'FORNECEDOR DESCONHECIDO'),
+                        doca: row['DOCA'] || listaTodasDocas[0],
+                        horaIni: row['INICIO'] || '08:00',
+                        horaFim: row['FIM'] || '10:00',
+                        status: 'AGENDADO',
+                        tipo: 'COTIDIANO',
+                        isRascunho: true,
+                        nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
+                        timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
+                    };
+                    window.ymsStore.rascunhoAgendamentos.push(item);
+                });
+
+                window.garantirTodosFornecedoresNaLista();
+                window.renderizarGradePCP();
+                window.exibirToast("Planilha Lida!", `${json.length} registros adicionados ao rascunho.`, "📊");
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        window.processarTextoBruto = function() {
+            const texto = document.getElementById('txtBruto')?.value.trim();
+            if (!texto) { alert("Cole o texto da planilha antes de processar."); return; }
+            const linhas = texto.split('\n');
+            let adicionados = 0;
+
+            linhas.forEach(linha => {
+                const colunas = linha.split('\t');
+                if (colunas.length >= 3) {
+                    const proximoId = window.ymsStore.agendamentos.length + window.ymsStore.rascunhoAgendamentos.length + 1000;
+                    const item = {
+                        ordem: colunas[0]?.trim() || `ORD-${proximoId}`,
+                        data: colunas[1]?.trim() || window.obterDataHojePtBR(),
+                        fornecedor: window.limparNomeFornecedor(colunas[2] || 'FORNECEDOR DESCONHECIDO'),
+                        doca: colunas[3]?.trim() || listaTodasDocas[0],
+                        horaIni: colunas[4]?.trim() || '08:00',
+                        horaFim: colunas[5]?.trim() || '10:00',
+                        status: 'AGENDADO',
+                        tipo: 'COTIDIANO',
+                        isRascunho: true,
+                        nf: null, transp: null, cavalo: null, carreta: null, motorista: null, cpf: null, celular: null, ticket: null, docasSequencia: [], indexDocaAtual: 0,
+                        timeCheckin: null, timeFiscal: null, timeInicioDescarga: null, timeFimDescarga: null, timeCheckout: null, statusSlaTicket: ""
+                    };
+                    window.ymsStore.rascunhoAgendamentos.push(item);
+                    adicionados++;
+                }
             });
-            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
+
+            window.garantirTodosFornecedoresNaLista();
+            window.renderizarGradePCP();
+            document.getElementById('txtBruto').value = '';
+            window.exibirToast("Texto Processado!", `${adicionados} registros adicionados ao rascunho.`, "📋");
         };
 
-        window.filtrarOpcoesFornecedor = function() {
-            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
-            window.popularSelectFornecedores(filtrados);
+        window.selecionarTicketFiscal = function(ticket) {
+            window.ymsStore.ticketAtivoFiscal = ticket;
+            window.ymsStore.sequenciaDocasSelecao = [];
+            window.renderizarModuloFiscal();
         };
 
-        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
-            const sel = document.getElementById('selEmpresaFornecedorLogin');
-            if (!sel) return;
-            sel.innerHTML = "";
-            const lista = listaParaExibir || window.obterListaNomesFornecedores();
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
-                if (idx === 0) opt.selected = true;
-                sel.appendChild(opt);
+        window.alternarSelecaoDocaFiscal = function(doca) {
+            if (!window.ymsStore.sequenciaDocasSelecao) window.ymsStore.sequenciaDocasSelecao = [];
+            const idx = window.ymsStore.sequenciaDocasSelecao.indexOf(doca);
+            if (idx !== -1) {
+                window.ymsStore.sequenciaDocasSelecao.splice(idx, 1);
+            } else {
+                window.ymsStore.sequenciaDocasSelecao.push(doca);
+            }
+            window.renderizarModuloFiscal();
+        };
+
+        window.resetarSequenciaDocas = function() {
+            window.ymsStore.sequenciaDocasSelecao = [];
+            window.renderizarModuloFiscal();
+        };
+
+        window.atualizarDisplayRotaSequencial = function() {
+            const display = document.getElementById('displayRotaSequencial');
+            if (!display) return;
+            const seq = window.ymsStore.sequenciaDocasSelecao || [];
+            if (seq.length === 0) {
+                display.innerHTML = `<span class="text-slate-500 italic">Nenhuma doca selecionada</span>`;
+            } else {
+                display.innerHTML = seq.map((d, i) => `<span class="bg-purple-900/80 border border-purple-500 text-white px-2 py-0.5 rounded font-mono text-xs">${i + 1}ª: ${d}</span>`).join(" ➔ ");
+            }
+        };
+
+        window.limparPainelDetalhesFiscal = function() {
+            document.getElementById('txtTicketFiscalAtivo').textContent = "Selecione um Ticket";
+            document.getElementById('fiscMotorista').textContent = "-";
+            document.getElementById('fiscPlaca').textContent = "-";
+            document.getElementById('fiscNf').textContent = "-";
+            window.ymsStore.ticketAtivoFiscal = null;
+            window.ymsStore.sequenciaDocasSelecao = [];
+        };
+
+        window.liberarParaDocaFiscal = function() {
+            const ticket = window.ymsStore.ticketAtivoFiscal;
+            if (!ticket) {
+                alert("Selecione um veículo da Fila do Pátio.");
+                return;
+            }
+            const rota = window.ymsStore.sequenciaDocasSelecao || [];
+            if (rota.length === 0) {
+                alert("Selecione pelo menos uma doca para formar a rota.");
+                return;
+            }
+
+            const index = window.ymsStore.agendamentos.findIndex(i => i.ticket === ticket);
+            if (index !== -1) {
+                window.ymsStore.agendamentos[index].docasSequencia = [...rota];
+                window.ymsStore.agendamentos[index].indexDocaAtual = 0;
+                window.ymsStore.agendamentos[index].timeFiscal = new Date().toISOString();
+                window.ymsStore.agendamentos[index].status = "TRIAGEM_FISCAL";
+
+                window.salvarAgendamentosNaMemoria();
+                window.dispararSmsEtapa(window.ymsStore.agendamentos[index], 'TRIAGEM_FISCAL');
+                window.limparPainelDetalhesFiscal();
+                window.renderizarModuloFiscal();
+                window.exibirToast("Rota Liberada!", `Ticket ${ticket} enviado para a ${rota[0]}`, "🚀");
+            }
+        };
+
+        window.chamarProximoSms = function() {
+            const selDoca = document.getElementById('selDocaOperador');
+            if (!selDoca) return;
+            const docaSel = selDoca.value;
+            const docaNorm = window.normalizarTexto(docaSel);
+            const agendamentos = window.ymsStore.agendamentos || [];
+
+            const jaEmDescarga = agendamentos.find(i => {
+                if (i.status !== 'EM_DESCARGA') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
             });
-        };
 
-        window.popularSelectCadastroEmpresasUsr = function() {
-            const sel = document.getElementById('selUsrEmpresa');
-            if (!sel) return;
-            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
-            window.obterListaNomesFornecedores().forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = f;
-                sel.appendChild(opt);
+            if (jaEmDescarga) {
+                alert(`Já existe o veículo ${jaEmDescarga.cavalo} (${jaEmDescarga.ticket}) em descarga nesta doca. Finalize a descarga atual primeiro.`);
+                return;
+            }
+
+            const proximo = agendamentos.find(i => {
+                if (i.status !== 'TRIAGEM_FISCAL' && i.status !== 'CHECKIN_PATIO') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
             });
+
+            if (!proximo) {
+                alert("Nenhum caminhão na fila para esta doca.");
+                return;
+            }
+
+            proximo.status = "EM_DESCARGA";
+            proximo.timeInicioDescarga = new Date().toISOString();
+
+            window.salvarAgendamentosNaMemoria();
+            window.dispararSmsEtapa(proximo, 'EM_DESCARGA');
+            window.atualizarPainelDoca();
+            window.exibirToast("Motorista Chamado!", `Ticket ${proximo.ticket} autorizado na ${docaSel}`, "📣");
         };
 
-        // --- 5. BANCO DE DADOS FIREBASE E PERSISTÊNCIA ---
+        window.finalizarDescargaDoca = function() {
+            const selDoca = document.getElementById('selDocaOperador');
+            if (!selDoca) return;
+            const docaSel = selDoca.value;
+            const docaNorm = window.normalizarTexto(docaSel);
+            const agendamentos = window.ymsStore.agendamentos || [];
+
+            const item = agendamentos.find(i => {
+                if (i.status !== 'EM_DESCARGA') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
+            });
+
+            if (!item) {
+                alert("Nenhum veículo está em descarga nesta doca.");
+                return;
+            }
+
+            item.timeFimDescarga = new Date().toISOString();
+
+            if (item.docasSequencia && item.docasSequencia.length > 0 && item.indexDocaAtual + 1 < item.docasSequencia.length) {
+                item.indexDocaAtual += 1;
+                const proximaDoca = item.docasSequencia[item.indexDocaAtual];
+                item.status = "TRIAGEM_FISCAL";
+                window.salvarAgendamentosNaMemoria();
+                window.exibirToast("Avançou Doca!", `Ticket ${item.ticket} direcionado para a próxima doca: ${proximaDoca}`, "➡️");
+            } else {
+                item.status = "AGUARDANDO_CHECKOUT";
+                window.salvarAgendamentosNaMemoria();
+                window.dispararSmsEtapa(item, 'AGUARDANDO_CHECKOUT');
+                window.exibirToast("Descarga Finalizada!", `Ticket ${item.ticket} liberado para a Portaria de Saída.`, "✅");
+            }
+
+            window.atualizarPainelDoca();
+            if (typeof window.renderizarModuloCheckout === 'function') {
+                window.renderizarModuloCheckout();
+            }
+        };
+
+        window.selecionarTicketCheckout = function(ticket) {
+            window.ymsStore.ticketAtivoCheckout = ticket;
+            window.renderizarModuloCheckout();
+        };
+
+        window.limparPainelCheckout = function() {
+            document.getElementById('txtTicketCheckoutAtivo').textContent = "Selecione um Veículo";
+            document.getElementById('chkMotorista').textContent = "-";
+            document.getElementById('chkPlaca').textContent = "-";
+            document.getElementById('chkFornecedor').textContent = "-";
+            document.getElementById('chkHoraEntrada').textContent = "-";
+            document.getElementById('chkRotaDocas').textContent = "-";
+            window.ymsStore.ticketAtivoCheckout = null;
+        };
+
+        window.confirmarSaidaPortaria = function() {
+            const ticket = window.ymsStore.ticketAtivoCheckout;
+            if (!ticket) {
+                alert("Selecione um veículo na fila de Check-out.");
+                return;
+            }
+
+            const index = window.ymsStore.agendamentos.findIndex(i => i.ticket === ticket);
+            if (index !== -1) {
+                window.ymsStore.agendamentos[index].timeCheckout = new Date().toISOString();
+                window.ymsStore.agendamentos[index].status = "CONCLUIDO";
+
+                window.salvarAgendamentosNaMemoria();
+                window.limparPainelCheckout();
+                window.renderizarModuloCheckout();
+                window.exibirToast("Check-out Concluído!", `Ticket ${ticket} finalizado e saída registrada.`, "🚪");
+            }
+        };
+
+        window.exportarRelatorioExcelFormatado = function() {
+            const agendamentos = (window.ymsStore && window.ymsStore.agendamentos) ? window.ymsStore.agendamentos : [];
+            if (agendamentos.length === 0) {
+                alert("Nenhum dado para exportar.");
+                return;
+            }
+
+            const formatados = agendamentos.map(ag => {
+                const horaEntradaReal = ag.timeCheckin ? window.formatarHoraIso(ag.timeCheckin) : (ag.horaIni || '-');
+                const horaSaidaReal = ag.timeCheckout ? window.formatarHoraIso(ag.timeCheckout) : (ag.timeFimDescarga ? window.formatarHoraIso(ag.timeFimDescarga) : (ag.horaFim || '-'));
+                const tempoDescarga = window.calcularDiferencaHorasFormatada(horaEntradaReal, horaSaidaReal);
+
+                return {
+                    "Carga / Ordem": ag.ordem || '-',
+                    "Placa Cavalo": ag.cavalo || '-',
+                    "Placa Carreta": ag.carreta || '-',
+                    "Data Agendada": ag.data || '-',
+                    "Dia da Semana": window.obterDiaSemanaPtBR(ag.data),
+                    "Fornecedor": window.limparNomeFornecedor(ag.fornecedor),
+                    "Hora Agendada Inicial": ag.horaIni || '-',
+                    "Hora Agendada Final": ag.horaFim || '-',
+                    "Chegada Planta (Totem)": ag.timeCheckin ? window.formatarHoraIso(ag.timeCheckin) : '-',
+                    "Liberado Fiscal": ag.timeFiscal ? window.formatarHoraIso(ag.timeFiscal) : '-',
+                    "Docas da Rota": (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" / ") : (ag.doca || '-'),
+                    "Hora Real Entrada Doca": horaEntradaReal,
+                    "Hora Real Saída Doca": horaSaidaReal,
+                    "Tempo Total Descarga": tempoDescarga,
+                    "Status Atual / SLA": ag.statusSlaTicket || ag.status || 'AGENDADO'
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(formatados);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Relatorio YMS");
+            XLSX.writeFile(workbook, `YMS_Relatorio_${window.obterDataHojeISO()}.xlsx`);
+            window.exibirToast("Exportado!", "O arquivo Excel foi baixado no seu computador.", "📥");
+        };
+
+        // --- 6. BANCO DE DADOS FIREBASE E PERSISTÊNCIA ---
         function inicializarEscutadoresFirebase() {
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                 const data = snapshot.val();
@@ -2157,6 +2397,65 @@
             });
         }
 
+        window.salvarAgendamentosNaMemoria = function() {
+            set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos);
+        };
+        window.salvarCredenciaisFornecedoresNaMemoria = function() {
+            set(ref(db, 'yms_credenciais_fornecedores'), window.mapaCredenciaisFornecedores);
+        };
+        window.salvarUsuariosCustomizadosNaMemoria = function() {
+            set(ref(db, 'yms_usuarios_customizados'), window.ymsStore.baseUsuariosCustom);
+        };
+        window.salvarBaseMotoristasNaMemoria = function() {
+            set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
+        };
+
+        window.popularSelectFornecedores = function(lista) {
+            const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
+            selForn.innerHTML = "";
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
+        };
+
+        window.filtrarOpcoesFornecedor = function() {
+            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectFornecedores(filtrados);
+        };
+
+        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
+            const sel = document.getElementById('selEmpresaFornecedorLogin');
+            if (!sel) return;
+            sel.innerHTML = "";
+            const lista = listaParaExibir || window.obterListaNomesFornecedores();
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
+                if (idx === 0) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        };
+
+        window.popularSelectCadastroEmpresasUsr = function() {
+            const sel = document.getElementById('selUsrEmpresa');
+            if (!sel) return;
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
+            window.obterListaNomesFornecedores().forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = f;
+                sel.appendChild(opt);
+            });
+        };
+
+        // --- 7. STARTUP DA APLICAÇÃO ---
         window.inicializarAplicacao = function() {
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
