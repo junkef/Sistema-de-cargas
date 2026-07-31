@@ -251,7 +251,7 @@
             return "NO HORÁRIO";
         };
 
-        // --- 2. CONTROLE DE INTERFACE, LOGIN E ABAS PCP ---
+        // --- 2. GERENCIAMENTO DE PERFIS E LOGIN ---
         const configPerfisAcesso = {
             'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
             'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
@@ -389,6 +389,18 @@
             document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
         };
 
+        // --- 3. CONTROLE DE ABAS E MODULOS ---
+        window.sincronizarTodosModulos = function() {
+            window.garantirTodosFornecedoresNaLista();
+            if (typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
+            if (typeof window.renderizarModuloFornecedor === 'function') window.renderizarModuloFornecedor();
+            if (typeof window.renderizarModuloFiscal === 'function') window.renderizarModuloFiscal();
+            if (typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
+            if (typeof window.renderizarModuloCheckout === 'function') window.renderizarModuloCheckout();
+            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
+            if (typeof window.carregarGraficosTorre === 'function') window.carregarGraficosTorre();
+        };
+
         window.mudarPerfil = function(perfilId) {
             if (window.ymsStore.usuarioLogado && !window.ymsStore.usuarioLogado.modulosCustom.includes(perfilId)) {
                 alert("Acesso negado a este módulo!");
@@ -502,7 +514,7 @@
             }
         };
 
-        // --- 3. FUNCIONALIDADES DE EXCLUSÃO (RESOLVENDO ERRO NO CONSOLE) ---
+        // --- 4. EXCLUSÃO E MANIPULAÇÃO DE REGISTROS ---
         window.excluirFornecedorDinamico = function(empresa) {
             if (!confirm(`Excluir a empresa "${empresa}" da base?`)) return;
             const alvo = String(empresa).trim().toUpperCase();
@@ -566,7 +578,7 @@
             window.exibirToast("Rascunho Limpo", "Todos os itens de rascunho removidos.", "🗑️");
         };
 
-        // --- 4. CONTROLE DE HORÁRIOS DO PCP ---
+        // --- 5. CONTROLE DE HORÁRIOS DO PCP ---
         window.atualizarHorariosDisponiveis = function() {
             const inpHora = document.getElementById('inpHora');
             const gridTimeline = document.getElementById('gridTimelineHorarios');
@@ -650,7 +662,7 @@
             }
         };
 
-        // --- 5. RENDERIZADORES DE TABELAS ---
+        // --- 6. RENDERIZADORES DE TABELAS ---
         window.renderizarTabelaFornecedores = function() {
             const tbody = document.getElementById('tblCorpoFornecedores');
             if (!tbody) return;
@@ -1125,7 +1137,40 @@
             }
         };
 
-        // --- 6. TORRE DE CONTROLE & GRÁFICOS (COM FILTRO DE DATA ATIVO) ---
+        window.atualizarTodasListasFornecedores = function() {
+            const fornecedoresLimpos = window.obterListaNomesFornecedores();
+            if (typeof window.popularSelectFornecedores === 'function') window.popularSelectFornecedores(fornecedoresLimpos);
+            if (typeof window.popularSelectLoginEmpresas === 'function') window.popularSelectLoginEmpresas(fornecedoresLimpos);
+            if (typeof window.popularSelectCadastroEmpresasUsr === 'function') window.popularSelectCadastroEmpresasUsr();
+            if (typeof window.renderizarTabelaFornecedores === 'function') window.renderizarTabelaFornecedores();
+            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
+            if (typeof window.renderizarTabelaUsuariosCustom === 'function') window.renderizarTabelaUsuariosCustom();
+            const badgeTotal = document.getElementById('badgeQtdFornecedoresTotal');
+            if (badgeTotal) badgeTotal.textContent = `${fornecedoresLimpos.length} Empresas`;
+        };
+
+        window.garantirTodosFornecedoresNaLista = function() {
+            if (!Array.isArray(window.mapaCredenciaisFornecedores)) {
+                window.mapaCredenciaisFornecedores = [];
+            }
+            let alterou = false;
+            const listaLimpaUnica = window.obterListaNomesFornecedores();
+            listaLimpaUnica.forEach(nomeForn => {
+                if (!window.mapaCredenciaisFornecedores.some(f => window.limparNomeFornecedor(f.empresa) === nomeForn)) {
+                    window.mapaCredenciaisFornecedores.push({
+                        empresa: nomeForn,
+                        senha: `${nomeForn.toLowerCase().replace(/\s+/g, '')}@2026`
+                    });
+                    alterou = true;
+                }
+            });
+            if (alterou) {
+                window.salvarCredenciaisFornecedoresNaMemoria();
+                window.atualizarTodasListasFornecedores();
+            }
+        };
+
+        // --- 7. TORRE DE CONTROLE & GRÁFICOS (BLINDADO CONTRA ERROS DE FILTRO) ---
         window.carregarGraficosTorre = function() {
             setTimeout(() => {
                 if (instanceChartCheckin) { instanceChartCheckin.destroy(); instanceChartCheckin = null; }
@@ -1292,7 +1337,7 @@
             }, 150);
         };
 
-        // --- 7. BANCO DE DADOS FIREBASE ---
+        // --- 8. BANCO DE DADOS FIREBASE ---
         function inicializarEscutadoresFirebase() {
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                 const data = snapshot.val();
@@ -1356,7 +1401,65 @@
             });
         }
 
-        // --- 8. STARTUP DA APLICAÇÃO ---
+        window.salvarAgendamentosNaMemoria = function() {
+            set(ref(db, 'yms_agendamentos_oficiais'), window.ymsStore.agendamentos);
+        };
+        window.salvarCredenciaisFornecedoresNaMemoria = function() {
+            set(ref(db, 'yms_credenciais_fornecedores'), window.mapaCredenciaisFornecedores);
+        };
+        window.salvarUsuariosCustomizadosNaMemoria = function() {
+            set(ref(db, 'yms_usuarios_customizados'), window.ymsStore.baseUsuariosCustom);
+        };
+        window.salvarBaseMotoristasNaMemoria = function() {
+            set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
+        };
+
+        window.popularSelectFornecedores = function(lista) {
+            const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
+            selForn.innerHTML = "";
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
+        };
+
+        window.filtrarOpcoesFornecedor = function() {
+            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
+            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
+            window.popularSelectFornecedores(filtrados);
+        };
+
+        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
+            const sel = document.getElementById('selEmpresaFornecedorLogin');
+            if (!sel) return;
+            sel.innerHTML = "";
+            const lista = listaParaExibir || window.obterListaNomesFornecedores();
+            lista.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
+                if (idx === 0) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        };
+
+        window.popularSelectCadastroEmpresasUsr = function() {
+            const sel = document.getElementById('selUsrEmpresa');
+            if (!sel) return;
+            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
+            window.obterListaNomesFornecedores().forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = f;
+                sel.appendChild(opt);
+            });
+        };
+
+        // --- 9. STARTUP DA APLICAÇÃO ---
         window.inicializarAplicacao = function() {
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
