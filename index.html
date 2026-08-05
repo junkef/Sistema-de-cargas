@@ -2133,7 +2133,7 @@
 
             // 🛡️ BLINDAGEM: Se o seletor estiver vazio, recarrega a lista de docas à força!
             if (selDoca.options.length === 0) {
-                const listaDocasHardcode = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
+                const listaDocasHardcode = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis', 'Doca - Devolução'];
                 listaDocasHardcode.forEach(d => {
                     const opt = document.createElement('option');
                     opt.value = d; 
@@ -3329,6 +3329,105 @@
         } else {
             window.inicializarAplicacao();
         }
+        // --- FUNÇÃO GLOBAL DE EXCEL (GARANTIA DE ESCOPO) ---
+        window.exportarRelatorioExcelFormatado = function() {
+            const dataIniVal = document.getElementById('repDataInicio') ? document.getElementById('repDataInicio').value : null;
+            const dataFimVal = document.getElementById('repDataFim') ? document.getElementById('repDataFim').value : null;
+
+            let dIni = null, dFim = null;
+            if (dataIniVal) {
+                const p = dataIniVal.split('-');
+                dIni = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                dIni.setHours(0, 0, 0, 0);
+            }
+            if (dataFimVal) {
+                const p = dataFimVal.split('-');
+                dFim = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                dFim.setHours(23, 59, 59, 999);
+            }
+
+            const todosAg = window.ymsStore.agendamentos || [];
+            
+            const filtrados = todosAg.filter(ag => {
+                if (!ag.data) return true;
+                let dAg = null;
+                if (ag.data.includes('/')) {
+                    const pt = ag.data.split('/');
+                    dAg = new Date(parseInt(pt[2], 10), parseInt(pt[1], 10) - 1, parseInt(pt[0], 10));
+                } else if (ag.data.includes('-')) {
+                    const pt = ag.data.split('-');
+                    dAg = new Date(parseInt(pt[0], 10), parseInt(pt[1], 10) - 1, parseInt(pt[2], 10));
+                }
+                if (!dAg) return true;
+                if (dIni && dAg < dIni) return false;
+                if (dFim && dAg > dFim) return false;
+                return true;
+            });
+
+            if (filtrados.length === 0) {
+                alert("Não há dados processados para exportar neste período.");
+                return;
+            }
+
+            const dadosPlanilha = filtrados.map(ag => {
+                let horaEntradaReal = ag.timeCheckin ? (typeof window.formatarHoraIso === 'function' ? window.formatarHoraIso(ag.timeCheckin) : ag.timeCheckin.split('T')[1].substring(0,5)) : (ag.horaIni || '-');
+                let horaSaidaReal = ag.timeCheckout ? (typeof window.formatarHoraIso === 'function' ? window.formatarHoraIso(ag.timeCheckout) : ag.timeCheckout.split('T')[1].substring(0,5)) : (ag.timeFimDescarga ? (typeof window.formatarHoraIso === 'function' ? window.formatarHoraIso(ag.timeFimDescarga) : ag.timeFimDescarga.split('T')[1].substring(0,5)) : (ag.horaFim || '-'));
+                
+                let tempoTotal = '-';
+                if(typeof window.calcularDiferencaHorasFormatada === 'function') {
+                    tempoTotal = window.calcularDiferencaHorasFormatada(horaEntradaReal, horaSaidaReal);
+                }
+                
+                let statusSla = "NO HORÁRIO";
+                if(typeof window.obterStatusSla === 'function') {
+                    statusSla = window.obterStatusSla(ag).text;
+                }
+
+                return {
+                    "Carga / Ticket": ag.ticket || ag.ordem || '-',
+                    "Placa Cavalo": ag.cavalo || '-',
+                    "Placa Carreta": ag.carreta || '-',
+                    "Data Agendada": ag.data || '-',
+                    "Fornecedor / Empresa": typeof window.limparNomeFornecedor === 'function' ? window.limparNomeFornecedor(ag.fornecedor) : ag.fornecedor,
+                    "Motorista": ag.motorista || '-',
+                    "CPF": ag.cpf || '-',
+                    "Nota Fiscal": ag.nf || '-',
+                    "Cheg. Planta (Totem)": ag.timeCheckin ? (typeof window.formatarHoraIso === 'function' ? window.formatarHoraIso(ag.timeCheckin) : ag.timeCheckin) : '-',
+                    "Liberação Fiscal": ag.timeFiscal ? (typeof window.formatarHoraIso === 'function' ? window.formatarHoraIso(ag.timeFiscal) : ag.timeFiscal) : '-',
+                    "Doca(s) / Rota": (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" -> ") : (ag.doca || '-'),
+                    "Início Janela Agendada": ag.horaIni || '-',
+                    "Fim Janela Agendada": ag.horaFim || '-',
+                    "Início Descarga Real": ag.timeInicioDescarga ? (typeof window.formatarHoraIso === 'function' ? window.formatarHoraIso(ag.timeInicioDescarga) : ag.timeInicioDescarga) : '-',
+                    "Fim Descarga Real": ag.timeFimDescarga ? (typeof window.formatarHoraIso === 'function' ? window.formatarHoraIso(ag.timeFimDescarga) : ag.timeFimDescarga) : '-',
+                    "Check-out (Saída)": ag.timeCheckout ? (typeof window.formatarHoraIso === 'function' ? window.formatarHoraIso(ag.timeCheckout) : ag.timeCheckout) : '-',
+                    "Tempo Total Operação": tempoTotal,
+                    "SLA Operacional": statusSla,
+                    "Status Atual": ag.status || 'AGENDADO'
+                };
+            });
+
+            try {
+                if (typeof XLSX === 'undefined') {
+                    alert("A biblioteca SheetJS (XLSX) não foi carregada. Verifique se o link no topo do HTML está correto.");
+                    return;
+                }
+                const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Relatório Pátio");
+                
+                const dataHoje = typeof window.obterDataHojeISO === 'function' ? window.obterDataHojeISO().replace(/-/g, '') : '2026';
+                const nomeArquivo = `YMS_Relatorio_Patio_${dataHoje}.xlsx`;
+                
+                XLSX.writeFile(wb, nomeArquivo);
+                
+                if(typeof window.exibirToast === 'function') {
+                    window.exibirToast("Download Concluído", "Planilha salva no seu dispositivo.", "📥");
+                }
+            } catch (error) {
+                console.error("Erro ao gerar Excel:", error);
+                alert("Erro ao gerar a planilha. Verifique o console.");
+            }
+        };
     </script>
    
 </body>
