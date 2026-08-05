@@ -3120,7 +3120,7 @@
             });
         };
 
-        // --- 10. STARTUP DA APLICAÇÃO ---
+ // --- 10. STARTUP DA APLICAÇÃO ---
         window.inicializarAplicacao = function() {
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
@@ -3142,6 +3142,7 @@
                 document.getElementById('repDataFim').value = hojeIso;
             }
 
+            // Popula o seletor de Docas do PCP
             const selDoca = document.getElementById('inpDoca');
             if (selDoca) {
                 selDoca.innerHTML = "";
@@ -3149,6 +3150,17 @@
                     const opt = document.createElement('option');
                     opt.value = d; opt.textContent = d;
                     selDoca.appendChild(opt);
+                });
+            }
+
+            // CORREÇÃO: Popula o seletor amarelo do Operador de Doca
+            const selDocaOperador = document.getElementById('selDocaOperador');
+            if (selDocaOperador) {
+                selDocaOperador.innerHTML = "";
+                listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    selDocaOperador.appendChild(opt);
                 });
             }
 
