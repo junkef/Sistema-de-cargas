@@ -1525,6 +1525,25 @@
                 window.tipoCargaSelecionado = 'critica';
             }
         };
+        window.alternarAbaFornecedor = function(aba) {
+            window.ymsStore.abaFornecedorAtual = aba;
+            const btnPen = document.getElementById('btnAbaPendentes');
+            const btnCon = document.getElementById('btnAbaConfirmadas');
+            
+            if (btnPen && btnCon) {
+                if (aba === 'pendentes') {
+                    btnPen.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white cursor-pointer";
+                    btnCon.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer";
+                } else {
+                    btnCon.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition bg-indigo-600 text-white cursor-pointer";
+                    btnPen.className = "flex-1 py-1.5 rounded-lg font-bold text-[11px] transition text-slate-400 hover:text-white cursor-pointer";
+                }
+            }
+            
+            if (typeof window.renderizarModuloFornecedor === 'function') {
+                window.renderizarModuloFornecedor();
+            }
+        };
         // --- FUNÇÕES DO PORTAL DO FORNECEDOR ---
         
         window.selecionarOrdemFornecedor = function(ordem) {
