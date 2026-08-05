@@ -2642,6 +2642,102 @@
                 alert("Erro: Ticket não encontrado no banco de dados.");
             }
         };
+        // --- 3. FUNÇÕES DO OPERADOR DE DOCA ---
+        window.chamarProximoSms = function() {
+            const selDoca = document.getElementById('selDocaOperador');
+            if (!selDoca) return;
+            const docaSel = selDoca.value;
+            const docaNorm = window.normalizarTexto(docaSel);
+
+            const agendamentos = window.ymsStore.agendamentos || [];
+            
+            // Verifica se já tem alguém descarregando nesta doca
+            const emDescarga = agendamentos.find(i => {
+                if (i.status !== 'EM_DESCARGA') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
+            });
+
+            if (emDescarga) {
+                alert("Já existe um veículo em descarga nesta doca. Finalize a operação dele no botão azul antes de chamar o próximo.");
+                return;
+            }
+
+            // Busca a fila desta doca
+            const filaDoca = agendamentos.filter(i => {
+                if (i.status !== 'TRIAGEM_FISCAL' && i.status !== 'CHECKIN_PATIO') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
+            });
+
+            if (filaDoca.length === 0) {
+                alert("Não há caminhões aguardando na fila para esta doca.");
+                return;
+            }
+
+            // Pega o primeiro da fila (Regra FIFO - First In, First Out)
+            const proximo = filaDoca[0];
+            proximo.status = 'EM_DESCARGA';
+            proximo.timeInicioDescarga = new Date().toISOString();
+
+            if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
+
+            // Dispara o alerta de SMS na tela
+            if (typeof window.dispararSmsEtapa === 'function') {
+                window.dispararSmsEtapa(proximo, 'EM_DESCARGA');
+            } else if(typeof window.exibirToast === 'function') {
+                window.exibirToast("Veículo Chamado!", `Motorista ${proximo.motorista} acionado para doca.`, "📲");
+            }
+
+            if(typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
+        };
+
+        window.finalizarDescargaDoca = function() {
+            const selDoca = document.getElementById('selDocaOperador');
+            if (!selDoca) return;
+            const docaSel = selDoca.value;
+            const docaNorm = window.normalizarTexto(docaSel);
+
+            const agendamentos = window.ymsStore.agendamentos || [];
+            
+            // Procura quem está na doca agora
+            const emDescarga = agendamentos.find(i => {
+                if (i.status !== 'EM_DESCARGA') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
+            });
+
+            if (!emDescarga) {
+                alert("Não há nenhum veículo em descarga nesta doca para ser finalizado.");
+                return;
+            }
+
+            const docasSeq = emDescarga.docasSequencia || [emDescarga.doca];
+            const indexAtual = emDescarga.indexDocaAtual || 0;
+
+            // Roteirizador: Verifica se tem próxima doca na rota montada no fiscal
+            if (indexAtual + 1 < docasSeq.length) {
+                emDescarga.indexDocaAtual = indexAtual + 1;
+                emDescarga.status = 'TRIAGEM_FISCAL'; // Devolve pra fila da próxima doca
+                if(typeof window.exibirToast === 'function') {
+                    window.exibirToast("Descarga Parcial!", `Veículo avançou na rota. Enviado para a doca: ${docasSeq[indexAtual + 1]}.`, "🔄");
+                }
+            } else {
+                // Rota concluída ou doca única
+                emDescarga.status = 'AGUARDANDO_CHECKOUT';
+                emDescarga.timeFimDescarga = new Date().toISOString();
+                if(typeof window.exibirToast === 'function') {
+                    window.exibirToast("Descarga Finalizada!", "Veículo liberado. Aguardando Check-out na portaria.", "✅");
+                }
+                // Avisa o motorista que ele pode ir embora
+                if (typeof window.dispararSmsEtapa === 'function') {
+                    window.dispararSmsEtapa(emDescarga, 'AGUARDANDO_CHECKOUT');
+                }
+            }
+
+            if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
+            if(typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
+        };
 
         // --- 9. BANCO DE DADOS FIREBASE ---
         function inicializarEscutadoresFirebase() {
