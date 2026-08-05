@@ -2247,13 +2247,13 @@
             if (display && display.value) display.value = display.value.slice(0, -1);
         };
 
-        window.finalizarCheckinTotem = function() {
+      window.finalizarCheckinTotem = function() {
             const cpfRaw = document.getElementById('displayTotem')?.value || '';
             const cpfLimpo = cpfRaw.replace(/\D/g, '');
             if(cpfLimpo.length !== 11) { alert("Digite um CPF com 11 dígitos."); return; }
             
             const agendamentos = window.ymsStore.agendamentos || [];
-            // Acha ordem confirmada que bata o CPF do motorista (simulando check-in)
+            // Acha ordem confirmada que bata o CPF do motorista
             const ordemParaCheckin = agendamentos.find(i => i.status === 'CONFIRMADO_FORNECEDOR' && i.cpf === cpfLimpo);
 
             if(ordemParaCheckin) {
@@ -2264,12 +2264,40 @@
                 const numTicket = Math.floor(Math.random() * 900) + 100;
                 ordemParaCheckin.ticket = `T-${numTicket}`;
 
-                window.salvarAgendamentosNaMemoria();
-                window.limparTotem();
-                window.exibirToast("Check-in Realizado!", `Veículo no pátio. Ticket: ${ordemParaCheckin.ticket}`, "🏭");
-                
-                // Abre o módulo do fiscal pra dar seguimento
-                if (typeof window.mudarPerfil === 'function') window.mudarPerfil('fiscal');
+                if (typeof window.salvarAgendamentosNaMemoria === 'function') {
+                    window.salvarAgendamentosNaMemoria();
+                }
+
+                // --- LÓGICA DE PREENCHIMENTO E IMPRESSÃO DO TICKET ---
+                document.getElementById('ticketImpressaoId').textContent = ordemParaCheckin.ticket;
+                document.getElementById('ticketImpressaoNome').textContent = ordemParaCheckin.motorista || '-';
+                document.getElementById('ticketImpressaoCpf').textContent = ordemParaCheckin.cpf || '-';
+                document.getElementById('ticketImpressaoPlaca').textContent = ordemParaCheckin.cavalo || '-';
+                document.getElementById('ticketImpressaoTransp').textContent = ordemParaCheckin.transp || '-';
+                document.getElementById('ticketImpressaoSla').textContent = window.calcularSlaTicket(ordemParaCheckin);
+
+                // Gerar o QR Code
+                const qrContainer = document.getElementById('qrcodeTicket');
+                if (qrContainer) {
+                    qrContainer.innerHTML = ""; // Limpa o anterior
+                    new QRCode(qrContainer, {
+                        text: ordemParaCheckin.ticket,
+                        width: 80,
+                        height: 80
+                    });
+                }
+
+                // Usamos um setTimeout leve para garantir que o QRCode renderizou antes de chamar a impressora
+                setTimeout(() => {
+                    window.print(); // Abre a tela de impressão do Windows/Navegador
+                    
+                    window.limparTotem();
+                    window.exibirToast("Check-in Realizado!", `Veículo no pátio. Ticket: ${ordemParaCheckin.ticket}`, "🏭");
+                    
+                    // Move a tela para o módulo do fiscal após imprimir
+                    if (typeof window.mudarPerfil === 'function') window.mudarPerfil('fiscal');
+                }, 300);
+
             } else {
                 alert("Nenhuma carga 'CONFIRMADA' para este CPF hoje.");
             }
