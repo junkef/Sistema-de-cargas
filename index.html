@@ -2089,7 +2089,45 @@
             }
         };
 
-      window.atualizarPainelDoca = function() {
+    // --- FUNÇÃO DE CÁLCULO DE ATRASOS (SLA) ---
+        window.obterStatusSla = function(ag) {
+            if (!ag.horaIni) return { text: "NO HORÁRIO", cor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" };
+            
+            const agora = new Date();
+            // Transforma a hora agendada em uma data de hoje para cálculo
+            const [h, m] = ag.horaIni.split(':');
+            const dataAgendada = new Date();
+            dataAgendada.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+            
+            const tolerânciaFornecedor = new Date(dataAgendada.getTime() + 15 * 60000); // 15 min de tolerância
+
+            // 1. FORNECEDOR ATRASADO (Fez check-in depois do horário agendado)
+            const horaChegadaTotem = ag.timeCheckin ? new Date(ag.timeCheckin) : agora;
+            if (horaChegadaTotem > tolerânciaFornecedor) {
+                return { text: "FORN. ATRASADO", cor: "bg-red-500/20 text-red-400 border-red-500/30" };
+            }
+
+            // 2. NOTA ATRASADA (Ficou mais de 30 min agarrado no Fiscal)
+            if (ag.timeCheckin && !ag.timeFiscal) {
+                const tempoNoFiscal = (agora - new Date(ag.timeCheckin)) / 60000;
+                if (tempoNoFiscal > 30) {
+                    return { text: "NOTA ATRASADA", cor: "bg-amber-500/20 text-amber-400 border-amber-500/30" };
+                }
+            }
+
+            // 3. DOCA ATRASADA (Ficou mais de 30 min aguardando a doca liberar após sair do fiscal)
+            if (ag.timeFiscal && ag.status === 'TRIAGEM_FISCAL') {
+                const tempoEsperandoDoca = (agora - new Date(ag.timeFiscal)) / 60000;
+                if (tempoEsperandoDoca > 30) {
+                    return { text: "DOCA ATRASADA", cor: "bg-orange-500/20 text-orange-400 border-orange-500/30" };
+                }
+            }
+
+            return { text: "NO HORÁRIO", cor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" };
+        };
+
+        // --- ATUALIZAÇÃO DO PAINEL DA DOCA COM OS NOVOS STATUS ---
+        window.atualizarPainelDoca = function() {
             const selDoca = document.getElementById('selDocaOperador');
             if (!selDoca) return;
 
@@ -2100,7 +2138,7 @@
                     const opt = document.createElement('option');
                     opt.value = d; 
                     opt.textContent = d;
-                    opt.className = "bg-white text-slate-900 font-bold"; // Força a cor para garantir leitura
+                    opt.className = "bg-white text-slate-900 font-bold";
                     selDoca.appendChild(opt);
                 });
             }
@@ -2109,7 +2147,6 @@
             const docaNorm = window.normalizarTexto(docaSel);
             const agendamentos = window.ymsStore.agendamentos || [];
             
-            // Verifica quem está em descarga
             const emDescarga = agendamentos.find(i => {
                 if (i.status !== 'EM_DESCARGA') return false;
                 const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
@@ -2121,9 +2158,10 @@
             const txtPlacaDetalhes = document.getElementById('txtPlacaEDetalhesDoca');
 
             if (emDescarga) {
+                const slaEmDescarga = window.obterStatusSla(emDescarga); // Calcula SLA de quem está na doca
                 if (badgeStatus) {
                     badgeStatus.className = "bg-amber-500/20 text-amber-400 text-xs font-bold px-3 py-1 rounded-full uppercase border border-amber-500/30 animate-pulse";
-                    badgeStatus.textContent = "EM DESCARGA";
+                    badgeStatus.innerHTML = `EM DESCARGA <span class="ml-2 px-2 py-0.5 rounded-full border ${slaEmDescarga.cor} text-[9px]">${slaEmDescarga.text}</span>`;
                 }
                 if (txtTicketBig) txtTicketBig.textContent = emDescarga.ticket || emDescarga.ordem;
                 if (txtPlacaDetalhes) txtPlacaDetalhes.textContent = `🚚 ${emDescarga.cavalo || '-'} • ${emDescarga.motorista || 'Motorista'} • NF: ${emDescarga.nf || '-'}`;
@@ -2136,7 +2174,6 @@
                 if (txtPlacaDetalhes) txtPlacaDetalhes.textContent = "Nenhum Veículo em Descarga";
             }
 
-            // Verifica fila
             const filaDoca = agendamentos.filter(i => {
                 if (i.status !== 'TRIAGEM_FISCAL' && i.status !== 'CHECKIN_PATIO') return false;
                 const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
@@ -2153,14 +2190,22 @@
                     containerFila.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Nenhum caminhão na fila.</p>`;
                 } else {
                     filaDoca.forEach((item, idx) => {
+                        // Calcula o tempo de cada caminhão na fila
+                        const sla = window.obterStatusSla(item);
+
                         const card = `
                             <div class="bg-slate-900 border border-slate-700 p-3 rounded-xl flex justify-between items-center shadow">
                                 <div>
-                                    <span class="bg-blue-600 text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded">${idx + 1}º - ${item.ticket || item.ordem}</span>
-                                    <p class="text-xs font-bold text-white mt-1">${item.motorista || 'Motorista'}</p>
-                                    <p class="text-[10px] text-yellow-400 font-mono">Placa: ${item.cavalo || '-'}</p>
+                                    <div class="flex items-center gap-2 mb-1.5">
+                                        <span class="bg-blue-600 text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded shadow">${idx + 1}º - ${item.ticket || item.ordem}</span>
+                                        <span class="${sla.cor} border text-[9px] px-2 py-0.5 rounded-full font-bold shadow-sm">${sla.text}</span>
+                                    </div>
+                                    <p class="text-xs font-bold text-white">${item.motorista || 'Motorista'}</p>
+                                    <p class="text-[10px] text-yellow-400 font-mono mt-0.5">Placa: ${item.cavalo || '-'}</p>
                                 </div>
-                                <span class="text-[10px] bg-purple-900/80 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">${item.status}</span>
+                                <span class="text-[10px] bg-purple-900/80 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold uppercase shadow-inner text-center leading-tight">
+                                    ${item.status.replace('_', '<br>')}
+                                </span>
                             </div>
                         `;
                         containerFila.insertAdjacentHTML('beforeend', card);
