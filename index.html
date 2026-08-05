@@ -2879,6 +2879,102 @@
             });
             document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
         };
+        // --- FUNÇÃO DE EXPORTAÇÃO DE RELATÓRIO EXCEL ---
+        window.exportarRelatorioExcelFormatado = function() {
+            // 1. Pega as datas do filtro
+            const dataIniVal = document.getElementById('repDataInicio')?.value;
+            const dataFimVal = document.getElementById('repDataFim')?.value;
+
+            let dIni = null, dFim = null;
+            if (dataIniVal) {
+                const p = dataIniVal.split('-');
+                dIni = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                dIni.setHours(0, 0, 0, 0);
+            }
+            if (dataFimVal) {
+                const p = dataFimVal.split('-');
+                dFim = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                dFim.setHours(23, 59, 59, 999);
+            }
+
+            const todosAg = window.ymsStore.agendamentos || [];
+            
+            // 2. Filtra os agendamentos pela data selecionada
+            const filtrados = todosAg.filter(ag => {
+                if (!ag.data) return true;
+                let dAg = null;
+                if (ag.data.includes('/')) {
+                    const pt = ag.data.split('/');
+                    dAg = new Date(parseInt(pt[2], 10), parseInt(pt[1], 10) - 1, parseInt(pt[0], 10));
+                } else if (ag.data.includes('-')) {
+                    const pt = ag.data.split('-');
+                    dAg = new Date(parseInt(pt[0], 10), parseInt(pt[1], 10) - 1, parseInt(pt[2], 10));
+                }
+                if (!dAg) return true;
+                if (dIni && dAg < dIni) return false;
+                if (dFim && dAg > dFim) return false;
+                return true;
+            });
+
+            if (filtrados.length === 0) {
+                alert("Não há dados processados para exportar neste período.");
+                return;
+            }
+
+            // 3. Monta os dados brutos no formato de colunas do Excel
+            const dadosPlanilha = filtrados.map(ag => {
+                const horaEntradaReal = ag.timeCheckin ? window.formatarHoraIso(ag.timeCheckin) : (ag.horaIni || '-');
+                const horaSaidaReal = ag.timeCheckout ? window.formatarHoraIso(ag.timeCheckout) : (ag.timeFimDescarga ? window.formatarHoraIso(ag.timeFimDescarga) : (ag.horaFim || '-'));
+                const tempoTotal = window.calcularDiferencaHorasFormatada(horaEntradaReal, horaSaidaReal);
+                
+                let statusSla = "NO HORÁRIO";
+                if(typeof window.obterStatusSla === 'function') {
+                    statusSla = window.obterStatusSla(ag).text;
+                }
+
+                return {
+                    "Carga / Ticket": ag.ticket || ag.ordem || '-',
+                    "Placa Cavalo": ag.cavalo || '-',
+                    "Placa Carreta": ag.carreta || '-',
+                    "Data Agendada": ag.data || '-',
+                    "Dia Semana": window.obterDiaSemanaPtBR(ag.data),
+                    "Fornecedor / Empresa": window.limparNomeFornecedor ? window.limparNomeFornecedor(ag.fornecedor) : ag.fornecedor,
+                    "Motorista": ag.motorista || '-',
+                    "CPF": ag.cpf || '-',
+                    "Nota Fiscal": ag.nf || '-',
+                    "Cheg. Planta (Totem)": ag.timeCheckin ? window.formatarHoraIso(ag.timeCheckin) : '-',
+                    "Liberação Fiscal": ag.timeFiscal ? window.formatarHoraIso(ag.timeFiscal) : '-',
+                    "Doca(s) / Rota": (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" -> ") : (ag.doca || '-'),
+                    "Início Janela Agendada": ag.horaIni || '-',
+                    "Fim Janela Agendada": ag.horaFim || '-',
+                    "Início Descarga Real": ag.timeInicioDescarga ? window.formatarHoraIso(ag.timeInicioDescarga) : '-',
+                    "Fim Descarga Real": ag.timeFimDescarga ? window.formatarHoraIso(ag.timeFimDescarga) : '-',
+                    "Check-out (Saída)": ag.timeCheckout ? window.formatarHoraIso(ag.timeCheckout) : '-',
+                    "Tempo Total Operação": tempoTotal,
+                    "SLA Operacional": statusSla,
+                    "Status Atual": ag.status || 'AGENDADO'
+                };
+            });
+
+            // 4. Cria a planilha usando a biblioteca global XLSX (SheetJS)
+            try {
+                const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Relatório Pátio");
+                
+                const dataHoje = window.obterDataHojeISO ? window.obterDataHojeISO().replace(/-/g, '') : '2026';
+                const nomeArquivo = `YMS_Relatorio_Patio_${dataHoje}.xlsx`;
+                
+                XLSX.writeFile(wb, nomeArquivo);
+                
+                if(typeof window.exibirToast === 'function') {
+                    window.exibirToast("Download Concluído", "Planilha salva no seu dispositivo.", "📥");
+                }
+            } catch (error) {
+                console.error("Erro ao gerar Excel:", error);
+                alert("Erro ao gerar a planilha. Verifique se a biblioteca SheetJS carregou corretamente.");
+            }
+        };
         // ==========================================
         // MÓDULO 5: OPERADOR DE DOCA
         // ==========================================
