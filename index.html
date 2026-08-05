@@ -2247,7 +2247,7 @@
             if (display && display.value) display.value = display.value.slice(0, -1);
         };
 
-      window.finalizarCheckinTotem = function() {
+   window.finalizarCheckinTotem = function() {
             const cpfRaw = document.getElementById('displayTotem')?.value || '';
             const cpfLimpo = cpfRaw.replace(/\D/g, '');
             if(cpfLimpo.length !== 11) { alert("Digite um CPF com 11 dígitos."); return; }
@@ -2302,7 +2302,6 @@
                 alert("Nenhuma carga 'CONFIRMADA' para este CPF hoje.");
             }
         };
-
         window.fecharModalSmsExterno = function(e) { if(e.target.id === 'modalSmsNotif') window.fecharModalSms(); };
         window.fecharModalSms = function() { document.getElementById('modalSmsNotif')?.classList.add('hidden'); };
         window.copiarTextoNotificacao = function() {
@@ -2540,6 +2539,107 @@
                 if (typeof window.mudarPerfil === 'function') window.mudarPerfil('fiscal');
             } else {
                 alert("Nenhuma carga 'CONFIRMADA' para este CPF hoje.");
+            }
+        };
+        // --- FUNÇÕES DO RECEBIMENTO FISCAL ---
+        window.selecionarTicketFiscal = function(ticket) {
+            window.ymsStore.ticketAtivoFiscal = ticket;
+            // Ao trocar de ticket, carrega a doca original como array ou limpa se quiser refazer
+            const agendamentos = window.ymsStore.agendamentos || [];
+            const ativo = agendamentos.find(i => i.ticket === ticket);
+            if (ativo) {
+                window.ymsStore.sequenciaDocasSelecao = (ativo.docasSequencia && ativo.docasSequencia.length > 0) ? [...ativo.docasSequencia] : [ativo.doca];
+            }
+            window.renderizarModuloFiscal();
+        };
+
+        window.alternarSelecaoDocaFiscal = function(doca) {
+            if (!window.ymsStore.sequenciaDocasSelecao) {
+                window.ymsStore.sequenciaDocasSelecao = [];
+            }
+            const idx = window.ymsStore.sequenciaDocasSelecao.indexOf(doca);
+            
+            if (idx > -1) {
+                // Se já clicou, remove da sequência
+                window.ymsStore.sequenciaDocasSelecao.splice(idx, 1);
+            } else {
+                // Se não clicou, adiciona no final da sequência
+                window.ymsStore.sequenciaDocasSelecao.push(doca);
+            }
+            window.renderizarModuloFiscal();
+        };
+
+        window.resetarSequenciaDocas = function() {
+            window.ymsStore.sequenciaDocasSelecao = [];
+            window.renderizarModuloFiscal();
+        };
+
+        window.atualizarDisplayRotaSequencial = function() {
+            const display = document.getElementById('displayRotaSequencial');
+            if (!display) return;
+            
+            const seq = window.ymsStore.sequenciaDocasSelecao || [];
+            
+            if (seq.length === 0) {
+                display.innerHTML = '<span class="text-slate-500 italic">Nenhuma doca selecionada</span>';
+            } else {
+                display.innerHTML = seq.map((d, i) => 
+                    `<span class="bg-amber-400 text-slate-900 px-2 py-0.5 rounded text-[10px] font-black">${i + 1}º ${d}</span>`
+                ).join('<span class="text-slate-500 font-bold px-1">➔</span>');
+            }
+        };
+
+        window.limparPainelDetalhesFiscal = function() {
+            document.getElementById('txtTicketFiscalAtivo').textContent = "Selecione um Ticket";
+            document.getElementById('fiscMotorista').textContent = "-";
+            document.getElementById('fiscPlaca').textContent = "-";
+            document.getElementById('fiscNf').textContent = "-";
+            window.ymsStore.sequenciaDocasSelecao = [];
+            window.atualizarDisplayRotaSequencial();
+        };
+
+        window.liberarParaDocaFiscal = function() {
+            const ticket = window.ymsStore.ticketAtivoFiscal;
+            if (!ticket) {
+                alert("Selecione um veículo na fila lateral primeiro.");
+                return;
+            }
+
+            const seq = window.ymsStore.sequenciaDocasSelecao || [];
+            if (seq.length === 0) {
+                alert("Selecione pelo menos uma doca clicando nos botões centrais para roteirizar o caminhão.");
+                return;
+            }
+
+            const agendamentos = window.ymsStore.agendamentos || [];
+            const index = agendamentos.findIndex(i => i.ticket === ticket);
+
+            if (index !== -1) {
+                // Atualiza o status e os tempos
+                agendamentos[index].status = 'TRIAGEM_FISCAL'; // O operador de doca é quem muda para 'EM_DESCARGA'
+                agendamentos[index].timeFiscal = new Date().toISOString();
+                
+                // Grava a rota montada pelo fiscal
+                agendamentos[index].docasSequencia = [...seq];
+                agendamentos[index].indexDocaAtual = 0; // Começa na primeira doca [0]
+
+                if (typeof window.salvarAgendamentosNaMemoria === 'function') {
+                    window.salvarAgendamentosNaMemoria();
+                }
+
+                // Dispara o modal de notificação de SMS
+                if (typeof window.dispararSmsEtapa === 'function') {
+                    window.dispararSmsEtapa(agendamentos[index], 'TRIAGEM_FISCAL');
+                } else {
+                    window.exibirToast("Sucesso!", `Rota salva. Veículo enviado para: ${seq[0]}`, "🚀");
+                }
+
+                // Limpa a tela pro próximo caminhão
+                window.ymsStore.ticketAtivoFiscal = null;
+                window.ymsStore.sequenciaDocasSelecao = [];
+                window.renderizarModuloFiscal();
+            } else {
+                alert("Erro: Ticket não encontrado no banco de dados.");
             }
         };
 
