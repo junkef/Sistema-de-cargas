@@ -2089,14 +2089,27 @@
             }
         };
 
-        window.atualizarPainelDoca = function() {
+      window.atualizarPainelDoca = function() {
             const selDoca = document.getElementById('selDocaOperador');
             if (!selDoca) return;
+
+            // 🛡️ BLINDAGEM: Se o seletor estiver vazio, recarrega a lista de docas à força!
+            if (selDoca.options.length === 0) {
+                const listaDocasHardcode = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis'];
+                listaDocasHardcode.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; 
+                    opt.textContent = d;
+                    opt.className = "bg-white text-slate-900 font-bold"; // Força a cor para garantir leitura
+                    selDoca.appendChild(opt);
+                });
+            }
+
             const docaSel = selDoca.value;
-
-            const agendamentos = window.ymsStore.agendamentos || [];
             const docaNorm = window.normalizarTexto(docaSel);
-
+            const agendamentos = window.ymsStore.agendamentos || [];
+            
+            // Verifica quem está em descarga
             const emDescarga = agendamentos.find(i => {
                 if (i.status !== 'EM_DESCARGA') return false;
                 const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
@@ -2123,6 +2136,7 @@
                 if (txtPlacaDetalhes) txtPlacaDetalhes.textContent = "Nenhum Veículo em Descarga";
             }
 
+            // Verifica fila
             const filaDoca = agendamentos.filter(i => {
                 if (i.status !== 'TRIAGEM_FISCAL' && i.status !== 'CHECKIN_PATIO') return false;
                 const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
@@ -2140,13 +2154,13 @@
                 } else {
                     filaDoca.forEach((item, idx) => {
                         const card = `
-                            <div class="bg-slate-900 border border-slate-700 p-3 rounded-xl flex justify-between items-center">
+                            <div class="bg-slate-900 border border-slate-700 p-3 rounded-xl flex justify-between items-center shadow">
                                 <div>
                                     <span class="bg-blue-600 text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded">${idx + 1}º - ${item.ticket || item.ordem}</span>
                                     <p class="text-xs font-bold text-white mt-1">${item.motorista || 'Motorista'}</p>
                                     <p class="text-[10px] text-yellow-400 font-mono">Placa: ${item.cavalo || '-'}</p>
                                 </div>
-                                <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded font-bold">${item.status}</span>
+                                <span class="text-[10px] bg-purple-900/80 text-purple-300 border border-purple-500/50 px-2 py-1 rounded font-bold">${item.status}</span>
                             </div>
                         `;
                         containerFila.insertAdjacentHTML('beforeend', card);
@@ -2154,7 +2168,6 @@
                 }
             }
         };
-
         window.renderizarModuloCheckout = function() {
             const container = document.getElementById('listaAguardandoCheckout');
             const badge = document.getElementById('badgeQtdCheckout');
