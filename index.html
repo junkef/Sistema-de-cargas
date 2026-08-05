@@ -1525,6 +1525,112 @@
                 window.tipoCargaSelecionado = 'critica';
             }
         };
+        // --- FUNÇÕES DO PORTAL DO FORNECEDOR ---
+        
+        window.selecionarOrdemFornecedor = function(ordem) {
+            window.ymsStore.ordemAtivaFornecedor = ordem;
+            window.renderizarModuloFornecedor();
+        };
+
+        window.buscarMotoristaPorCpf = function() {
+            const cpfRaw = document.getElementById('fornCpf')?.value || '';
+            const cpfLimpo = cpfRaw.replace(/\D/g, '');
+            
+            if (!cpfLimpo || cpfLimpo.length !== 11) {
+                alert("Digite um CPF válido com 11 dígitos para buscar.");
+                return;
+            }
+
+            const motoristaEncontrado = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+            
+            if (motoristaEncontrado) {
+                if (motoristaEncontrado.status === 'BLOQUEADO') {
+                    alert(`⚠️ ATENÇÃO: O motorista ${motoristaEncontrado.nome} está BLOQUEADO na base. Acesso ao pátio não será permitido.`);
+                }
+                document.getElementById('fornMotorista').value = motoristaEncontrado.nome || '';
+                document.getElementById('fornCelular').value = motoristaEncontrado.celular || '';
+                window.exibirToast("Motorista Localizado", "Dados preenchidos automaticamente.", "🪪");
+            } else {
+                alert("Motorista não encontrado na base. Prossiga com o preenchimento manual.");
+                document.getElementById('fornMotorista').focus();
+            }
+        };
+
+        window.salvarConfirmacaoFornecedor = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            
+            const ordemAtiva = window.ymsStore.ordemAtivaFornecedor;
+            if (!ordemAtiva) {
+                alert("Selecione uma ordem primeiro na lista lateral.");
+                return;
+            }
+
+            const nf = document.getElementById('fornNf')?.value.trim();
+            const transp = document.getElementById('fornTransp')?.value.trim();
+            const cavalo = document.getElementById('fornCavalo')?.value.trim().toUpperCase();
+            const carreta = document.getElementById('fornCarreta')?.value.trim().toUpperCase();
+            const cpfRaw = document.getElementById('fornCpf')?.value;
+            const cpf = cpfRaw ? cpfRaw.replace(/\D/g, '') : '';
+            const motorista = document.getElementById('fornMotorista')?.value.trim();
+            const celularRaw = document.getElementById('fornCelular')?.value;
+            const celular = celularRaw ? celularRaw.replace(/\D/g, '') : '';
+
+            // Validação de campos obrigatórios
+            if (!nf || !transp || !cavalo || !cpf || !motorista || !celular) {
+                alert("Preencha todos os campos obrigatórios (*).");
+                return;
+            }
+
+            if (cpf.length !== 11) {
+                alert("O CPF deve conter exatamente 11 números.");
+                return;
+            }
+
+            const agendamentos = window.ymsStore.agendamentos || [];
+            const index = agendamentos.findIndex(i => i.ordem === ordemAtiva);
+
+            if (index !== -1) {
+                // Atualiza os dados da janela com o que o fornecedor digitou
+                agendamentos[index].nf = nf;
+                agendamentos[index].transp = transp;
+                agendamentos[index].cavalo = cavalo;
+                agendamentos[index].carreta = carreta;
+                agendamentos[index].cpf = cpf;
+                agendamentos[index].motorista = motorista;
+                agendamentos[index].celular = celular;
+                
+                // Muda o status para confirmado
+                agendamentos[index].status = 'CONFIRMADO_FORNECEDOR';
+
+                // Cadastra o motorista na base automaticamente, se ele for novo
+                const motoristaExistente = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpf);
+                if (!motoristaExistente) {
+                    window.ymsStore.baseMotoristas.push({
+                        cpf: cpf,
+                        nome: motorista,
+                        celular: celular,
+                        status: 'ATIVO',
+                        obs: 'Cadastrado via Portal Fornecedor'
+                    });
+                    if (typeof window.salvarBaseMotoristasNaMemoria === 'function') {
+                        window.salvarBaseMotoristasNaMemoria();
+                    }
+                }
+
+                // Salva tudo no Firebase
+                window.salvarAgendamentosNaMemoria();
+                
+                // Move o usuário para a aba de "Confirmadas"
+                window.ymsStore.abaFornecedorAtual = 'confirmadas';
+                window.renderizarModuloFornecedor();
+                const btnCon = document.getElementById('btnAbaConfirmadas');
+                if (btnCon) btnCon.click();
+                
+                window.exibirToast("Sucesso!", "Dados confirmados e check-in liberado para o Totem.", "✅");
+            } else {
+                alert("Ordem não encontrada na base de dados.");
+            }
+        };
 
         // --- 4. EXCLUSÃO E MANIPULAÇÃO DE REGISTROS ---
         window.excluirFornecedorDinamico = function(empresa) {
