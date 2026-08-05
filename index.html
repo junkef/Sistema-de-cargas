@@ -2822,6 +2822,115 @@
             document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
         };
         // ==========================================
+        // MÓDULO 5: OPERADOR DE DOCA
+        // ==========================================
+        window.chamarProximoSms = function() {
+            const selDoca = document.getElementById('selDocaOperador');
+            if (!selDoca) return;
+            const docaSel = selDoca.value;
+            const docaNorm = window.normalizarTexto(docaSel);
+
+            const agendamentos = window.ymsStore.agendamentos || [];
+            
+            const emDescarga = agendamentos.find(i => {
+                if (i.status !== 'EM_DESCARGA') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
+            });
+
+            if (emDescarga) {
+                alert("Já existe um veículo em descarga nesta doca. Finalize a operação dele no botão azul antes de chamar o próximo.");
+                return;
+            }
+
+            const filaDoca = agendamentos.filter(i => {
+                if (i.status !== 'TRIAGEM_FISCAL' && i.status !== 'CHECKIN_PATIO') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
+            });
+
+            if (filaDoca.length === 0) {
+                alert("Não há caminhões aguardando na fila para esta doca.");
+                return;
+            }
+
+            const proximo = filaDoca[0];
+            proximo.status = 'EM_DESCARGA';
+            proximo.timeInicioDescarga = new Date().toISOString();
+
+            if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
+
+            if (typeof window.dispararSmsEtapa === 'function') {
+                window.dispararSmsEtapa(proximo, 'EM_DESCARGA');
+            } else if(typeof window.exibirToast === 'function') {
+                window.exibirToast("Veículo Chamado!", `Motorista ${proximo.motorista} acionado para doca.`, "📲");
+            }
+
+            if(typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
+        };
+
+        window.finalizarDescargaDoca = function() {
+            const selDoca = document.getElementById('selDocaOperador');
+            if (!selDoca) return;
+            const docaSel = selDoca.value;
+            const docaNorm = window.normalizarTexto(docaSel);
+
+            const agendamentos = window.ymsStore.agendamentos || [];
+            
+            const emDescarga = agendamentos.find(i => {
+                if (i.status !== 'EM_DESCARGA') return false;
+                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
+                return window.normalizarTexto(docaAtual) === docaNorm;
+            });
+
+            if (!emDescarga) {
+                alert("Não há nenhum veículo em descarga nesta doca para ser finalizado.");
+                return;
+            }
+
+            const docasSeq = emDescarga.docasSequencia || [emDescarga.doca];
+            const indexAtual = emDescarga.indexDocaAtual || 0;
+
+            if (indexAtual + 1 < docasSeq.length) {
+                emDescarga.indexDocaAtual = indexAtual + 1;
+                emDescarga.status = 'TRIAGEM_FISCAL'; 
+                if(typeof window.exibirToast === 'function') window.exibirToast("Descarga Parcial!", `Veículo avançou na rota. Enviado para a doca: ${docasSeq[indexAtual + 1]}.`, "🔄");
+            } else {
+                emDescarga.status = 'AGUARDANDO_CHECKOUT';
+                emDescarga.timeFimDescarga = new Date().toISOString();
+                if(typeof window.exibirToast === 'function') window.exibirToast("Descarga Finalizada!", "Veículo liberado. Aguardando Check-out na portaria.", "✅");
+                if (typeof window.dispararSmsEtapa === 'function') window.dispararSmsEtapa(emDescarga, 'AGUARDANDO_CHECKOUT');
+            }
+
+            if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
+            if(typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
+        };
+
+        // ==========================================
+        // MÓDULO 6: CHECK-OUT PORTARIA
+        // ==========================================
+        window.selecionarTicketCheckout = function(ticket) {
+            window.ymsStore.ticketAtivoCheckout = ticket;
+            if(typeof window.renderizarModuloCheckout === 'function') window.renderizarModuloCheckout();
+        };
+
+        window.confirmarSaidaPortaria = function() {
+            const ticket = window.ymsStore.ticketAtivoCheckout;
+            if (!ticket) { alert("Selecione um veículo na fila de saída."); return; }
+            const agendamentos = window.ymsStore.agendamentos || [];
+            const index = agendamentos.findIndex(i => i.ticket === ticket);
+            
+            if (index !== -1) {
+                agendamentos[index].status = 'CONCLUIDO';
+                agendamentos[index].timeCheckout = new Date().toISOString();
+                if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
+                if(typeof window.exibirToast === 'function') window.exibirToast("Check-out Finalizado", "Veículo liberado da planta.", "🚪");
+                
+                window.ymsStore.ticketAtivoCheckout = null;
+                if(typeof window.renderizarModuloCheckout === 'function') window.renderizarModuloCheckout();
+            }
+        };
+        // ==========================================
         // BLOCO DE CORREÇÃO: TOTEM E FISCAL
         // ==========================================
 
