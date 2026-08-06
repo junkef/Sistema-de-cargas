@@ -3274,12 +3274,17 @@
             });
         };
 
- // --- 10. STARTUP DA APLICAÇÃO ---
+// --- 10. STARTUP DA APLICAÇÃO ---
         window.inicializarAplicacao = function() {
-            window.atualizarRelogioDigital();
-            setInterval(window.atualizarRelogioDigital, 1000);
+            if (typeof window.atualizarRelogioDigital === 'function') {
+                window.atualizarRelogioDigital();
+                setInterval(window.atualizarRelogioDigital, 1000);
+            }
 
-            const hojeIso = window.obterDataHojeISO();
+            let hojeIso = "";
+            if (typeof window.obterDataHojeISO === 'function') {
+                hojeIso = window.obterDataHojeISO();
+            }
 
             if (document.getElementById('inpData')) {
                 document.getElementById('inpData').min = hojeIso;
@@ -3296,34 +3301,51 @@
                 document.getElementById('repDataFim').value = hojeIso;
             }
 
-            // Popula o seletor de Docas do PCP
+            // 🛡️ A LISTA ABSOLUTA DE DOCAS (Força a atualização global)
+            window.listaTodasDocas = [
+                'Doca - (04N/06N)', 
+                'Doca - 1 F2 (7S)', 
+                'Doca - 2 F2 (7S)', 
+                'Doca - Basico F2 (5S)', 
+                'Doca - Basico F3 (CS1)', 
+                'Doca - Inflamáveis', 
+                'Doca - Devolução' // <-- Devolução fixada na marra!
+            ];
+
+            // Injeta no seletor do PCP (Agendamento)
             const selDoca = document.getElementById('inpDoca');
             if (selDoca) {
                 selDoca.innerHTML = "";
-                listaTodasDocas.forEach(d => {
+                window.listaTodasDocas.forEach(d => {
                     const opt = document.createElement('option');
                     opt.value = d; opt.textContent = d;
                     selDoca.appendChild(opt);
                 });
             }
 
-            // CORREÇÃO: Popula o seletor amarelo do Operador de Doca
+            // Injeta no seletor amarelo do Operador de Doca
             const selDocaOperador = document.getElementById('selDocaOperador');
             if (selDocaOperador) {
                 selDocaOperador.innerHTML = "";
-                listaTodasDocas.forEach(d => {
+                window.listaTodasDocas.forEach(d => {
                     const opt = document.createElement('option');
-                    opt.value = d; opt.textContent = d;
+                    opt.value = d; 
+                    opt.textContent = d;
+                    opt.className = "bg-white text-slate-900 font-bold";
                     selDocaOperador.appendChild(opt);
                 });
             }
 
             if (typeof window.atualizarHorariosDisponiveis === 'function') window.atualizarHorariosDisponiveis();
-
-            window.restaurarSessaoLocal();
-            inicializarEscutadoresFirebase();
+            if (typeof window.restaurarSessaoLocal === 'function') window.restaurarSessaoLocal();
+            if (typeof inicializarEscutadoresFirebase === 'function') inicializarEscutadoresFirebase();
         };
 
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', window.inicializarAplicacao);
+        } else {
+            window.inicializarAplicacao();
+        }
         if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', window.inicializarAplicacao);
         } else {
