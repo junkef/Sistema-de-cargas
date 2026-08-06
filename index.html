@@ -3769,7 +3769,140 @@
             document.getElementById('cadMotObs').value = '';
         };
     </script>
+    <!-- SCRIPT ISOLADO PARA GARANTIR O FUNCIONAMENTO GLOBAL (MOTORISTAS E FORNECEDORES) -->
+    <script>
+        // =========================================
+        // 1. BLOCO DE MOTORISTAS
+        // =========================================
+        window.alternarStatusMotorista = function(cpf) {
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+
+            if (motorista) {
+                motorista.status = motorista.status === 'BLOQUEADO' ? 'ATIVO' : 'BLOQUEADO';
+                if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
+                if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
+                if (typeof window.exibirToast === 'function') window.exibirToast("Status Atualizado", `Motorista ${motorista.status === 'ATIVO' ? 'Liberado' : 'Bloqueado'} com sucesso.`, motorista.status === 'ATIVO' ? "🟢" : "🔴");
+            } else {
+                alert("Motorista não encontrado na base.");
+            }
+        };
+
+        window.salvarMotoristaManual = function(e) {
+            if(e) e.preventDefault();
+            const cpfRaw = document.getElementById('cadMotCpf')?.value || '';
+            const cpfLimpo = cpfRaw.replace(/\D/g, '');
+            const nome = document.getElementById('cadMotNome')?.value.trim();
+            const celular = document.getElementById('cadMotCelular')?.value.trim();
+            const status = document.getElementById('cadMotStatus')?.value;
+            const obs = document.getElementById('cadMotObs')?.value.trim();
+
+            if(cpfLimpo.length !== 11) { alert("O CPF deve ter exatamente 11 dígitos."); return; }
+            if(!nome) { alert("O nome completo é obrigatório."); return; }
+            if (!Array.isArray(window.ymsStore.baseMotoristas)) window.ymsStore.baseMotoristas = [];
+
+            const indexExistente = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+
+            if (indexExistente !== -1) {
+                window.ymsStore.baseMotoristas[indexExistente].nome = nome;
+                window.ymsStore.baseMotoristas[indexExistente].celular = celular;
+                window.ymsStore.baseMotoristas[indexExistente].status = status;
+                window.ymsStore.baseMotoristas[indexExistente].obs = obs;
+                if(typeof window.exibirToast === 'function') window.exibirToast("Atualizado!", "Dados do motorista atualizados.", "📝");
+            } else {
+                window.ymsStore.baseMotoristas.push({ cpf: cpfLimpo, nome: nome, celular: celular, status: status, obs: obs });
+                if(typeof window.exibirToast === 'function') window.exibirToast("Cadastrado!", "Novo motorista adicionado à base.", "💾");
+            }
+
+            if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
+            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
+
+            document.getElementById('cadMotCpf').value = '';
+            document.getElementById('cadMotNome').value = '';
+            document.getElementById('cadMotCelular').value = '';
+            document.getElementById('cadMotObs').value = '';
+        };
+
+        // =========================================
+        // 2. BLOCO DE FORNECEDORES (CORREÇÃO DO EFEITO ZUMBI)
+        // =========================================
+        
+        // Substitui a função que criava os zumbis. Agora ela olha APENAS para a base oficial.
+        window.obterListaNomesFornecedores = function() {
+            const conjuntoUnico = new Set();
+            if (Array.isArray(window.mapaCredenciaisFornecedores) && window.mapaCredenciaisFornecedores.length > 0) {
+                window.mapaCredenciaisFornecedores.forEach(item => {
+                    const limpo = window.limparNomeFornecedor(item.empresa);
+                    if (limpo) conjuntoUnico.add(limpo);
+                });
+            } else if (typeof listaPadrao60Fornecedores !== 'undefined') {
+                listaPadrao60Fornecedores.forEach(item => {
+                    const limpo = window.limparNomeFornecedor(item.empresa);
+                    if (limpo) conjuntoUnico.add(limpo);
+                });
+            }
+            return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        };
+
+        // Exclusão definitiva de Fornecedor
+        window.excluirFornecedorDinamico = function(empresa) {
+            if (!confirm(`Tem certeza que deseja excluir permanentemente a empresa "${empresa}"?`)) return;
+            const alvo = String(empresa).trim().toUpperCase();
+            
+            // Filtra e remove o fornecedor da memória
+            window.mapaCredenciaisFornecedores = (window.mapaCredenciaisFornecedores || []).filter(
+                f => String(f.empresa).trim().toUpperCase() !== alvo
+            );
+            
+            // Salva no Firebase imediatamente e atualiza a tela
+            if (typeof window.salvarCredenciaisFornecedoresNaMemoria === 'function') window.salvarCredenciaisFornecedoresNaMemoria();
+            if (typeof window.atualizarTodasListasFornecedores === 'function') window.atualizarTodasListasFornecedores();
+            if (typeof window.exibirToast === 'function') window.exibirToast("Fornecedor Excluído", `${empresa} removida da base.`, "🗑️");
+        };
+
+        // Salvar Novo Fornecedor ou Editar Senha
+        window.salvarNovoFornecedorDinamico = function(e) {
+            if(e) e.preventDefault();
+            const inpNome = document.getElementById('cadFornNome');
+            const inpSenha = document.getElementById('cadFornSenha');
+            
+            const nome = inpNome?.value.trim().toUpperCase();
+            const senha = inpSenha?.value.trim() || `${nome.toLowerCase().replace(/\s+/g, '')}@2026`;
+
+            if (!nome) { alert("O nome da empresa é obrigatório."); return; }
+            if (!Array.isArray(window.mapaCredenciaisFornecedores)) window.mapaCredenciaisFornecedores = [];
+
+            const indexExistente = window.mapaCredenciaisFornecedores.findIndex(f => String(f.empresa).trim().toUpperCase() === nome);
+            
+            if (indexExistente !== -1) {
+                window.mapaCredenciaisFornecedores[indexExistente].senha = senha;
+                if (typeof window.exibirToast === 'function') window.exibirToast("Atualizado", "Senha do fornecedor atualizada.", "🔄");
+            } else {
+                window.mapaCredenciaisFornecedores.push({ empresa: nome, senha: senha });
+                if (typeof window.exibirToast === 'function') window.exibirToast("Cadastrado", "Novo fornecedor adicionado.", "🏢");
+            }
+
+            if (typeof window.salvarCredenciaisFornecedoresNaMemoria === 'function') window.salvarCredenciaisFornecedoresNaMemoria();
+            if (typeof window.atualizarTodasListasFornecedores === 'function') window.atualizarTodasListasFornecedores();
+
+            if (inpNome) inpNome.value = '';
+            if (inpSenha) inpSenha.value = '';
+        };
+
+        // Exclusão de Usuários Operacionais
+        window.excluirUsuarioCustom = function(id) {
+            if (!confirm("Tem certeza que deseja excluir este usuário do sistema?")) return;
+            window.ymsStore.baseUsuariosCustom = (window.ymsStore.baseUsuariosCustom || []).filter(u => u.id !== id);
+            
+            if (typeof window.salvarUsuariosCustomizadosNaMemoria === 'function') window.salvarUsuariosCustomizadosNaMemoria();
+            if (typeof window.renderizarTabelaUsuariosCustom === 'function') window.renderizarTabelaUsuariosCustom();
+            if (typeof window.exibirToast === 'function') window.exibirToast("Usuário Removido", "Operador excluído com sucesso.", "🗑️");
+        };
+    </script>
 </body>
+</html>
+</body>
+    
 </html>
 
 
