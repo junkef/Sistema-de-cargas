@@ -3273,6 +3273,76 @@
                 sel.appendChild(opt);
             });
         };
+        // ==========================================
+        // MÓDULO: GESTÃO DE MOTORISTAS
+        // ==========================================
+        window.alternarStatusMotorista = function(cpf) {
+            const cpfLimpo = String(cpf).replace(/\D/g, '');
+            const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+
+            if (motorista) {
+                // Inverte o status atual
+                motorista.status = motorista.status === 'BLOQUEADO' ? 'ATIVO' : 'BLOQUEADO';
+                
+                if (typeof window.salvarBaseMotoristasNaMemoria === 'function') {
+                    window.salvarBaseMotoristasNaMemoria();
+                }
+                if (typeof window.renderizarTabelaMotoristas === 'function') {
+                    window.renderizarTabelaMotoristas();
+                }
+                if (typeof window.exibirToast === 'function') {
+                    window.exibirToast("Status Atualizado", `Motorista ${motorista.status === 'ATIVO' ? 'Liberado' : 'Bloqueado'} com sucesso.`, motorista.status === 'ATIVO' ? "🟢" : "🔴");
+                }
+            } else {
+                alert("Motorista não encontrado na base.");
+            }
+        };
+
+        window.salvarMotoristaManual = function(e) {
+            if(e) e.preventDefault();
+            
+            const cpfRaw = document.getElementById('cadMotCpf')?.value || '';
+            const cpfLimpo = cpfRaw.replace(/\D/g, '');
+            const nome = document.getElementById('cadMotNome')?.value.trim();
+            const celular = document.getElementById('cadMotCelular')?.value.trim();
+            const status = document.getElementById('cadMotStatus')?.value;
+            const obs = document.getElementById('cadMotObs')?.value.trim();
+
+            if(cpfLimpo.length !== 11) { alert("O CPF deve ter exatamente 11 dígitos."); return; }
+            if(!nome) { alert("O nome completo é obrigatório."); return; }
+
+            if (!Array.isArray(window.ymsStore.baseMotoristas)) window.ymsStore.baseMotoristas = [];
+
+            const indexExistente = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
+
+            if (indexExistente !== -1) {
+                // Atualiza motorista existente
+                window.ymsStore.baseMotoristas[indexExistente].nome = nome;
+                window.ymsStore.baseMotoristas[indexExistente].celular = celular;
+                window.ymsStore.baseMotoristas[indexExistente].status = status;
+                window.ymsStore.baseMotoristas[indexExistente].obs = obs;
+                if(typeof window.exibirToast === 'function') window.exibirToast("Atualizado!", "Dados do motorista atualizados.", "📝");
+            } else {
+                // Adiciona novo motorista
+                window.ymsStore.baseMotoristas.push({
+                    cpf: cpfLimpo,
+                    nome: nome,
+                    celular: celular,
+                    status: status,
+                    obs: obs
+                });
+                if(typeof window.exibirToast === 'function') window.exibirToast("Cadastrado!", "Novo motorista adicionado à base.", "💾");
+            }
+
+            if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
+            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
+
+            // Limpa o formulário após salvar
+            document.getElementById('cadMotCpf').value = '';
+            document.getElementById('cadMotNome').value = '';
+            document.getElementById('cadMotCelular').value = '';
+            document.getElementById('cadMotObs').value = '';
+        };
 
 // --- 10. STARTUP DA APLICAÇÃO ---
         window.inicializarAplicacao = function() {
