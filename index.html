@@ -810,8 +810,127 @@
                     </div>
                 </div>
             </div>
+
+            <!-- RELATÓRIO EXCEL -->
+            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+                <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-700 gap-3">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>📊</span> RELATÓRIO DE HISTÓRICO DE TICKETS E PÁTIO
+                        </h3>
+                        <p class="text-xs text-slate-400">Baixe o relatório completo no formato padrão de controle para análise</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-700">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block px-1">De:</span>
+                            <input type="date" id="repDataInicio" class="bg-slate-950 border border-slate-800 rounded-lg text-xs p-1 font-mono font-bold text-white outline-none">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block px-1">Até:</span>
+                            <input type="date" id="repDataFim" class="bg-slate-950 border border-slate-800 rounded-lg text-xs p-1 font-mono font-bold text-white outline-none">
+                        </div>
+                        <button type="button" onclick="window.carregarGraficosTorre()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition cursor-pointer self-end">
+                            🔍 Filtrar
+                        </button>
+                        <button type="button" onclick="window.exportarRelatorioExcelFormatado()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer self-end">
+                            <span>📥</span> BAIXAR EXCEL
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-60 custom-scrollbar">
+                    <table class="w-full text-left text-xs font-mono">
+                        <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0">
+                            <tr>
+                                <th class="p-2.5">Carga</th>
+                                <th class="p-2.5">Placa</th>
+                                <th class="p-2.5">Dia Seman</th>
+                                <th class="p-2.5">Fornecedor</th>
+                                <th class="p-2.5">Cheg. Planta</th>
+                                <th class="p-2.5">Hrs NF</th>
+                                <th class="p-2.5">Local Doca</th>
+                                <th class="p-2.5">Hora Real Ent.</th>
+                                <th class="p-2.5">Hora Real Saída</th>
+                                <th class="p-2.5">Tempo Descarga</th>
+                                <th class="p-2.5">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblPreviewRelatorio" class="divide-y divide-slate-800 text-slate-200">
+                            <tr>
+                                <td colspan="11" class="text-center py-8 text-slate-500 italic">Nenhum ticket processado no período selecionado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
+    </div>
+
+    <!-- MODAL DE MENSAGEM / SMS DO PÁTIO -->
+    <div id="modalSmsNotif" onclick="window.fecharModalSmsExterno(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
+        <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative my-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700">
+                <div class="bg-amber-500 p-2.5 rounded-2xl text-2xl shadow-lg text-slate-900">💬</div>
+                <div>
+                    <h3 class="text-base font-black text-white">Central de Mensagens & Alertas</h3>
+                    <p class="text-xs text-amber-400 font-bold" id="notifDestinoMsg">Destino: +55 (47) 99242-4703</p>
+                </div>
+                <button type="button" onclick="window.fecharModalSms()" class="ml-auto text-slate-400 hover:text-white font-black text-xl cursor-pointer p-1">✕</button>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700/80 rounded-2xl p-4 mb-5">
+                <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Conteúdo da Notificação:</p>
+                <div id="notifTextoCorpo" class="text-xs font-mono text-slate-200 bg-slate-950 p-3 rounded-xl border border-slate-800 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <button type="button" onclick="window.copiarTextoNotificacao()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-3 rounded-xl transition flex items-center justify-center gap-2 border border-slate-600 cursor-pointer">
+                    📋 Copiar Texto
+                </button>
+                <button type="button" onclick="window.dispararSomAlerta()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-black text-xs py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg cursor-pointer">
+                    🔔 Tocar Alerta Sonoro
+                </button>
+            </div>
+
+            <button type="button" onclick="window.fecharModalSms()" class="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold text-xs py-3.5 rounded-xl transition cursor-pointer relative z-50 shadow-lg border border-indigo-400/30">
+                ✓ Concluir e Continuar Operação
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST DE NOTIFICAÇÃO GLOBAL -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50 min-w-[320px]">
+        <span class="text-2xl" id="toastIcon">✨</span>
+        <div>
+            <p class="font-bold text-sm" id="toastTitulo">Notificação</p>
+            <p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p>
+        </div>
+    </div>
+
+    <!-- TICKET DE IMPRESSÃO DO TOTEM COM QR CODE -->
+    <div id="ticketImpressao" class="hidden">
+        <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px;">
+            <h2 style="font-size:16px; margin:0;">SISTEMA YMS / PCP</h2>
+            <p style="font-size:10px; margin:2px 0;">TICKET DE CONTROLE DE PÁTIO</p>
+        </div>
+        <div style="text-align: center; background: #eee; padding: 6px; margin: 8px 0; border:1px solid #000;">
+            <h1 id="ticketImpressaoId" style="font-size: 36px; font-weight: 900; margin: 0;">T-000</h1>
+        </div>
+        <div style="font-size: 11px; line-height:1.4;">
+            <p><strong>MOTORISTA:</strong> <span id="ticketImpressaoNome">-</span></p>
+            <p><strong>CPF:</strong> <span id="ticketImpressaoCpf">-</span></p>
+            <p><strong>PLACA:</strong> <span id="ticketImpressaoPlaca">-</span></p>
+            <p><strong>TRANSP:</strong> <span id="ticketImpressaoTransp">-</span></p>
+            <p><strong>SLA PATIO:</strong> <span id="ticketImpressaoSla">-</span></p>
+        </div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <div id="qrcodeTicket" style="display: flex; justify-content: center; margin-bottom: 4px;"></div>
+            <p style="font-size: 8px; margin: 0;">ESCANEIE NA PORTARIA / TRIAGEM FISCAL</p>
+        </div>
     </div>
 
     <script>
@@ -1756,6 +1875,133 @@
             if (typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
         };
 
+        window.solicitarAcessoPerfil = function(keyPerfil) {
+            window.ymsStore.perfilSolicitadoTemp = keyPerfil;
+            const configPerfisAcesso = {
+                'pcp': { nome: "PCP Programador", precisaSenha: true, modulos: ['pcp', 'torre'] },
+                'fornecedor': { nome: "Portal Fornecedor", precisaSenha: true, eFornecedor: true, modulos: ['fornecedor'] },
+                'totem': { nome: "Totem Autoatendimento", precisaSenha: false, modulos: ['totem'] },
+                'fiscal': { nome: "Recebimento Fiscal", precisaSenha: true, modulos: ['fiscal'] },
+                'doca': { nome: "Operador de Doca", precisaSenha: true, modulos: ['doca'] },
+                'checkout': { nome: "Check-out Portaria", precisaSenha: true, modulos: ['checkout'] },
+                'motoristas': { nome: "Gestão de Motoristas", precisaSenha: true, modulos: ['motoristas'] },
+                'admin': { nome: "Torre / Administrador", precisaSenha: true, modulos: ['pcp', 'fornecedor', 'totem', 'fiscal', 'doca', 'checkout', 'motoristas', 'torre'] }
+            };
+            const cfg = configPerfisAcesso[keyPerfil];
+            if (!cfg) return;
+
+            const boxSenha = document.getElementById('boxSenhaLogin');
+            const boxEmpresa = document.getElementById('boxEmpresaFornecedorLogin');
+            const lblPerfil = document.getElementById('lblPerfilSelecionadoLogin');
+
+            if (boxSenha) boxSenha.classList.add('hidden');
+            if (boxEmpresa) boxEmpresa.classList.add('hidden');
+
+            if (cfg.eFornecedor) {
+                if (document.getElementById('filtroLoginForn')) document.getElementById('filtroLoginForn').value = '';
+                if (typeof window.popularSelectLoginEmpresas === 'function') window.popularSelectLoginEmpresas();
+                if (boxEmpresa) boxEmpresa.classList.remove('hidden');
+            } else if (!cfg.precisaSenha) {
+                window.concluirLoginPerfil(keyPerfil, cfg.nome, cfg.modulos);
+            } else {
+                if (lblPerfil) lblPerfil.textContent = `AUTENTICAÇÃO: ${cfg.nome.toUpperCase()}`;
+                if (boxSenha) boxSenha.classList.remove('hidden');
+                if (document.getElementById('inputUserLogin')) document.getElementById('inputUserLogin').focus();
+            }
+        };
+
+        window.confirmarLoginFornecedorEmpresa = function() {
+            const empSel = document.getElementById('selEmpresaFornecedorLogin')?.value;
+            if (!empSel) { alert("Selecione a sua empresa na lista."); return; }
+            const senhaForn = document.getElementById('inputSenhaFornecedor')?.value.trim();
+            const cadForn = (window.mapaCredenciaisFornecedores || []).find(item => window.limparNomeFornecedor(item.empresa) === window.limparNomeFornecedor(empSel));
+            if (senhaForn === (cadForn ? cadForn.senha : "123") || senhaForn === "admin" || senhaForn === "1234") {
+                window.ymsStore.empresaFornecedorLogada = empSel;
+                localStorage.setItem('yms_empresa_fornecedor_logada', empSel);
+                window.concluirLoginPerfil('fornecedor', `Fornecedor: ${empSel}`, ['fornecedor']);
+            } else {
+                alert("Senha incorreta!");
+            }
+        };
+
+        window.confirmarLoginComSenha = function() {
+            const userDig = document.getElementById('inputUserLogin')?.value.trim();
+            const pinDig = document.getElementById('inputPinLogin')?.value.trim();
+            const perfilSel = window.ymsStore.perfilSolicitadoTemp;
+            if ((userDig.toLowerCase() === "admin" || userDig === "") && (pinDig === "1234" || pinDig === "admin" || pinDig === "123")) {
+                window.concluirLoginPerfil('admin', 'Administrador', ['pcp','fornecedor','totem','fiscal','doca','checkout','motoristas','torre']);
+                return;
+            }
+            const usrEncontrado = (window.ymsStore.baseUsuariosCustom || []).find(u => u.login.toLowerCase() === userDig.toLowerCase() && u.senha === pinDig);
+            if (usrEncontrado) {
+                if (perfilSel && !usrEncontrado.modulos.includes(perfilSel) && !usrEncontrado.modulos.includes('torre')) {
+                    alert(`🚫 ACESSO NEGADO!\n\nO operador "${usrEncontrado.nome}" não possui permissão para acessar o módulo selecionado.`);
+                    return;
+                }
+                window.concluirLoginPerfil(perfilSel || usrEncontrado.modulos[0], usrEncontrado.nome, usrEncontrado.modulos);
+            } else {
+                alert("Usuário ou Senha incorretos!");
+            }
+        };
+
+        window.concluirLoginPerfil = function(keyPerfil, nomeExibicao, modulosPermitidos, abaParaAbrir = null) {
+            const targetAba = abaParaAbrir || modulosPermitidos[0];
+            const sessaoData = { key: keyPerfil, nome: nomeExibicao, modulosCustom: modulosPermitidos, abaAtiva: targetAba };
+            window.ymsStore.usuarioLogado = sessaoData;
+            localStorage.setItem('yms_sessao_usuario', JSON.stringify(sessaoData));
+            const modalLogin = document.getElementById('modalLoginGlobal');
+            if (modalLogin) modalLogin.classList.add('hidden');
+            const lblUser = document.getElementById('lblNomeUsuarioLogado');
+            if (lblUser) lblUser.textContent = `Sair (${nomeExibicao})`;
+
+            const navBar = document.getElementById('navBarPerfis');
+            if (keyPerfil === 'totem' || (modulosPermitidos.length === 1 && modulosPermitidos[0] === 'totem')) {
+                if (navBar) navBar.classList.add('hidden');
+            } else {
+                if (navBar) navBar.classList.remove('hidden');
+                document.querySelectorAll('#navBarPerfis button').forEach(btn => {
+                    const moduloBtn = btn.getAttribute('data-modulo');
+                    if (modulosPermitidos.includes(moduloBtn)) { btn.classList.remove('hidden'); } else { btn.classList.add('hidden'); }
+                });
+            }
+            if (typeof window.mudarPerfil === 'function') window.mudarPerfil(targetAba);
+        };
+
+        window.fazerLogoutGlobal = function() {
+            window.ymsStore.usuarioLogado = null;
+            window.ymsStore.empresaFornecedorLogada = null;
+            localStorage.removeItem('yms_sessao_usuario');
+            localStorage.removeItem('yms_empresa_fornecedor_logada');
+            const modalLogin = document.getElementById('modalLoginGlobal');
+            const boxSenha = document.getElementById('boxSenhaLogin');
+            const boxEmpresa = document.getElementById('boxEmpresaFornecedorLogin');
+            const navBar = document.getElementById('navBarPerfis');
+
+            if (modalLogin) modalLogin.classList.remove('hidden');
+            if (boxSenha) boxSenha.classList.add('hidden');
+            if (boxEmpresa) boxEmpresa.classList.add('hidden');
+            if (navBar) navBar.classList.remove('hidden');
+            document.querySelectorAll('#navBarPerfis button').forEach(btn => btn.classList.remove('hidden'));
+        };
+
+        window.restaurarSessaoLocal = function() {
+            try {
+                const sessaoSalva = localStorage.getItem('yms_sessao_usuario');
+                const empForSalva = localStorage.getItem('yms_empresa_fornecedor_logada');
+                if (empForSalva) { window.ymsStore.empresaFornecedorLogada = empForSalva; }
+                if (sessaoSalva) {
+                    const parsed = JSON.parse(sessaoSalva);
+                    if (parsed && parsed.key && parsed.modulosCustom) {
+                        window.concluirLoginPerfil(parsed.key, parsed.nome, parsed.modulosCustom, parsed.abaAtiva || parsed.modulosCustom[0]);
+                        return true;
+                    }
+                }
+            } catch(e) { console.error("Erro ao restaurar sessão:", e); }
+            const modalLogin = document.getElementById('modalLoginGlobal');
+            if (modalLogin) modalLogin.classList.remove('hidden');
+            return false;
+        };
+
         // --- INICIALIZAÇÃO DA APLICAÇÃO ---
         window.inicializarAplicacao = function() {
             if (typeof window.atualizarRelogioDigital === 'function') {
@@ -1795,13 +2041,7 @@
 
             if (typeof window.atualizarHorariosDisponiveis === 'function') window.atualizarHorariosDisponiveis();
             
-            // Chama a configuração do Firebase importado lá em cima
-            if (typeof inicializarEscutadoresFirebase === 'function') inicializarEscutadoresFirebase();
-            
-            // Renderiza logo na inicialização
-            if (typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
-            
-            // Oculta a tela de Login temporariamente para o seu desenvolvimento (remova se precisar ver a tela de login primeiro)
+            // Oculta a tela de Login temporariamente para o seu desenvolvimento
             document.getElementById('modalLoginGlobal')?.classList.add('hidden');
             window.mudarPerfil('pcp'); 
         };
