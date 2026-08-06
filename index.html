@@ -2877,554 +2877,16 @@
                 if (idx === 0) opt.selected = true;
                 selForn.appendChild(opt);
             });
-            document.getElementById('lblContadorForn').textContent = `(${lista.length} CADASTRADOS)`;
-        };
-        // --- FUNÇÃO DE EXPORTAÇÃO DE RELATÓRIO EXCEL ---
+           </script>
+    
+    <!-- SUPER SCRIPT ISOLADO (CORRIGE LINHAS EM BRANCO, DUPLICAÇÕES E CACHE) -->
+    <script>
+        // ==========================================
+        // 1. RELATÓRIO EXCEL DA TORRE
+        // ==========================================
         window.exportarRelatorioExcelFormatado = function() {
-            // 1. Pega as datas do filtro
             const dataIniVal = document.getElementById('repDataInicio')?.value;
             const dataFimVal = document.getElementById('repDataFim')?.value;
-
-            let dIni = null, dFim = null;
-            if (dataIniVal) {
-                const p = dataIniVal.split('-');
-                dIni = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
-                dIni.setHours(0, 0, 0, 0);
-            }
-            if (dataFimVal) {
-                const p = dataFimVal.split('-');
-                dFim = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
-                dFim.setHours(23, 59, 59, 999);
-            }
-
-            const todosAg = window.ymsStore.agendamentos || [];
-            
-            // 2. Filtra os agendamentos pela data selecionada
-            const filtrados = todosAg.filter(ag => {
-                if (!ag.data) return true;
-                let dAg = null;
-                if (ag.data.includes('/')) {
-                    const pt = ag.data.split('/');
-                    dAg = new Date(parseInt(pt[2], 10), parseInt(pt[1], 10) - 1, parseInt(pt[0], 10));
-                } else if (ag.data.includes('-')) {
-                    const pt = ag.data.split('-');
-                    dAg = new Date(parseInt(pt[0], 10), parseInt(pt[1], 10) - 1, parseInt(pt[2], 10));
-                }
-                if (!dAg) return true;
-                if (dIni && dAg < dIni) return false;
-                if (dFim && dAg > dFim) return false;
-                return true;
-            });
-
-            if (filtrados.length === 0) {
-                alert("Não há dados processados para exportar neste período.");
-                return;
-            }
-
-            // 3. Monta os dados brutos no formato de colunas do Excel
-            const dadosPlanilha = filtrados.map(ag => {
-                const horaEntradaReal = ag.timeCheckin ? window.formatarHoraIso(ag.timeCheckin) : (ag.horaIni || '-');
-                const horaSaidaReal = ag.timeCheckout ? window.formatarHoraIso(ag.timeCheckout) : (ag.timeFimDescarga ? window.formatarHoraIso(ag.timeFimDescarga) : (ag.horaFim || '-'));
-                const tempoTotal = window.calcularDiferencaHorasFormatada(horaEntradaReal, horaSaidaReal);
-                
-                let statusSla = "NO HORÁRIO";
-                if(typeof window.obterStatusSla === 'function') {
-                    statusSla = window.obterStatusSla(ag).text;
-                }
-
-                return {
-                    "Carga / Ticket": ag.ticket || ag.ordem || '-',
-                    "Placa Cavalo": ag.cavalo || '-',
-                    "Placa Carreta": ag.carreta || '-',
-                    "Data Agendada": ag.data || '-',
-                    "Dia Semana": window.obterDiaSemanaPtBR(ag.data),
-                    "Fornecedor / Empresa": window.limparNomeFornecedor ? window.limparNomeFornecedor(ag.fornecedor) : ag.fornecedor,
-                    "Motorista": ag.motorista || '-',
-                    "CPF": ag.cpf || '-',
-                    "Nota Fiscal": ag.nf || '-',
-                    "Cheg. Planta (Totem)": ag.timeCheckin ? window.formatarHoraIso(ag.timeCheckin) : '-',
-                    "Liberação Fiscal": ag.timeFiscal ? window.formatarHoraIso(ag.timeFiscal) : '-',
-                    "Doca(s) / Rota": (ag.docasSequencia && ag.docasSequencia.length > 0) ? ag.docasSequencia.join(" -> ") : (ag.doca || '-'),
-                    "Início Janela Agendada": ag.horaIni || '-',
-                    "Fim Janela Agendada": ag.horaFim || '-',
-                    "Início Descarga Real": ag.timeInicioDescarga ? window.formatarHoraIso(ag.timeInicioDescarga) : '-',
-                    "Fim Descarga Real": ag.timeFimDescarga ? window.formatarHoraIso(ag.timeFimDescarga) : '-',
-                    "Check-out (Saída)": ag.timeCheckout ? window.formatarHoraIso(ag.timeCheckout) : '-',
-                    "Tempo Total Operação": tempoTotal,
-                    "SLA Operacional": statusSla,
-                    "Status Atual": ag.status || 'AGENDADO'
-                };
-            });
-
-            // 4. Cria a planilha usando a biblioteca global XLSX (SheetJS)
-            try {
-                const ws = XLSX.utils.json_to_sheet(dadosPlanilha);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Relatório Pátio");
-                
-                const dataHoje = window.obterDataHojeISO ? window.obterDataHojeISO().replace(/-/g, '') : '2026';
-                const nomeArquivo = `YMS_Relatorio_Patio_${dataHoje}.xlsx`;
-                
-                XLSX.writeFile(wb, nomeArquivo);
-                
-                if(typeof window.exibirToast === 'function') {
-                    window.exibirToast("Download Concluído", "Planilha salva no seu dispositivo.", "📥");
-                }
-            } catch (error) {
-                console.error("Erro ao gerar Excel:", error);
-                alert("Erro ao gerar a planilha. Verifique se a biblioteca SheetJS carregou corretamente.");
-            }
-        };
-        // ==========================================
-        // MÓDULO 5: OPERADOR DE DOCA
-        // ==========================================
-        window.chamarProximoSms = function() {
-            const selDoca = document.getElementById('selDocaOperador');
-            if (!selDoca) return;
-            const docaSel = selDoca.value;
-            const docaNorm = window.normalizarTexto(docaSel);
-
-            const agendamentos = window.ymsStore.agendamentos || [];
-            
-            const emDescarga = agendamentos.find(i => {
-                if (i.status !== 'EM_DESCARGA') return false;
-                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
-                return window.normalizarTexto(docaAtual) === docaNorm;
-            });
-
-            if (emDescarga) {
-                alert("Já existe um veículo em descarga nesta doca. Finalize a operação dele no botão azul antes de chamar o próximo.");
-                return;
-            }
-
-            const filaDoca = agendamentos.filter(i => {
-                if (i.status !== 'TRIAGEM_FISCAL' && i.status !== 'CHECKIN_PATIO') return false;
-                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
-                return window.normalizarTexto(docaAtual) === docaNorm;
-            });
-
-            if (filaDoca.length === 0) {
-                alert("Não há caminhões aguardando na fila para esta doca.");
-                return;
-            }
-
-            const proximo = filaDoca[0];
-            proximo.status = 'EM_DESCARGA';
-            proximo.timeInicioDescarga = new Date().toISOString();
-
-            if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
-
-            if (typeof window.dispararSmsEtapa === 'function') {
-                window.dispararSmsEtapa(proximo, 'EM_DESCARGA');
-            } else if(typeof window.exibirToast === 'function') {
-                window.exibirToast("Veículo Chamado!", `Motorista ${proximo.motorista} acionado para doca.`, "📲");
-            }
-
-            if(typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
-        };
-
-        window.finalizarDescargaDoca = function() {
-            const selDoca = document.getElementById('selDocaOperador');
-            if (!selDoca) return;
-            const docaSel = selDoca.value;
-            const docaNorm = window.normalizarTexto(docaSel);
-
-            const agendamentos = window.ymsStore.agendamentos || [];
-            
-            const emDescarga = agendamentos.find(i => {
-                if (i.status !== 'EM_DESCARGA') return false;
-                const docaAtual = (i.docasSequencia && i.docasSequencia.length > 0) ? i.docasSequencia[i.indexDocaAtual || 0] : i.doca;
-                return window.normalizarTexto(docaAtual) === docaNorm;
-            });
-
-            if (!emDescarga) {
-                alert("Não há nenhum veículo em descarga nesta doca para ser finalizado.");
-                return;
-            }
-
-            const docasSeq = emDescarga.docasSequencia || [emDescarga.doca];
-            const indexAtual = emDescarga.indexDocaAtual || 0;
-
-            if (indexAtual + 1 < docasSeq.length) {
-                emDescarga.indexDocaAtual = indexAtual + 1;
-                emDescarga.status = 'TRIAGEM_FISCAL'; 
-                if(typeof window.exibirToast === 'function') window.exibirToast("Descarga Parcial!", `Veículo avançou na rota. Enviado para a doca: ${docasSeq[indexAtual + 1]}.`, "🔄");
-            } else {
-                emDescarga.status = 'AGUARDANDO_CHECKOUT';
-                emDescarga.timeFimDescarga = new Date().toISOString();
-                if(typeof window.exibirToast === 'function') window.exibirToast("Descarga Finalizada!", "Veículo liberado. Aguardando Check-out na portaria.", "✅");
-                if (typeof window.dispararSmsEtapa === 'function') window.dispararSmsEtapa(emDescarga, 'AGUARDANDO_CHECKOUT');
-            }
-
-            if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
-            if(typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
-        };
-
-        // ==========================================
-        // MÓDULO 6: CHECK-OUT PORTARIA
-        // ==========================================
-        window.selecionarTicketCheckout = function(ticket) {
-            window.ymsStore.ticketAtivoCheckout = ticket;
-            if(typeof window.renderizarModuloCheckout === 'function') window.renderizarModuloCheckout();
-        };
-
-        window.confirmarSaidaPortaria = function() {
-            const ticket = window.ymsStore.ticketAtivoCheckout;
-            if (!ticket) { alert("Selecione um veículo na fila de saída."); return; }
-            const agendamentos = window.ymsStore.agendamentos || [];
-            const index = agendamentos.findIndex(i => i.ticket === ticket);
-            
-            if (index !== -1) {
-                agendamentos[index].status = 'CONCLUIDO';
-                agendamentos[index].timeCheckout = new Date().toISOString();
-                if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
-                if(typeof window.exibirToast === 'function') window.exibirToast("Check-out Finalizado", "Veículo liberado da planta.", "🚪");
-                
-                window.ymsStore.ticketAtivoCheckout = null;
-                if(typeof window.renderizarModuloCheckout === 'function') window.renderizarModuloCheckout();
-            }
-        };
-        // ==========================================
-        // BLOCO DE CORREÇÃO: TOTEM E FISCAL
-        // ==========================================
-
-        // --- 1. FUNÇÕES DO TOTEM (COM IMPRESSÃO) ---
-        window.digitarTotem = function(val) {
-            const display = document.getElementById('displayTotem');
-            if (display) display.value = (display.value || '') + val;
-        };
-
-        window.limparTotem = function() {
-            const display = document.getElementById('displayTotem');
-            if (display) display.value = '';
-        };
-
-        window.apagarTotem = function() {
-            const display = document.getElementById('displayTotem');
-            if (display && display.value) display.value = display.value.slice(0, -1);
-        };
-
-        window.finalizarCheckinTotem = function() {
-            const cpfRaw = document.getElementById('displayTotem')?.value || '';
-            const cpfLimpo = cpfRaw.replace(/\D/g, '');
-            if(cpfLimpo.length !== 11) { alert("Digite um CPF com 11 dígitos."); return; }
-            
-            const agendamentos = window.ymsStore.agendamentos || [];
-            const ordemParaCheckin = agendamentos.find(i => i.status === 'CONFIRMADO_FORNECEDOR' && i.cpf === cpfLimpo);
-
-            if(ordemParaCheckin) {
-                ordemParaCheckin.status = 'CHECKIN_PATIO';
-                ordemParaCheckin.timeCheckin = new Date().toISOString();
-                const numTicket = Math.floor(Math.random() * 900) + 100;
-                ordemParaCheckin.ticket = `T-${numTicket}`;
-
-                if (typeof window.salvarAgendamentosNaMemoria === 'function') {
-                    window.salvarAgendamentosNaMemoria();
-                }
-
-                // Lógica de Impressão do Ticket
-                const elId = document.getElementById('ticketImpressaoId');
-                if(elId) {
-                    elId.textContent = ordemParaCheckin.ticket;
-                    document.getElementById('ticketImpressaoNome').textContent = ordemParaCheckin.motorista || '-';
-                    document.getElementById('ticketImpressaoCpf').textContent = ordemParaCheckin.cpf || '-';
-                    document.getElementById('ticketImpressaoPlaca').textContent = ordemParaCheckin.cavalo || '-';
-                    document.getElementById('ticketImpressaoTransp').textContent = ordemParaCheckin.transp || '-';
-                    document.getElementById('ticketImpressaoSla').textContent = typeof window.calcularSlaTicket === 'function' ? window.calcularSlaTicket(ordemParaCheckin) : 'NO HORÁRIO';
-
-                    const qrContainer = document.getElementById('qrcodeTicket');
-                    if (qrContainer) {
-                        qrContainer.innerHTML = "";
-                        try {
-                            new QRCode(qrContainer, { text: ordemParaCheckin.ticket, width: 80, height: 80 });
-                        } catch(e) { console.log("Aviso: Biblioteca QRCode não carregada."); }
-                    }
-
-                    // Aguarda o QR Code ser desenhado na tela para chamar a impressora
-                    setTimeout(() => {
-                        window.print();
-                        window.limparTotem();
-                        if (typeof window.exibirToast === 'function') window.exibirToast("Check-in Realizado!", `Ticket: ${ordemParaCheckin.ticket}`, "🏭");
-                        if (typeof window.mudarPerfil === 'function') window.mudarPerfil('fiscal');
-                    }, 500);
-                } else {
-                    window.limparTotem();
-                    if (typeof window.exibirToast === 'function') window.exibirToast("Check-in Realizado!", `Ticket: ${ordemParaCheckin.ticket}`, "🏭");
-                    if (typeof window.mudarPerfil === 'function') window.mudarPerfil('fiscal');
-                }
-            } else {
-                alert("Nenhuma carga 'CONFIRMADA' para este CPF hoje.");
-            }
-        };
-
-        // --- 2. FUNÇÕES DO RECEBIMENTO FISCAL ---
-        window.selecionarTicketFiscal = function(ticket) {
-            window.ymsStore.ticketAtivoFiscal = ticket;
-            const agendamentos = window.ymsStore.agendamentos || [];
-            const ativo = agendamentos.find(i => i.ticket === ticket);
-            if (ativo) {
-                window.ymsStore.sequenciaDocasSelecao = (ativo.docasSequencia && ativo.docasSequencia.length > 0) ? [...ativo.docasSequencia] : [ativo.doca];
-            }
-            if(typeof window.renderizarModuloFiscal === 'function') window.renderizarModuloFiscal();
-        };
-
-        window.alternarSelecaoDocaFiscal = function(doca) {
-            if (!window.ymsStore.sequenciaDocasSelecao) window.ymsStore.sequenciaDocasSelecao = [];
-            const idx = window.ymsStore.sequenciaDocasSelecao.indexOf(doca);
-            
-            if (idx > -1) {
-                window.ymsStore.sequenciaDocasSelecao.splice(idx, 1);
-            } else {
-                window.ymsStore.sequenciaDocasSelecao.push(doca);
-            }
-            if(typeof window.renderizarModuloFiscal === 'function') window.renderizarModuloFiscal();
-        };
-
-        window.resetarSequenciaDocas = function() {
-            window.ymsStore.sequenciaDocasSelecao = [];
-            if(typeof window.renderizarModuloFiscal === 'function') window.renderizarModuloFiscal();
-        };
-
-        window.atualizarDisplayRotaSequencial = function() {
-            const display = document.getElementById('displayRotaSequencial');
-            if (!display) return;
-            const seq = window.ymsStore.sequenciaDocasSelecao || [];
-            if (seq.length === 0) {
-                display.innerHTML = '<span class="text-slate-500 italic">Nenhuma doca selecionada</span>';
-            } else {
-                display.innerHTML = seq.map((d, i) => 
-                    `<span class="bg-amber-400 text-slate-900 px-2 py-0.5 rounded text-[10px] font-black">${i + 1}º ${d}</span>`
-                ).join('<span class="text-slate-500 font-bold px-1">➔</span>');
-            }
-        };
-
-        window.limparPainelDetalhesFiscal = function() {
-            const elAtivo = document.getElementById('txtTicketFiscalAtivo');
-            if(elAtivo) elAtivo.textContent = "Selecione um Ticket";
-            const elMot = document.getElementById('fiscMotorista');
-            if(elMot) elMot.textContent = "-";
-            const elPla = document.getElementById('fiscPlaca');
-            if(elPla) elPla.textContent = "-";
-            const elNf = document.getElementById('fiscNf');
-            if(elNf) elNf.textContent = "-";
-            window.ymsStore.sequenciaDocasSelecao = [];
-            window.atualizarDisplayRotaSequencial();
-        };
-
-        window.liberarParaDocaFiscal = function() {
-            const ticket = window.ymsStore.ticketAtivoFiscal;
-            if (!ticket) { alert("Selecione um veículo na fila lateral primeiro."); return; }
-            const seq = window.ymsStore.sequenciaDocasSelecao || [];
-            if (seq.length === 0) { alert("Selecione pelo menos uma doca clicando nos botões centrais."); return; }
-
-            const agendamentos = window.ymsStore.agendamentos || [];
-            const index = agendamentos.findIndex(i => i.ticket === ticket);
-
-            if (index !== -1) {
-                agendamentos[index].status = 'TRIAGEM_FISCAL';
-                agendamentos[index].timeFiscal = new Date().toISOString();
-                agendamentos[index].docasSequencia = [...seq];
-                agendamentos[index].indexDocaAtual = 0;
-
-                if (typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
-
-                if (typeof window.dispararSmsEtapa === 'function') {
-                    window.dispararSmsEtapa(agendamentos[index], 'TRIAGEM_FISCAL');
-                } else if(typeof window.exibirToast === 'function') {
-                    window.exibirToast("Sucesso!", `Veículo enviado para: ${seq[0]}`, "🚀");
-                }
-
-                window.ymsStore.ticketAtivoFiscal = null;
-                window.ymsStore.sequenciaDocasSelecao = [];
-                if(typeof window.renderizarModuloFiscal === 'function') window.renderizarModuloFiscal();
-            } else {
-                alert("Erro: Ticket não encontrado.");
-            }
-        };
-        // ==========================================
-
-        window.filtrarOpcoesFornecedor = function() {
-            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
-            window.popularSelectFornecedores(filtrados);
-        };
-
-        window.popularSelectLoginEmpresas = function(listaParaExibir = null) {
-            const sel = document.getElementById('selEmpresaFornecedorLogin');
-            if (!sel) return;
-            sel.innerHTML = "";
-            const lista = listaParaExibir || window.obterListaNomesFornecedores();
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-2 hover:bg-indigo-600 hover:text-white cursor-pointer rounded font-bold";
-                if (idx === 0) opt.selected = true;
-                sel.appendChild(opt);
-            });
-        };
-
-        window.popularSelectCadastroEmpresasUsr = function() {
-            const sel = document.getElementById('selUsrEmpresa');
-            if (!sel) return;
-            sel.innerHTML = `<option value="">--- Nenhuma (Acesso Interno / Padrão) ---</option>`;
-            window.obterListaNomesFornecedores().forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = f;
-                sel.appendChild(opt);
-            });
-        };
-        // ==========================================
-        // MÓDULO: GESTÃO DE MOTORISTAS
-        // ==========================================
-        window.alternarStatusMotorista = function(cpf) {
-            const cpfLimpo = String(cpf).replace(/\D/g, '');
-            const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (motorista) {
-                // Inverte o status atual
-                motorista.status = motorista.status === 'BLOQUEADO' ? 'ATIVO' : 'BLOQUEADO';
-                
-                if (typeof window.salvarBaseMotoristasNaMemoria === 'function') {
-                    window.salvarBaseMotoristasNaMemoria();
-                }
-                if (typeof window.renderizarTabelaMotoristas === 'function') {
-                    window.renderizarTabelaMotoristas();
-                }
-                if (typeof window.exibirToast === 'function') {
-                    window.exibirToast("Status Atualizado", `Motorista ${motorista.status === 'ATIVO' ? 'Liberado' : 'Bloqueado'} com sucesso.`, motorista.status === 'ATIVO' ? "🟢" : "🔴");
-                }
-            } else {
-                alert("Motorista não encontrado na base.");
-            }
-        };
-
-        window.salvarMotoristaManual = function(e) {
-            if(e) e.preventDefault();
-            
-            const cpfRaw = document.getElementById('cadMotCpf')?.value || '';
-            const cpfLimpo = cpfRaw.replace(/\D/g, '');
-            const nome = document.getElementById('cadMotNome')?.value.trim();
-            const celular = document.getElementById('cadMotCelular')?.value.trim();
-            const status = document.getElementById('cadMotStatus')?.value;
-            const obs = document.getElementById('cadMotObs')?.value.trim();
-
-            if(cpfLimpo.length !== 11) { alert("O CPF deve ter exatamente 11 dígitos."); return; }
-            if(!nome) { alert("O nome completo é obrigatório."); return; }
-
-            if (!Array.isArray(window.ymsStore.baseMotoristas)) window.ymsStore.baseMotoristas = [];
-
-            const indexExistente = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (indexExistente !== -1) {
-                // Atualiza motorista existente
-                window.ymsStore.baseMotoristas[indexExistente].nome = nome;
-                window.ymsStore.baseMotoristas[indexExistente].celular = celular;
-                window.ymsStore.baseMotoristas[indexExistente].status = status;
-                window.ymsStore.baseMotoristas[indexExistente].obs = obs;
-                if(typeof window.exibirToast === 'function') window.exibirToast("Atualizado!", "Dados do motorista atualizados.", "📝");
-            } else {
-                // Adiciona novo motorista
-                window.ymsStore.baseMotoristas.push({
-                    cpf: cpfLimpo,
-                    nome: nome,
-                    celular: celular,
-                    status: status,
-                    obs: obs
-                });
-                if(typeof window.exibirToast === 'function') window.exibirToast("Cadastrado!", "Novo motorista adicionado à base.", "💾");
-            }
-
-            if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-
-            // Limpa o formulário após salvar
-            document.getElementById('cadMotCpf').value = '';
-            document.getElementById('cadMotNome').value = '';
-            document.getElementById('cadMotCelular').value = '';
-            document.getElementById('cadMotObs').value = '';
-        };
-
-// --- 10. STARTUP DA APLICAÇÃO ---
-        window.inicializarAplicacao = function() {
-            if (typeof window.atualizarRelogioDigital === 'function') {
-                window.atualizarRelogioDigital();
-                setInterval(window.atualizarRelogioDigital, 1000);
-            }
-
-            let hojeIso = "";
-            if (typeof window.obterDataHojeISO === 'function') {
-                hojeIso = window.obterDataHojeISO();
-            }
-
-            if (document.getElementById('inpData')) {
-                document.getElementById('inpData').min = hojeIso;
-                document.getElementById('inpData').value = hojeIso;
-            }
-            if (document.getElementById('filtroDataFornecedor')) {
-                document.getElementById('filtroDataFornecedor').min = hojeIso;
-                document.getElementById('filtroDataFornecedor').value = hojeIso;
-            }
-            if (document.getElementById('repDataInicio')) {
-                document.getElementById('repDataInicio').value = hojeIso;
-            }
-            if (document.getElementById('repDataFim')) {
-                document.getElementById('repDataFim').value = hojeIso;
-            }
-
-            // 🛡️ A LISTA ABSOLUTA DE DOCAS (Força a atualização global)
-            window.listaTodasDocas = [
-                'Doca - (04N/06N)', 
-                'Doca - 1 F2 (7S)', 
-                'Doca - 2 F2 (7S)', 
-                'Doca - Basico F2 (5S)', 
-                'Doca - Basico F3 (CS1)', 
-                'Doca - Inflamáveis', 
-                'Doca - Devolução' // <-- Devolução fixada na marra!
-            ];
-
-            // Injeta no seletor do PCP (Agendamento)
-            const selDoca = document.getElementById('inpDoca');
-            if (selDoca) {
-                selDoca.innerHTML = "";
-                window.listaTodasDocas.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d; opt.textContent = d;
-                    selDoca.appendChild(opt);
-                });
-            }
-
-            // Injeta no seletor amarelo do Operador de Doca
-            const selDocaOperador = document.getElementById('selDocaOperador');
-            if (selDocaOperador) {
-                selDocaOperador.innerHTML = "";
-                window.listaTodasDocas.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d; 
-                    opt.textContent = d;
-                    opt.className = "bg-white text-slate-900 font-bold";
-                    selDocaOperador.appendChild(opt);
-                });
-            }
-
-            if (typeof window.atualizarHorariosDisponiveis === 'function') window.atualizarHorariosDisponiveis();
-            if (typeof window.restaurarSessaoLocal === 'function') window.restaurarSessaoLocal();
-            if (typeof inicializarEscutadoresFirebase === 'function') inicializarEscutadoresFirebase();
-        };
-
-        if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', window.inicializarAplicacao);
-        } else {
-            window.inicializarAplicacao();
-        }
-        if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', window.inicializarAplicacao);
-        } else {
-            window.inicializarAplicacao();
-        }
-        // --- FUNÇÃO GLOBAL DE EXCEL (GARANTIA DE ESCOPO) ---
-        window.exportarRelatorioExcelFormatado = function() {
-            const dataIniVal = document.getElementById('repDataInicio') ? document.getElementById('repDataInicio').value : null;
-            const dataFimVal = document.getElementById('repDataFim') ? document.getElementById('repDataFim').value : null;
 
             let dIni = null, dFim = null;
             if (dataIniVal) {
@@ -3512,268 +2974,16 @@
                 
                 XLSX.writeFile(wb, nomeArquivo);
                 
-                if(typeof window.exibirToast === 'function') {
-                    window.exibirToast("Download Concluído", "Planilha salva no seu dispositivo.", "📥");
-                }
+                if(typeof window.exibirToast === 'function') window.exibirToast("Download Concluído", "Planilha salva no seu dispositivo.", "📥");
             } catch (error) {
                 console.error("Erro ao gerar Excel:", error);
                 alert("Erro ao gerar a planilha. Verifique o console.");
             }
         };
-        // --- GARANTIA GLOBAL: GESTÃO DE MOTORISTAS ---
-        window.alternarStatusMotorista = function(cpf) {
-            const cpfLimpo = String(cpf).replace(/\D/g, '');
-            const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
 
-            if (motorista) {
-                // Inverte o status atual
-                motorista.status = motorista.status === 'BLOQUEADO' ? 'ATIVO' : 'BLOQUEADO';
-                
-                if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-                if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-                if (typeof window.exibirToast === 'function') {
-                    window.exibirToast("Status Atualizado", `Motorista ${motorista.status === 'ATIVO' ? 'Liberado' : 'Bloqueado'} com sucesso.`, motorista.status === 'ATIVO' ? "🟢" : "🔴");
-                }
-            } else {
-                alert("Motorista não encontrado na base.");
-            }
-        };
-
-        window.salvarMotoristaManual = function(e) {
-            if(e) e.preventDefault();
-            
-            const cpfRaw = document.getElementById('cadMotCpf')?.value || '';
-            const cpfLimpo = cpfRaw.replace(/\D/g, '');
-            const nome = document.getElementById('cadMotNome')?.value.trim();
-            const celular = document.getElementById('cadMotCelular')?.value.trim();
-            const status = document.getElementById('cadMotStatus')?.value;
-            const obs = document.getElementById('cadMotObs')?.value.trim();
-
-            if(cpfLimpo.length !== 11) { alert("O CPF deve ter exatamente 11 dígitos."); return; }
-            if(!nome) { alert("O nome completo é obrigatório."); return; }
-
-            if (!Array.isArray(window.ymsStore.baseMotoristas)) window.ymsStore.baseMotoristas = [];
-
-            const indexExistente = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (indexExistente !== -1) {
-                // Atualiza motorista existente
-                window.ymsStore.baseMotoristas[indexExistente].nome = nome;
-                window.ymsStore.baseMotoristas[indexExistente].celular = celular;
-                window.ymsStore.baseMotoristas[indexExistente].status = status;
-                window.ymsStore.baseMotoristas[indexExistente].obs = obs;
-                if(typeof window.exibirToast === 'function') window.exibirToast("Atualizado!", "Dados do motorista atualizados.", "📝");
-            } else {
-                // Adiciona novo motorista
-                window.ymsStore.baseMotoristas.push({
-                    cpf: cpfLimpo, nome: nome, celular: celular, status: status, obs: obs
-                });
-                if(typeof window.exibirToast === 'function') window.exibirToast("Cadastrado!", "Novo motorista adicionado à base.", "💾");
-            }
-
-            if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-
-            // Limpa o formulário
-            document.getElementById('cadMotCpf').value = '';
-            document.getElementById('cadMotNome').value = '';
-            document.getElementById('cadMotCelular').value = '';
-            document.getElementById('cadMotObs').value = '';
-        };
-    </script>
-   <!-- SCRIPT ISOLADO PARA GARANTIR O FUNCIONAMENTO DOS BOTÕES DE MOTORISTA -->
-    <script>
-        window.alternarStatusMotorista = function(cpf) {
-            const cpfLimpo = String(cpf).replace(/\D/g, '');
-            const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (motorista) {
-                // Inverte o status atual
-                motorista.status = motorista.status === 'BLOQUEADO' ? 'ATIVO' : 'BLOQUEADO';
-                
-                if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-                if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-                if (typeof window.exibirToast === 'function') {
-                    window.exibirToast("Status Atualizado", `Motorista ${motorista.status === 'ATIVO' ? 'Liberado' : 'Bloqueado'} com sucesso.`, motorista.status === 'ATIVO' ? "🟢" : "🔴");
-                }
-            } else {
-                alert("Motorista não encontrado na base.");
-            }
-        };
-
-        window.salvarMotoristaManual = function(e) {
-            if(e) e.preventDefault();
-            
-            const cpfRaw = document.getElementById('cadMotCpf')?.value || '';
-            const cpfLimpo = cpfRaw.replace(/\D/g, '');
-            const nome = document.getElementById('cadMotNome')?.value.trim();
-            const celular = document.getElementById('cadMotCelular')?.value.trim();
-            const status = document.getElementById('cadMotStatus')?.value;
-            const obs = document.getElementById('cadMotObs')?.value.trim();
-
-            if(cpfLimpo.length !== 11) { alert("O CPF deve ter exatamente 11 dígitos."); return; }
-            if(!nome) { alert("O nome completo é obrigatório."); return; }
-
-            if (!Array.isArray(window.ymsStore.baseMotoristas)) window.ymsStore.baseMotoristas = [];
-
-            const indexExistente = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (indexExistente !== -1) {
-                // Atualiza motorista existente
-                window.ymsStore.baseMotoristas[indexExistente].nome = nome;
-                window.ymsStore.baseMotoristas[indexExistente].celular = celular;
-                window.ymsStore.baseMotoristas[indexExistente].status = status;
-                window.ymsStore.baseMotoristas[indexExistente].obs = obs;
-                if(typeof window.exibirToast === 'function') window.exibirToast("Atualizado!", "Dados do motorista atualizados.", "📝");
-            } else {
-                // Adiciona novo motorista
-                window.ymsStore.baseMotoristas.push({
-                    cpf: cpfLimpo, nome: nome, celular: celular, status: status, obs: obs
-                });
-                if(typeof window.exibirToast === 'function') window.exibirToast("Cadastrado!", "Novo motorista adicionado à base.", "💾");
-            }
-
-            if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-
-            // Limpa o formulário
-            document.getElementById('cadMotCpf').value = '';
-            document.getElementById('cadMotNome').value = '';
-            document.getElementById('cadMotCelular').value = '';
-            document.getElementById('cadMotObs').value = '';
-        };
-    </script>
-
-    <!-- SCRIPT ISOLADO PARA GARANTIR O FUNCIONAMENTO DOS BOTÕES DE MOTORISTA -->
-    <script>
-        window.alternarStatusMotorista = function(cpf) {
-            const cpfLimpo = String(cpf).replace(/\D/g, '');
-            const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (motorista) {
-                // Inverte o status atual
-                motorista.status = motorista.status === 'BLOQUEADO' ? 'ATIVO' : 'BLOQUEADO';
-                
-                if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-                if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-                if (typeof window.exibirToast === 'function') {
-                    window.exibirToast("Status Atualizado", `Motorista ${motorista.status === 'ATIVO' ? 'Liberado' : 'Bloqueado'} com sucesso.`, motorista.status === 'ATIVO' ? "🟢" : "🔴");
-                }
-            } else {
-                alert("Motorista não encontrado na base.");
-            }
-        };
-
-        window.salvarMotoristaManual = function(e) {
-            if(e) e.preventDefault();
-            
-            const cpfRaw = document.getElementById('cadMotCpf')?.value || '';
-            const cpfLimpo = cpfRaw.replace(/\D/g, '');
-            const nome = document.getElementById('cadMotNome')?.value.trim();
-            const celular = document.getElementById('cadMotCelular')?.value.trim();
-            const status = document.getElementById('cadMotStatus')?.value;
-            const obs = document.getElementById('cadMotObs')?.value.trim();
-
-            if(cpfLimpo.length !== 11) { alert("O CPF deve ter exatamente 11 dígitos."); return; }
-            if(!nome) { alert("O nome completo é obrigatório."); return; }
-
-            if (!Array.isArray(window.ymsStore.baseMotoristas)) window.ymsStore.baseMotoristas = [];
-
-            const indexExistente = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (indexExistente !== -1) {
-                // Atualiza motorista existente
-                window.ymsStore.baseMotoristas[indexExistente].nome = nome;
-                window.ymsStore.baseMotoristas[indexExistente].celular = celular;
-                window.ymsStore.baseMotoristas[indexExistente].status = status;
-                window.ymsStore.baseMotoristas[indexExistente].obs = obs;
-                if(typeof window.exibirToast === 'function') window.exibirToast("Atualizado!", "Dados do motorista atualizados.", "📝");
-            } else {
-                // Adiciona novo motorista
-                window.ymsStore.baseMotoristas.push({
-                    cpf: cpfLimpo, nome: nome, celular: celular, status: status, obs: obs
-                });
-                if(typeof window.exibirToast === 'function') window.exibirToast("Cadastrado!", "Novo motorista adicionado à base.", "💾");
-            }
-
-            if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-
-            // Limpa o formulário
-            document.getElementById('cadMotCpf').value = '';
-            document.getElementById('cadMotNome').value = '';
-            document.getElementById('cadMotCelular').value = '';
-            document.getElementById('cadMotObs').value = '';
-        };
-    </script>
-
-    <!-- SCRIPT ISOLADO PARA GARANTIR O FUNCIONAMENTO DOS BOTÕES DE MOTORISTA -->
-    <script>
-        window.alternarStatusMotorista = function(cpf) {
-            const cpfLimpo = String(cpf).replace(/\D/g, '');
-            const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (motorista) {
-                // Inverte o status atual
-                motorista.status = motorista.status === 'BLOQUEADO' ? 'ATIVO' : 'BLOQUEADO';
-                
-                if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-                if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-                if (typeof window.exibirToast === 'function') {
-                    window.exibirToast("Status Atualizado", `Motorista ${motorista.status === 'ATIVO' ? 'Liberado' : 'Bloqueado'} com sucesso.`, motorista.status === 'ATIVO' ? "🟢" : "🔴");
-                }
-            } else {
-                alert("Motorista não encontrado na base.");
-            }
-        };
-
-        window.salvarMotoristaManual = function(e) {
-            if(e) e.preventDefault();
-            
-            const cpfRaw = document.getElementById('cadMotCpf')?.value || '';
-            const cpfLimpo = cpfRaw.replace(/\D/g, '');
-            const nome = document.getElementById('cadMotNome')?.value.trim();
-            const celular = document.getElementById('cadMotCelular')?.value.trim();
-            const status = document.getElementById('cadMotStatus')?.value;
-            const obs = document.getElementById('cadMotObs')?.value.trim();
-
-            if(cpfLimpo.length !== 11) { alert("O CPF deve ter exatamente 11 dígitos."); return; }
-            if(!nome) { alert("O nome completo é obrigatório."); return; }
-
-            if (!Array.isArray(window.ymsStore.baseMotoristas)) window.ymsStore.baseMotoristas = [];
-
-            const indexExistente = window.ymsStore.baseMotoristas.findIndex(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
-
-            if (indexExistente !== -1) {
-                // Atualiza motorista existente
-                window.ymsStore.baseMotoristas[indexExistente].nome = nome;
-                window.ymsStore.baseMotoristas[indexExistente].celular = celular;
-                window.ymsStore.baseMotoristas[indexExistente].status = status;
-                window.ymsStore.baseMotoristas[indexExistente].obs = obs;
-                if(typeof window.exibirToast === 'function') window.exibirToast("Atualizado!", "Dados do motorista atualizados.", "📝");
-            } else {
-                // Adiciona novo motorista
-                window.ymsStore.baseMotoristas.push({
-                    cpf: cpfLimpo, nome: nome, celular: celular, status: status, obs: obs
-                });
-                if(typeof window.exibirToast === 'function') window.exibirToast("Cadastrado!", "Novo motorista adicionado à base.", "💾");
-            }
-
-            if (typeof window.salvarBaseMotoristasNaMemoria === 'function') window.salvarBaseMotoristasNaMemoria();
-            if (typeof window.renderizarTabelaMotoristas === 'function') window.renderizarTabelaMotoristas();
-
-            // Limpa o formulário
-            document.getElementById('cadMotCpf').value = '';
-            document.getElementById('cadMotNome').value = '';
-            document.getElementById('cadMotCelular').value = '';
-            document.getElementById('cadMotObs').value = '';
-        };
-    </script>
-    <!-- SCRIPT ISOLADO PARA GARANTIR O FUNCIONAMENTO GLOBAL (MOTORISTAS E FORNECEDORES) -->
-    <script>
-        // =========================================
-        // 1. BLOCO DE MOTORISTAS
-        // =========================================
+        // ==========================================
+        // 2. GESTÃO DE MOTORISTAS
+        // ==========================================
         window.alternarStatusMotorista = function(cpf) {
             const cpfLimpo = String(cpf).replace(/\D/g, '');
             const motorista = (window.ymsStore.baseMotoristas || []).find(m => String(m.cpf).replace(/\D/g, '') === cpfLimpo);
@@ -3823,11 +3033,9 @@
             document.getElementById('cadMotObs').value = '';
         };
 
-        // =========================================
-        // 2. BLOCO DE FORNECEDORES (CORREÇÃO DO EFEITO ZUMBI)
-        // =========================================
-        
-        // Substitui a função que criava os zumbis. Agora ela olha APENAS para a base oficial.
+        // ==========================================
+        // 3. GESTÃO DE FORNECEDORES E USUÁRIOS
+        // ==========================================
         window.obterListaNomesFornecedores = function() {
             const conjuntoUnico = new Set();
             if (Array.isArray(window.mapaCredenciaisFornecedores) && window.mapaCredenciaisFornecedores.length > 0) {
@@ -3844,28 +3052,21 @@
             return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         };
 
-        // Exclusão definitiva de Fornecedor
         window.excluirFornecedorDinamico = function(empresa) {
             if (!confirm(`Tem certeza que deseja excluir permanentemente a empresa "${empresa}"?`)) return;
             const alvo = String(empresa).trim().toUpperCase();
             
-            // Filtra e remove o fornecedor da memória
-            window.mapaCredenciaisFornecedores = (window.mapaCredenciaisFornecedores || []).filter(
-                f => String(f.empresa).trim().toUpperCase() !== alvo
-            );
+            window.mapaCredenciaisFornecedores = (window.mapaCredenciaisFornecedores || []).filter(f => String(f.empresa).trim().toUpperCase() !== alvo);
             
-            // Salva no Firebase imediatamente e atualiza a tela
             if (typeof window.salvarCredenciaisFornecedoresNaMemoria === 'function') window.salvarCredenciaisFornecedoresNaMemoria();
             if (typeof window.atualizarTodasListasFornecedores === 'function') window.atualizarTodasListasFornecedores();
             if (typeof window.exibirToast === 'function') window.exibirToast("Fornecedor Excluído", `${empresa} removida da base.`, "🗑️");
         };
 
-        // Salvar Novo Fornecedor ou Editar Senha
         window.salvarNovoFornecedorDinamico = function(e) {
             if(e) e.preventDefault();
             const inpNome = document.getElementById('cadFornNome');
             const inpSenha = document.getElementById('cadFornSenha');
-            
             const nome = inpNome?.value.trim().toUpperCase();
             const senha = inpSenha?.value.trim() || `${nome.toLowerCase().replace(/\s+/g, '')}@2026`;
 
@@ -3889,20 +3090,151 @@
             if (inpSenha) inpSenha.value = '';
         };
 
-        // Exclusão de Usuários Operacionais
         window.excluirUsuarioCustom = function(id) {
             if (!confirm("Tem certeza que deseja excluir este usuário do sistema?")) return;
             window.ymsStore.baseUsuariosCustom = (window.ymsStore.baseUsuariosCustom || []).filter(u => u.id !== id);
-            
             if (typeof window.salvarUsuariosCustomizadosNaMemoria === 'function') window.salvarUsuariosCustomizadosNaMemoria();
             if (typeof window.renderizarTabelaUsuariosCustom === 'function') window.renderizarTabelaUsuariosCustom();
             if (typeof window.exibirToast === 'function') window.exibirToast("Usuário Removido", "Operador excluído com sucesso.", "🗑️");
         };
+
+        // ==========================================
+        // 4. PCP PROGRAMADOR E BLINDAGEM DO EXCEL
+        // ==========================================
+        window.criarJanelaManual = function(e) {
+            if(e) e.preventDefault();
+            const fornecedor = document.getElementById('inpFornecedor')?.value;
+            const doca = document.getElementById('inpDoca')?.value;
+            const dataRaw = document.getElementById('inpData')?.value; 
+            const horaIni = document.getElementById('inpHora')?.value;
+            const horaFim = document.getElementById('inpHoraFim')?.value;
+
+            if(!fornecedor || !doca || !dataRaw || !horaIni || !horaFim) {
+                alert("Preencha todos os campos obrigatórios da janela!"); return;
+            }
+
+            const dataFormatada = dataRaw.split('-').reverse().join('/');
+            const tipo = window.tipoCargaSelecionado || 'COTIDIANO';
+            const numOrdem = Math.floor(Math.random() * 90000) + 10000;
+
+            let obj = {
+                ordem: `REQ-${numOrdem}`, fornecedor: fornecedor, doca: doca,
+                data: dataFormatada, horaIni: horaIni, horaFim: horaFim,
+                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true
+            };
+
+            if (tipo === 'extra') {
+                obj.motivoExtra = document.getElementById('pcpMotivoExtra')?.value || '';
+                obj.cpf = document.getElementById('pcpCpf')?.value.replace(/\D/g, '') || '';
+                obj.celular = document.getElementById('pcpCelular')?.value.replace(/\D/g, '') || '';
+                obj.motorista = document.getElementById('pcpMotorista')?.value || '';
+            } else if (tipo === 'critica') {
+                obj.codigoCritico = document.getElementById('pcpCodigoCritico')?.value || '';
+                obj.motivoCritico = document.getElementById('pcpMotivoCritico')?.value || '';
+            }
+
+            if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
+            window.ymsStore.rascunhoAgendamentos.push(obj);
+
+            if(typeof window.exibirToast === 'function') window.exibirToast("Rascunho Adicionado", "Janela pronta para subida.", "📝");
+            if(typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
+            if(typeof window.atualizarHorariosDisponiveis === 'function') window.atualizarHorariosDisponiveis();
+        };
+
+        window.lerPlanilhaExcel = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+
+                    if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
+
+                    // Pula a linha 0 (cabeçalhos) e processa os dados
+                    jsonData.slice(1).forEach((row) => {
+                        // 🛑 FILTRO CONTRA LINHAS EM BRANCO: Se a linha inteira estiver vazia, o sistema pula!
+                        if (!row || !Array.isArray(row) || row.length === 0) return;
+                        const linhaVazia = row.every(val => val === null || val === undefined || String(val).trim() === '');
+                        if (linhaVazia) return;
+
+                        if(row.length >= 2) {
+                            const numOrdem = Math.floor(Math.random() * 90000) + 10000;
+                            window.ymsStore.rascunhoAgendamentos.push({
+                                ordem: `REQ-${numOrdem}`,
+                                fornecedor: String(row[0] || 'FORNECEDOR DA PLANILHA').trim(),
+                                doca: String(row[1] || 'Doca - (04N/06N)').trim(),
+                                data: String(row[2] || window.obterDataHojePtBR()).trim(),
+                                horaIni: String(row[3] || '08:00').trim(),
+                                horaFim: String(row[4] || '09:00').trim(),
+                                tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
+                            });
+                        }
+                    });
+
+                    if(typeof window.exibirToast === 'function') window.exibirToast("Planilha Lida", `Linhas carregadas no rascunho.`, "📊");
+                    if(typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
+                } catch(err) {
+                    alert("Erro ao ler planilha. Verifique se o formato está correto (.xlsx).");
+                    console.error(err);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            e.target.value = ''; 
+        };
+
+        window.processarTextoBruto = function() {
+            const texto = document.getElementById('txtBruto')?.value.trim();
+            if(!texto) { alert("Cole o texto copiado do Excel primeiro!"); return; }
+
+            const linhas = texto.split('\n');
+            if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
+
+            linhas.forEach(linha => {
+                // 🛑 FILTRO CONTRA LINHAS EM BRANCO NO TEXTO
+                if (linha.trim() === '') return; 
+                
+                const colunas = linha.split('\t'); 
+                if(colunas.length >= 2) {
+                    const numOrdem = Math.floor(Math.random() * 90000) + 10000;
+                    window.ymsStore.rascunhoAgendamentos.push({
+                        ordem: `REQ-${numOrdem}`,
+                        fornecedor: String(colunas[0] || 'FORNECEDOR DO TEXTO').trim(),
+                        doca: String(colunas[1] || 'Doca - (04N/06N)').trim(),
+                        data: String(colunas[2] || window.obterDataHojePtBR()).trim(),
+                        horaIni: String(colunas[3] || '08:00').trim(),
+                        horaFim: String(colunas[4] || '09:00').trim(),
+                        tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
+                    });
+                }
+            });
+
+            if(typeof window.exibirToast === 'function') window.exibirToast("Texto Processado", `Linhas adicionadas ao rascunho.`, "📋");
+            if(typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
+            document.getElementById('txtBruto').value = '';
+        };
+
+        window.confirmarESubirJanelas = function() {
+            if(!window.ymsStore.rascunhoAgendamentos || window.ymsStore.rascunhoAgendamentos.length === 0) {
+                alert("Sua grade de rascunhos está vazia. Adicione janelas primeiro."); return;
+            }
+            if(!confirm(`Confirmar subida de ${window.ymsStore.rascunhoAgendamentos.length} janela(s) para o sistema oficial?`)) return;
+            if(!window.ymsStore.agendamentos) window.ymsStore.agendamentos = [];
+
+            window.ymsStore.rascunhoAgendamentos.forEach(r => {
+                r.isRascunho = false;
+                window.ymsStore.agendamentos.push(r);
+            });
+
+            window.ymsStore.rascunhoAgendamentos = []; 
+            if(typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
+            if(typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
+            if(typeof window.exibirToast === 'function') window.exibirToast("Sucesso!", "Janelas publicadas e ativas no Firebase.", "🚀");
+        };
     </script>
 </body>
 </html>
-</body>
-    
-</html>
-
-
