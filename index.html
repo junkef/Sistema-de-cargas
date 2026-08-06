@@ -2797,7 +2797,7 @@
             if(typeof window.atualizarPainelDoca === 'function') window.atualizarPainelDoca();
         };
 
-        // --- 9. BANCO DE DADOS FIREBASE ---
+   // --- 9. BANCO DE DADOS FIREBASE ---
         function inicializarEscutadoresFirebase() {
             onValue(ref(db, 'yms_agendamentos_oficiais'), (snapshot) => {
                 const data = snapshot.val();
@@ -2866,7 +2866,7 @@
             set(ref(db, 'yms_base_motoristas'), window.ymsStore.baseMotoristas);
         };
 
-     window.popularSelectFornecedores = function(lista) {
+        window.popularSelectFornecedores = function(lista) {
             const selForn = document.getElementById('inpFornecedor');
             if (!selForn) return;
             selForn.innerHTML = "";
@@ -2880,14 +2880,9 @@
             const lblContador = document.getElementById('lblContadorForn');
             if(lblContador) lblContador.textContent = `(${lista.length} CADASTRADOS)`;
         };
-    </script>
-    <!-- ====================================================================== -->
-    <!-- FIM DO ESCOPO FIREBASE / INÍCIO DO ESCOPO GLOBAL BLINDADO              -->
-    <!-- ====================================================================== -->
 
-    <script>
         // ==========================================
-        // 1. PCP PROGRAMADOR (Blindado contra linhas em branco)
+        // 10. PCP PROGRAMADOR (Blindado contra linhas em branco)
         // ==========================================
         window.criarJanelaManual = function(e) {
             if(e) e.preventDefault();
@@ -3022,7 +3017,7 @@
         };
 
         // ==========================================
-        // 2. GESTÃO DE MOTORISTAS
+        // 11. GESTÃO DE MOTORISTAS, FORNECEDORES E USUÁRIOS
         // ==========================================
         window.alternarStatusMotorista = function(cpf) {
             const cpfLimpo = String(cpf).replace(/\D/g, '');
@@ -3073,9 +3068,6 @@
             document.getElementById('cadMotObs').value = '';
         };
 
-        // ==========================================
-        // 3. GESTÃO DE FORNECEDORES E USUÁRIOS
-        // ==========================================
         window.obterListaNomesFornecedores = function() {
             const conjuntoUnico = new Set();
             if (Array.isArray(window.mapaCredenciaisFornecedores) && window.mapaCredenciaisFornecedores.length > 0) {
@@ -3139,7 +3131,7 @@
         };
 
         // ==========================================
-        // 4. RELATÓRIO EXCEL DA TORRE
+        // 12. EXPORTAÇÃO DE RELATÓRIO EXCEL DA TORRE
         // ==========================================
         window.exportarRelatorioExcelFormatado = function() {
             const dataIniVal = document.getElementById('repDataInicio')?.value;
@@ -3237,6 +3229,64 @@
                 alert("Erro ao gerar a planilha. Verifique o console.");
             }
         };
+
+        // --- INICIALIZAÇÃO DA APLICAÇÃO ---
+        window.inicializarAplicacao = function() {
+            if (typeof window.atualizarRelogioDigital === 'function') {
+                window.atualizarRelogioDigital();
+                setInterval(window.atualizarRelogioDigital, 1000);
+            }
+
+            let hojeIso = "";
+            if (typeof window.obterDataHojeISO === 'function') hojeIso = window.obterDataHojeISO();
+
+            if (document.getElementById('inpData')) {
+                document.getElementById('inpData').min = hojeIso;
+                document.getElementById('inpData').value = hojeIso;
+            }
+            if (document.getElementById('filtroDataFornecedor')) {
+                document.getElementById('filtroDataFornecedor').min = hojeIso;
+                document.getElementById('filtroDataFornecedor').value = hojeIso;
+            }
+            if (document.getElementById('repDataInicio')) {
+                document.getElementById('repDataInicio').value = hojeIso;
+            }
+            if (document.getElementById('repDataFim')) {
+                document.getElementById('repDataFim').value = hojeIso;
+            }
+
+            // Injeta as Docas nos Seletores
+            const selDoca = document.getElementById('inpDoca');
+            if (selDoca && typeof listaTodasDocas !== 'undefined') {
+                selDoca.innerHTML = "";
+                listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    selDoca.appendChild(opt);
+                });
+            }
+
+            const selDocaOperador = document.getElementById('selDocaOperador');
+            if (selDocaOperador && typeof listaTodasDocas !== 'undefined') {
+                selDocaOperador.innerHTML = "";
+                listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    opt.className = "bg-white text-slate-900 font-bold";
+                    selDocaOperador.appendChild(opt);
+                });
+            }
+
+            if (typeof window.atualizarHorariosDisponiveis === 'function') window.atualizarHorariosDisponiveis();
+            if (typeof window.restaurarSessaoLocal === 'function') window.restaurarSessaoLocal();
+            if (typeof inicializarEscutadoresFirebase === 'function') inicializarEscutadoresFirebase();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', window.inicializarAplicacao);
+        } else {
+            window.inicializarAplicacao();
+        }
     </script>
 </body>
 </html>
