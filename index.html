@@ -576,6 +576,44 @@
         });
   
     <script>
+        const listaPadrao60Fornecedores = [
+            "5 ESTRELAS", "ADERE", "ALEPLAST", "ARAMART", ...
+        ];
+
+        // =========================================================
+        // COLE O TRECHO AQUI (SUBSTITUINDO A FUNÇÃO ANTIGA CASO EXISTA)
+        // =========================================================
+        window.criarJanelaManual = function(e) {
+            if(e) e.preventDefault();
+            const fornecedor = document.getElementById('inpFornecedor')?.value;
+            const doca = document.getElementById('inpDoca')?.value;
+            const dataRaw = document.getElementById('inpData')?.value; 
+            const horaIni = document.getElementById('inpHora')?.value;
+            const horaFim = document.getElementById('inpHoraFim')?.value;
+
+            if(!fornecedor || !doca || !dataRaw || !horaIni || !horaFim) {
+                alert("Preencha todos os campos obrigatórios da janela!"); return;
+            }
+
+            const dataFormatada = dataRaw.split('-').reverse().join('/');
+            const tipo = window.tipoCargaSelecionado || 'COTIDIANO';
+            const numOrdem = Math.floor(Math.random() * 90000) + 10000;
+
+            let obj = {
+                ordem: `REQ-${numOrdem}`, fornecedor: fornecedor, doca: doca,
+                data: dataFormatada, horaIni: horaIni, horaFim: horaFim,
+                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true
+            };
+
+            if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
+            window.ymsStore.rascunhoAgendamentos.push(obj);
+
+            window.exibirToast("Rascunho Adicionado", "Janela pronta para subida.", "📝");
+            window.renderizarGradePCP();
+            window.atualizarHorariosDisponiveis();
+        };
+
+        // ... as demais funções (window.exibirToast, etc.) continuam logo abaixo
     window.criarJanelaManual = window.criarJanelaManual || function(e) {
         if(e) e.preventDefault();
         alert("Aplicação carregada. Recarregue a página com Ctrl+F5.");
