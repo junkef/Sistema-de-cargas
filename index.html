@@ -5,305 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
     <link rel="icon" href="data:,">
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (Leitura e Geração de Excel) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js (Gráficos Torre de Controle) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCodeJS (Ticket Impresso do Totem) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <!-- Firebase App (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <!-- Firebase Realtime Database (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
         .hidden { display: none !important; }
         input[type="date"] { color-scheme: dark; }
-        
-        .btn-perfil-card, 
-        .btn-perfil-card span,
-        #modalLoginGlobal button span {
-            color: #ffffff !important;
-            font-weight: 800 !important;
-        }
-
-        #modalLoginGlobal button span.txt-purple {
-            color: #d8b4fe !important;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0f172a;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #4f46e5;
-        }
-
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
         @media print {
             body > *:not(#ticketImpressao) { display: none !important; }
-            #ticketImpressao {
-                display: block !important; position: absolute; left: 0; top: 0; width: 80mm;
-                padding: 5px; color: black !important; background: white !important; font-family: monospace;
-            }
+            #ticketImpressao { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; padding: 5px; color: black !important; background: white !important; font-family: monospace; }
         }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
 
-    <!-- MODAL INICIAL DE LOGIN / SELEÇÃO DE PERFIL -->
-    <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center">
-        <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-4 my-auto">
-            <div class="text-center space-y-1">
+    <!-- MODAL INICIAL DE LOGIN -->
+    <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 z-50 overflow-y-auto items-center">
+        <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-7 shadow-2xl space-y-4">
+            <div class="text-center">
                 <span class="bg-indigo-600/20 text-indigo-400 p-2 rounded-2xl text-2xl inline-block border border-indigo-500/30">🏭</span>
-                <h1 class="text-xl font-black text-white tracking-wider">YMS ECOSYSTEM - CONTROLE DE ACESSO</h1>
-                <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
+                <h1 class="text-xl font-black text-white">YMS ECOSYSTEM - CONTROLE DE ACESSO</h1>
             </div>
-
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <button type="button" onclick="solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
-                    <span class="text-xs">PCP Programador</span>
-                </button>
-                <button type="button" onclick="solicitarAcessoPerfil('fornecedor')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🏢</span>
-                    <span class="text-xs">Portal Fornecedor</span>
-                </button>
-                <button type="button" onclick="solicitarAcessoPerfil('totem')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🏭</span>
-                    <span class="text-xs">Totem Portaria</span>
-                </button>
-                <button type="button" onclick="solicitarAcessoPerfil('fiscal')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">📑</span>
-                    <span class="text-xs">Triagem Fiscal</span>
-                </button>
-                <button type="button" onclick="solicitarAcessoPerfil('doca')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🚛</span>
-                    <span class="text-xs">Operador Doca</span>
-                </button>
-                <button type="button" onclick="solicitarAcessoPerfil('checkout')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🚪</span>
-                    <span class="text-xs">Check-out Portaria</span>
-                </button>
-                <button type="button" onclick="solicitarAcessoPerfil('motoristas')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🪪</span>
-                    <span class="text-xs">Cad. Motoristas</span>
-                </button>
-                <button type="button" onclick="solicitarAcessoPerfil('admin')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">📡</span>
-                    <span class="text-xs txt-purple">Torre / Admin</span>
-                </button>
+                <button onclick="solicitarAcessoPerfil('pcp')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 p-3 rounded-2xl text-xs font-bold text-white flex flex-col items-center gap-1">🗓️ PCP</button>
+                <button onclick="solicitarAcessoPerfil('fornecedor')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 p-3 rounded-2xl text-xs font-bold text-white flex flex-col items-center gap-1">🏢 Fornecedor</button>
+                <button onclick="solicitarAcessoPerfil('totem')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 p-3 rounded-2xl text-xs font-bold text-white flex flex-col items-center gap-1">🏭 Totem</button>
+                <button onclick="solicitarAcessoPerfil('fiscal')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 p-3 rounded-2xl text-xs font-bold text-white flex flex-col items-center gap-1">📑 Fiscal</button>
+                <button onclick="solicitarAcessoPerfil('doca')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 p-3 rounded-2xl text-xs font-bold text-white flex flex-col items-center gap-1">🚛 Doca</button>
+                <button onclick="solicitarAcessoPerfil('checkout')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 p-3 rounded-2xl text-xs font-bold text-white flex flex-col items-center gap-1">🚪 Check-out</button>
+                <button onclick="solicitarAcessoPerfil('motoristas')" class="bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 p-3 rounded-2xl text-xs font-bold text-white flex flex-col items-center gap-1">🪪 Motoristas</button>
+                <button onclick="solicitarAcessoPerfil('torre')" class="bg-slate-800 hover:bg-purple-600/30 border border-slate-700 p-3 rounded-2xl text-xs font-bold text-white flex flex-col items-center gap-1">📡 Torre</button>
             </div>
-
-            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
-                </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
-                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
-                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="button" onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
-                        🔓 ENTRAR NO SISTEMA
-                    </button>
-                </div>
+            <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3">
+                <input type="text" id="inputUserLogin" placeholder="Usuário" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none">
+                <input type="password" id="inputPinLogin" placeholder="Senha" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none">
+                <button onclick="confirmarLoginComSenha()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl text-xs uppercase">ENTRAR</button>
             </div>
         </div>
     </div>
 
-    <!-- BARRA SUPERIOR -->
-    <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
+    <!-- HEADER -->
+    <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex justify-between items-center shadow-2xl z-40">
         <div class="flex items-center gap-3">
-            <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
-            <div>
-                <h1 class="font-black text-sm text-white tracking-wider flex items-center gap-2">
-                    YMS ECOSYSTEM <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">FIREBASE REALTIME</span>
-                </h1>
-                <p class="text-[10px] text-slate-400">Gestão de Janelas, Pátio, Portaria e Roteirização de Docas em Tempo Real</p>
-            </div>
+            <span class="bg-indigo-600 p-2 rounded-xl text-xl">🏭</span>
+            <h1 class="font-black text-sm text-white">YMS ECOSYSTEM</h1>
         </div>
-
-        <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button type="button" onclick="mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
-            <button type="button" onclick="mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
-            <button type="button" onclick="mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
-            <button type="button" onclick="mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
-            <button type="button" onclick="mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
-            <button type="button" onclick="mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
-            <button type="button" onclick="mudarPerfil('motoristas')" id="btn-motoristas" data-modulo="motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
-            <button type="button" onclick="mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
+        <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1 rounded-2xl border border-slate-800 overflow-x-auto">
+            <button onclick="mudarPerfil('pcp')" class="px-3 py-1.5 rounded-xl font-bold text-[10px] bg-indigo-600 text-white">🗓️ PCP</button>
+            <button onclick="mudarPerfil('fornecedor')" class="px-3 py-1.5 rounded-xl font-bold text-[10px] text-slate-400 hover:text-white">🏢 Fornecedor</button>
+            <button onclick="mudarPerfil('totem')" class="px-3 py-1.5 rounded-xl font-bold text-[10px] text-slate-400 hover:text-white">🏭 Totem</button>
+            <button onclick="mudarPerfil('fiscal')" class="px-3 py-1.5 rounded-xl font-bold text-[10px] text-slate-400 hover:text-white">📑 Fiscal</button>
+            <button onclick="mudarPerfil('doca')" class="px-3 py-1.5 rounded-xl font-bold text-[10px] text-slate-400 hover:text-white">🚛 Doca</button>
+            <button onclick="mudarPerfil('checkout')" class="px-3 py-1.5 rounded-xl font-bold text-[10px] text-slate-400 hover:text-white">🚪 Check-out</button>
+            <button onclick="mudarPerfil('motoristas')" class="px-3 py-1.5 rounded-xl font-bold text-[10px] text-slate-400 hover:text-white">🪪 Motoristas</button>
+            <button onclick="mudarPerfil('torre')" class="px-3 py-1.5 rounded-xl font-bold text-[10px] text-slate-400 hover:text-white">📡 Torre</button>
         </nav>
-
         <div class="flex items-center gap-3">
-            <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-2">
-                <span>🕒</span> <span>00:00:00</span>
-            </div>
-            <button type="button" onclick="fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
-                <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
-            </button>
+            <div id="relogioGlobal" class="text-xs font-mono font-bold text-yellow-400 bg-slate-900 px-3 py-1 rounded-xl border border-slate-800">00:00:00</div>
+            <button onclick="fazerLogoutGlobal()" class="bg-red-950/80 text-red-300 font-bold text-[10px] px-3 py-1 rounded-xl border border-red-500/40">Sair</button>
         </div>
     </header>
 
-    <div class="flex-1 flex flex-col">
-        <!-- MÓDULO 1: PCP PROGRAMADOR -->
-        <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
-                <div>
-                    <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-700/80 mb-4">
-                        <button type="button" id="tabIndividualBtn" onclick="alternarAbaPCP('individual')" class="flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow">✍️ Manual</button>
-                        <button type="button" id="tabMassaBtn" onclick="alternarAbaPCP('massa')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📊 Subida de Planilha</button>
-                        <button type="button" id="tabTextoBtn" onclick="alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
-                    </div>
-
-                    <div id="conteudoIndividual" class="space-y-3.5">
-                        <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
-                            <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
-                            <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
+    <main class="flex-1 overflow-y-auto p-4">
+        <!-- MÓDULOS -->
+        <section id="perfil-pcp" class="perfil-modulo hidden space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                    <h2 class="font-black text-white mb-4">🗓️ Programação de Janelas</h2>
+                    <div class="space-y-3">
+                        <select id="inpFornecedor" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white"></select>
+                        <select id="inpDoca" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white"></select>
+                        <input type="date" id="inpData" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="inpHora" class="bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white"></select>
+                            <select id="inpHoraFim" class="bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white"></select>
                         </div>
-
-                        <div>
-                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
-                            <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
-                                <button type="button" id="btnTipoCotidiano" onclick="selecionarTipoCarga('cotidiano')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟢</span> <span>Cotidiano</span>
-                                </button>
-                                <button type="button" id="btnTipoExtra" onclick="selecionarTipoCarga('extra')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟡</span> <span>Extra</span>
-                                </button>
-                                <button type="button" id="btnTipoCritica" onclick="selecionarTipoCarga('critica')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🔴</span> <span>Crítica</span>
-                                </button>
-                            </div>
+                        <button onclick="criarJanelaManual()" class="w-full bg-indigo-600 py-3 rounded-xl font-bold text-xs">ADICIONAR RASCUNHO</button>
+                        <div class="border-t border-slate-700 pt-3">
+                            <input type="file" id="fileInput" class="hidden" onchange="lerPlanilhaExcel(event)">
+                            <button onclick="document.getElementById('fileInput').click()" class="w-full bg-slate-700 py-2 rounded-xl text-xs mb-2">📂 SUBIR PLANILHA</button>
+                            <textarea id="txtBruto" placeholder="Ou cole texto tabular aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white h-20"></textarea>
+                            <button onclick="processarTextoBruto()" class="w-full bg-slate-700 py-2 rounded-xl text-xs mt-2">📋 PROCESSAR TEXTO</button>
                         </div>
-
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
-                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(60 CADASTRADOS)</span>
-                            </div>
-                            <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
-                                <div class="p-2 border-b border-slate-800 bg-slate-900 flex items-center gap-2">
-                                    <span class="text-xs">🔍</span>
-                                    <input type="text" id="filtroForn" placeholder="Filtrar fornecedor..." oninput="filtrarOpcoesFornecedor()" class="w-full bg-transparent text-xs text-slate-200 outline-none font-bold">
-                                </div>
-                                <select id="inpFornecedor" size="4" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1">
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Doca de Recebimento</label>
-                                <select id="inpDoca" onchange="atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-bold outline-none cursor-pointer"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Data (Apenas Hoje/Futura)</label>
-                                <input type="date" id="inpData" onchange="atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white outline-none">
-                            </div>
-                        </div>
-
-                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
-                            <div class="flex justify-between items-center text-[10px] font-bold">
-                                <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
-                                <span class="text-slate-400"><span class="text-emerald-400">■</span> Livre <span class="text-red-400 ml-1">■</span> Ocupado</span>
-                            </div>
-                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-28 overflow-y-auto pr-1 custom-scrollbar"></div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Início</label>
-                                <select id="inpHora" onchange="atualizarHorarioFimMinimo()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-yellow-400 outline-none"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Fim</label>
-                                <select id="inpHoraFim" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 outline-none"></select>
-                            </div>
-                        </div>
-                        <button type="button" onclick="criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
-                    </div>
-
-                    <!-- UPLOAD PLANILHA -->
-                    <div id="conteudoMassa" class="space-y-4 hidden">
-                        <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all">
-                            <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="lerPlanilhaExcel(event)">
-                            <div class="text-4xl mb-2">📂</div>
-                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv</p>
-                        </div>
-                    </div>
-
-                    <!-- COLAR TEXTO -->
-                    <div id="conteudoTexto" class="space-y-3 hidden">
-                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none"></textarea>
-                        <button type="button" onclick="processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- GRADE DE JANELAS -->
-            <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
-                <div>
-                    <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
-                        <div>
-                            <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
-                            <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos Sincronizados com o YMS</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow">0</span>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <button type="button" onclick="limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
-                            <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
-                        </button>
-                    </div>
-
-                    <div id="containerJanelas" class="space-y-3 max-h-[24rem] overflow-y-auto pr-1 custom-scrollbar">
-                        <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
-                    </div>
-                </div>
-
-                <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 space-y-2">
-                    <div class="grid grid-cols-12 gap-3">
-                        <button type="button" onclick="limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5">
-                            <span>🗑️</span> LIMPAR RASCUNHO
-                        </button>
-                        <button type="button" onclick="confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
-                            <span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
-                        </button>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col">
+                    <h2 class="font-black text-white mb-4">📋 Grade de Rascunho / Sincronizados</h2>
+                    <div id="containerJanelas" class="flex-1 space-y-2 overflow-y-auto max-h-96 custom-scrollbar pr-2"></div>
+                    <div id="painelAcaoSubir" class="hidden mt-4 pt-4 border-t border-slate-700">
+                        <button onclick="confirmarESubirJanelas()" class="w-full bg-emerald-600 py-3 rounded-xl font-bold text-xs">🚀 SUBIR PARA O FIREBASE</button>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 z-50 min-w-[320px] pointer-events-none">
-            <span id="toastIcon" class="text-2xl">✨</span>
-            <div>
-                <p id="toastTitulo" class="font-black text-sm uppercase tracking-wider"></p>
-                <p id="toastSub" class="text-xs text-indigo-200 font-bold"></p>
+
+        <section id="perfil-fornecedor" class="perfil-modulo hidden bg-slate-800 p-6 rounded-2xl border border-slate-700">
+            <h2 class="font-black text-white mb-4">🏢 Portal do Fornecedor</h2>
+            <div id="listaFornecedor" class="space-y-2"></div>
+        </section>
+
+        <section id="perfil-totem" class="perfil-modulo hidden bg-slate-800 p-6 rounded-2xl border border-slate-700">
+            <h2 class="font-black text-white mb-4">🏭 Totem de Autoatendimento</h2>
+            <div class="max-w-md mx-auto space-y-4">
+                <input type="text" id="totemOrdem" placeholder="Digite o número da Ordem (REQ-XXXXX)" class="w-full bg-slate-900 border-2 border-indigo-500 rounded-xl p-4 text-center text-xl font-black text-white outline-none">
+                <button onclick="processarCheckInTotem()" class="w-full bg-indigo-600 py-5 rounded-2xl font-black text-lg shadow-xl">REALIZAR CHECK-IN</button>
             </div>
-        </div>
+        </section>
+
+        <section id="perfil-fiscal" class="perfil-modulo hidden bg-slate-800 p-6 rounded-2xl border border-slate-700">
+            <h2 class="font-black text-white mb-4">📑 Triagem Fiscal</h2>
+            <div id="listaFiscal" class="space-y-2"></div>
+        </section>
+
+        <section id="perfil-doca" class="perfil-modulo hidden bg-slate-800 p-6 rounded-2xl border border-slate-700">
+            <h2 class="font-black text-white mb-4">🚛 Operador de Doca</h2>
+            <div id="listaDoca" class="space-y-2"></div>
+        </section>
+
+        <section id="perfil-checkout" class="perfil-modulo hidden bg-slate-800 p-6 rounded-2xl border border-slate-700">
+            <h2 class="font-black text-white mb-4">🚪 Check-out Portaria</h2>
+            <div id="listaCheckout" class="space-y-2"></div>
+        </section>
+
+        <section id="perfil-motoristas" class="perfil-modulo hidden bg-slate-800 p-6 rounded-2xl border border-slate-700">
+            <h2 class="font-black text-white mb-4">🪪 Cadastro de Motoristas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <input type="text" id="motNome" placeholder="Nome Completo" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                    <input type="text" id="motCPF" placeholder="CPF" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                    <input type="text" id="motPlaca" placeholder="Placa do Veículo" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                    <button onclick="salvarMotorista()" class="w-full bg-indigo-600 py-3 rounded-xl font-bold text-xs">SALVAR CADASTRO</button>
+                </div>
+                <div id="listaMotoristas" class="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-2 overflow-y-auto max-h-60"></div>
+            </div>
+        </section>
+
+        <section id="perfil-torre" class="perfil-modulo hidden space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Janelas Hoje</p>
+                    <p id="statsJanelas" class="text-3xl font-black text-white">0</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">No Pátio</p>
+                    <p id="statsPatio" class="text-3xl font-black text-emerald-400">0</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Atrasos</p>
+                    <p id="statsAtrasos" class="text-3xl font-black text-red-400">0</p>
+                </div>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <canvas id="chartTorre" height="100"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <div id="ticketImpressao" class="hidden"></div>
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl transition-all opacity-0 z-50 min-w-[320px] pointer-events-none">
+        <p id="toastTitulo" class="font-black text-sm uppercase"></p>
+        <p id="toastSub" class="text-xs text-indigo-200"></p>
     </div>
 
-    <!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
-        // Configurações Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCljoMUprqBfj9k8y0w7dE3MW7bWdjZlgA",
             authDomain: "yms-patio-6ba8c.firebaseapp.com",
@@ -314,463 +186,264 @@
             appId: "1:789675229632:web:b209d3dc57b702c8710825"
         };
 
-        // Inicialização Global (Compat Mode)
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         window.ymsStore = {
-            agendamentos: [], 
+            agendamentos: [],
+            motoristas: [],
             rascunhoAgendamentos: JSON.parse(localStorage.getItem('yms_rascunho_temp') || '[]'),
             usuarioLogado: null,
             perfilSolicitadoTemp: null
         };
 
         window.listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis', 'Doca - Devolução'];
-        const slotsDia24h = [];
-        for (let h = 0; h < 24; h++) {
-            for (let m of [0, 30]) {
-                slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-            }
-        }
+        const slotsDia = [];
+        for (let h = 0; h < 24; h++) for (let m of [0, 30]) slotsDia.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
 
-        const listaPadrao60Fornecedores = [
-            { empresa: "5 ESTRELAS", senha: "5estrelas@2026" }, { empresa: "ADERE", senha: "adere@2026" },
-            { empresa: "ALEPLAST", senha: "aleplast@2026" }, { empresa: "ARAMART", senha: "aramart@2026" },
-            { empresa: "ARCELORMITTAL", senha: "arcelormittal@2026" }, { empresa: "ARMACELL", senha: "armacell@2026" },
-            { empresa: "AROTUBI CURITIBA", senha: "arotubicuritiba@2026" }, { empresa: "AROTUBI JOINVILLE", senha: "arotubijoinville@2026" },
-            { empresa: "ASIBRAS", senha: "asibras@2026" }, { empresa: "BELENUS", senha: "belenus@2026" },
-            { empresa: "BIGFER", senha: "bigfer@2026" }, { empresa: "BOLLHOFF", senha: "bollhoff@2026" },
-            { empresa: "BRASCABOS", senha: "brascabos@2026" }, { empresa: "BRASKEN", senha: "brasken@2026" },
-            { empresa: "BUNDY CURITIBA", senha: "bundycuritiba@2026" }, { empresa: "BUNDY PINDA", senha: "bundypinda@2026" },
-            { empresa: "CARIBOR", senha: "caribor@2026" }, { empresa: "CCL", senha: "ccl@2026" },
-            { empresa: "CISER", senha: "ciser@2026" }, { empresa: "COLORFIX", senha: "colorfix@2026" },
-            { empresa: "CREMER", senha: "cremer@2026" }, { empresa: "CSN", senha: "csn@2026" },
-            { empresa: "DENK", senha: "denk@2026" }, { empresa: "DUFERCO", senha: "duferco@2026" },
-            { empresa: "FOCUS", senha: "focus@2026" }, { empresa: "FORMPARTS", senha: "formparts@2026" },
-            { empresa: "GRÁFICA NACIONAL", senha: "graficanacional@2026" }, { empresa: "INJEQUALY", senha: "injequaly@2026" },
-            { empresa: "INNARA", senha: "innara@2026" }, { empresa: "INNOVA", senha: "innova@2026" },
-            { empresa: "ISHENG", senha: "isheng@2026" }, { empresa: "ISOFORMA", senha: "isoforma@2026" },
-            { empresa: "ISOTERM", senha: "isoterm@2026" }, { empresa: "KLABIN", senha: "klabin@2026" },
-            { empresa: "KNAUF", senha: "knauf@2026" }, { empresa: "LINKPLAS", senha: "linkplas@2026" },
-            { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" }, { empresa: "METALMA", senha: "metalma@2026" },
-            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" }, { empresa: "MULTILOG", senha: "multilog@2026" },
-            { empresa: "NIDEC", senha: "nidec@2026" }, { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
-            { empresa: "PARANAPANEMA", senha: "paranapanema@2026" }, { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
-            { empresa: "REFREX", senha: "refrex@2026" }, { empresa: "RUDOLPH", senha: "rudolph@2026" },
-            { empresa: "SCHOTT", senha: "schott@2026" }, { empresa: "SG/LEAS", senha: "sgleas@2026" },
-            { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" }, { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
-            { empresa: "TESA", senha: "tesa@2026" }, { empresa: "UNIPLAST", senha: "uniplast@2026" },
-            { empresa: "UNITAAL", senha: "unitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
-            { empresa: "VEXILIOM", senha: "vexiliom@2026" }, { empresa: "VIPRADO", senha: "viprado@2026" },
-            { empresa: "VITROCOLOR", senha: "vitrocolor@2026" }, { empresa: "WEG MOTORES", senha: "weg@2026" },
-            { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
-        ];
-
-        // Utilitários
-        window.limparNomeFornecedor = function(nome) {
-            let str = String(nome || '').trim().toUpperCase();
-            if (!str) return '';
-            if (!str.match(/^5\s+ESTRELAS/i)) str = str.replace(/[\s\-_]*\d+$/, '').trim();
-            return str;
-        };
-
-        window.normalizarTexto = function(txt) { return String(txt || '').toLowerCase().replace(/\s+/g, '').trim(); };
-        window.horaParaMinutos = function(horaStr) {
-            if (!horaStr || horaStr === '---') return 0;
-            const partes = String(horaStr).trim().split(':');
-            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
-        };
-
-        window.exibirToast = function(titulo, sub, icone = "✨") {
+        // UTILITÁRIOS
+        window.exibirToast = (t, s) => {
             const toast = document.getElementById('toast');
-            if (!toast) return;
-            document.getElementById('toastIcon').textContent = icone;
-            document.getElementById('toastTitulo').textContent = titulo;
-            document.getElementById('toastSub').textContent = sub;
-            toast.className = "fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-100 z-50 min-w-[320px]";
-            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
+            document.getElementById('toastTitulo').textContent = t;
+            document.getElementById('toastSub').textContent = s;
+            toast.style.opacity = '1';
+            setTimeout(() => toast.style.opacity = '0', 3000);
         };
 
-        window.atualizarRelogioDigital = function() {
-            const relogio = document.getElementById('relogioGlobal');
-            if (relogio) relogio.innerHTML = `<span>🕒</span> <span>${new Date().toLocaleTimeString('pt-BR')}</span>`;
+        window.normalizarData = (d) => {
+            if(!d) return new Date().toLocaleDateString('pt-BR');
+            if(d.includes('-')) { const p = d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; }
+            return d;
         };
 
-        window.obterDataHojeISO = function() {
-            const hoje = new Date();
-            const ano = hoje.getFullYear();
-            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-            const dia = String(hoje.getDate()).padStart(2, '0');
-            return `${ano}-${mes}-${dia}`;
-        };
-
-        window.obterDataHojePtBR = function() {
-            const hoje = new Date();
-            const dia = String(hoje.getDate()).padStart(2, '0');
-            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-            const ano = hoje.getFullYear();
-            return `${dia}/${mes}/${ano}`;
-        };
-
-        window.normalizarDataPtBR = function(dataStr) {
-            if (!dataStr) return window.obterDataHojePtBR();
-            dataStr = dataStr.trim();
-            if (dataStr.includes('-')) {
-                const p = dataStr.split('-');
-                return `${p[2]}/${p[1]}/${p[0]}`;
-            }
-            if (dataStr.includes('/')) {
-                const p = dataStr.split('/');
-                return `${String(p[0]).padStart(2, '0')}/${String(p[1]).padStart(2, '0')}/${p[2]}`;
-            }
-            return dataStr;
-        };
-
-        // Firebase Handlers
-        function inicializarEscutadoresFirebase() {
-            db.ref('yms_agendamentos_oficiais').on('value', (snapshot) => {
-                const data = snapshot.val();
-                window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                window.renderizarGradePCP();
-            });
-        }
-
-        window.salvarAgendamentosNaMemoria = function() { 
-            db.ref('yms_agendamentos_oficiais').set(window.ymsStore.agendamentos);
-        };
-
-        // Login / Perfil
-        window.solicitarAcessoPerfil = function(perfil) {
-            window.ymsStore.perfilSolicitadoTemp = perfil;
+        // LOGIN
+        window.solicitarAcessoPerfil = (p) => {
+            window.ymsStore.perfilSolicitadoTemp = p;
             document.getElementById('boxSenhaLogin').classList.remove('hidden');
-            document.getElementById('lblPerfilSelecionadoLogin').textContent = `AUTENTICAÇÃO: ${perfil.toUpperCase()}`;
-            document.getElementById('inputUserLogin').focus();
         };
 
-        window.confirmarLoginComSenha = function() {
-            const user = document.getElementById('inputUserLogin').value;
-            const pass = document.getElementById('inputPinLogin').value;
-            if(!user || !pass) return alert("Preencha login e senha!");
-            
-            // Login simples para demonstração
-            window.ymsStore.usuarioLogado = { nome: user, perfil: window.ymsStore.perfilSolicitadoTemp };
+        window.confirmarLoginComSenha = () => {
+            const u = document.getElementById('inputUserLogin').value;
+            if(!u) return alert("Digite o usuário");
+            window.ymsStore.usuarioLogado = { nome: u, perfil: window.ymsStore.perfilSolicitadoTemp };
             document.getElementById('modalLoginGlobal').classList.add('hidden');
-            document.getElementById('lblNomeUsuarioLogado').textContent = user.toUpperCase();
             window.mudarPerfil(window.ymsStore.perfilSolicitadoTemp);
         };
 
-        window.fazerLogoutGlobal = function() {
-            window.ymsStore.usuarioLogado = null;
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
-            document.getElementById('boxSenhaLogin').classList.add('hidden');
+        window.fazerLogoutGlobal = () => location.reload();
+
+        window.mudarPerfil = (p) => {
+            document.querySelectorAll('.perfil-modulo').forEach(m => m.classList.add('hidden'));
+            document.getElementById(`perfil-${p}`).classList.remove('hidden');
+            if(p === 'torre') renderizarTorre();
+            else renderizarListas();
         };
 
-        // PCP Módulo
-        window.obterListaNomesFornecedores = function() {
-            const conjuntoUnico = new Set();
-            listaPadrao60Fornecedores.forEach(item => conjuntoUnico.add(window.limparNomeFornecedor(item.empresa)));
-            return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-        };
-
-        window.popularSelectFornecedores = function(lista) {
-            const selForn = document.getElementById('inpFornecedor');
-            if (!selForn) return;
-            selForn.innerHTML = "";
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
-                if (idx === 0) opt.selected = true;
-                selForn.appendChild(opt);
-            });
-            const lbl = document.getElementById('lblContadorForn');
-            if(lbl) lbl.textContent = `(${lista.length} CADASTRADOS)`;
-        };
-
-        window.filtrarOpcoesFornecedor = function() {
-            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
-            window.popularSelectFornecedores(filtrados);
-        };
-
-      window.criarJanelaManual = function(e) {
-            if(e) e.preventDefault();
-            const fornecedor = document.getElementById('inpFornecedor')?.value;
-            const doca = document.getElementById('inpDoca')?.value;
-            const dataRaw = document.getElementById('inpData')?.value; 
-            const horaIni = document.getElementById('inpHora')?.value;
-            const horaFim = document.getElementById('inpHoraFim')?.value;
-
-            if(!fornecedor || !doca || !dataRaw || !horaIni || !horaFim) {
-                alert("Preencha todos os campos obrigatórios da janela!"); return;
-            }
-
-            const dataFormatada = window.normalizarDataPtBR(dataRaw);
-            const tipo = window.tipoCargaSelecionado || 'COTIDIANO';
-            const numOrdem = Math.floor(Math.random() * 90000) + 10000;
-
-            let obj = {
-                ordem: `REQ-${numOrdem}`, fornecedor: fornecedor, doca: doca,
-                data: dataFormatada, horaIni: horaIni, horaFim: horaFim,
-                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true
+        // PCP
+        window.criarJanelaManual = () => {
+            const nova = {
+                ordem: `REQ-${Math.floor(Math.random()*90000)+10000}`,
+                fornecedor: document.getElementById('inpFornecedor').value,
+                doca: document.getElementById('inpDoca').value,
+                data: window.normalizarData(document.getElementById('inpData').value),
+                horaIni: document.getElementById('inpHora').value,
+                horaFim: document.getElementById('inpHoraFim').value,
+                status: 'AGENDADO'
             };
-
-            if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
-            window.ymsStore.rascunhoAgendamentos.push(obj);
+            window.ymsStore.rascunhoAgendamentos.push(nova);
             localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
-
-            window.exibirToast("Rascunho Adicionado", "Janela pronta para subida.", "📝");
-            window.renderizarGradePCP();
-            window.atualizarHorariosDisponiveis();
+            renderizarListas();
         };
 
-        window.lerPlanilhaExcel = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        window.lerPlanilhaExcel = (e) => {
             const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
-
-                    json.slice(1).forEach(row => {
-                        if (!row || row.length < 2) return;
-                        window.ymsStore.rascunhoAgendamentos.push({
-                            ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
-                            fornecedor: String(row[0] || 'FORNECEDOR').trim(),
-                            doca: String(row[1] || 'Doca - (04N/06N)').trim(),
-                            data: window.normalizarDataPtBR(String(row[2] || window.obterDataHojePtBR())),
-                            horaIni: String(row[3] || '08:00').trim(),
-                            horaFim: String(row[4] || '09:00').trim(),
-                            tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
-                        });
+            reader.onload = (evt) => {
+                const workbook = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
+                json.slice(1).forEach(r => {
+                    if(r[0]) window.ymsStore.rascunhoAgendamentos.push({
+                        ordem: `REQ-${Math.floor(Math.random()*90000)+10000}`,
+                        fornecedor: r[0], doca: r[1] || 'Doca Geral', data: window.normalizarData(r[2]),
+                        horaIni: r[3] || '08:00', horaFim: r[4] || '09:00', status: 'AGENDADO'
                     });
-                    localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
-                    window.renderizarGradePCP();
-                } catch(err) { alert("Erro na planilha!"); }
+                });
+                localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
+                renderizarListas();
             };
-            reader.readAsArrayBuffer(file);
+            reader.readAsArrayBuffer(e.target.files[0]);
         };
 
-        window.processarTextoBruto = function() {
-            const texto = document.getElementById('txtBruto')?.value.trim();
-            if(!texto) return alert("Cole o texto!");
-            texto.split('\n').forEach(linha => {
-                const col = linha.split(/\t|;| ,/);
-                if(col.length >= 2) {
-                    window.ymsStore.rascunhoAgendamentos.push({
-                        ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
-                        fornecedor: String(col[0]).trim(), doca: String(col[1]).trim(),
-                        data: window.normalizarDataPtBR(String(col[2] || window.obterDataHojePtBR())),
-                        horaIni: String(col[3] || '08:00').trim(), horaFim: String(col[4] || '09:00').trim(),
-                        tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
-                    });
-                }
+        window.processarTextoBruto = () => {
+            const txt = document.getElementById('txtBruto').value.trim();
+            txt.split('\n').forEach(l => {
+                const c = l.split(/\t|;| ,/);
+                if(c[0]) window.ymsStore.rascunhoAgendamentos.push({
+                    ordem: `REQ-${Math.floor(Math.random()*90000)+10000}`,
+                    fornecedor: c[0], doca: c[1] || 'Doca Geral', data: window.normalizarData(c[2]),
+                    horaIni: c[3] || '08:00', horaFim: c[4] || '09:00', status: 'AGENDADO'
+                });
             });
             localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
-            window.renderizarGradePCP();
+            renderizarListas();
             document.getElementById('txtBruto').value = '';
         };
 
-        window.confirmarESubirJanelas = function() {
-            if(window.ymsStore.rascunhoAgendamentos.length === 0) return alert("Rascunho vazio!");
-            if(!confirm("Subir para o Firebase?")) return;
-
+        window.confirmarESubirJanelas = () => {
             db.ref('yms_agendamentos_oficiais').get().then(snap => {
-                const atual = snap.val();
-                const lista = atual ? (Array.isArray(atual) ? atual : Object.values(atual)) : [];
-                const novos = window.ymsStore.rascunhoAgendamentos.map(r => ({ ...r, isRascunho: false }));
-                
-                db.ref('yms_agendamentos_oficiais').set([...lista, ...novos]).then(() => {
+                const atual = snap.val() || [];
+                const novos = window.ymsStore.rascunhoAgendamentos;
+                db.ref('yms_agendamentos_oficiais').set([...atual, ...novos]).then(() => {
                     window.ymsStore.rascunhoAgendamentos = [];
                     localStorage.removeItem('yms_rascunho_temp');
-                    window.renderizarGradePCP();
-                    window.exibirToast("Sucesso!", "Janelas ativas no Firebase.", "🚀");
+                    window.exibirToast("Sucesso", "Janelas sincronizadas!");
                 });
             });
         };
 
-       window.renderizarGradePCP = function() {
-            const container = document.getElementById('containerJanelas');
-            if (!container) return;
-            container.innerHTML = "";
-
-            const todasJanelasExibicao = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
-            const contadorEl = document.getElementById('contadorJanelas');
-            if (contadorEl) contadorEl.textContent = todasJanelasExibicao.length;
-
-            if (todasJanelasExibicao.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no sistema.</p>`;
-                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.add('hidden');
-                return;
-            }
-
-            if ((window.ymsStore.rascunhoAgendamentos || []).length > 0) {
-                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.remove('hidden');
-            } else {
-                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.add('hidden');
-            }
-
-            todasJanelasExibicao.forEach(item => {
-                const ehRascunho = item.isRascunho || (window.ymsStore.rascunhoAgendamentos || []).some(r => r.ordem === item.ordem);
-                let badgeTag = ehRascunho 
-                    ? `<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-500/50 px-2 py-0.5 rounded">📝 RASCUNHO</span>`
-                    : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status || 'AGENDADO'}</span>`;
-
-                const card = `
-                    <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
-                                ${badgeTag}
-                                <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
-                            </div>
-                            <p class="text-sm font-black text-white">📍 ${item.doca}</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="text-right">
-                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
-                                <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
-                            </div>
-                            <button type="button" onclick="window.removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 transition text-xs cursor-pointer ml-1">🗑️</button>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', card);
-            });
-        };
-
-        window.removerJanelaIndividual = function(ordem) {
-            if(!confirm("Remover?")) return;
-            window.ymsStore.rascunhoAgendamentos = window.ymsStore.rascunhoAgendamentos.filter(i => i.ordem !== ordem);
-            window.ymsStore.agendamentos = window.ymsStore.agendamentos.filter(i => i.ordem !== ordem);
-            localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
-            window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-        };
-
-        window.limparJanelasSubidas = function() {
-            if(!confirm("Zerar tudo?")) return;
-            window.ymsStore.agendamentos = [];
-            window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-        };
-
-        window.limparGradeTotal = function() {
-            window.ymsStore.rascunhoAgendamentos = [];
-            localStorage.removeItem('yms_rascunho_temp');
-            window.renderizarGradePCP();
-        };
-
-        window.atualizarHorariosDisponiveis = function() {
-            const inpHora = document.getElementById('inpHora');
-            const gridTimeline = document.getElementById('gridTimelineHorarios');
-            const docaSel = document.getElementById('inpDoca')?.value;
-            const dataSelRaw = document.getElementById('inpData')?.value;
-
-            if (!inpHora) return;
-            const dataSelFormatted = window.normalizarDataPtBR(dataSelRaw);
-
-            const todosAg = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
-            const agendamentosOcupados = todosAg.filter(a => 
-                window.normalizarTexto(a.doca) === window.normalizarTexto(docaSel) &&
-                window.normalizarDataPtBR(a.data) === dataSelFormatted
-            );
-
-            inpHora.innerHTML = "";
-            if (gridTimeline) gridTimeline.innerHTML = "";
-
-            window.slotsDia24h.forEach(slot => {
-                const minSlot = window.horaParaMinutos(slot);
-                const ehOcupado = agendamentosOcupados.some(a => {
-                    const minIni = window.horaParaMinutos(a.horaIni);
-                    const minFim = window.horaParaMinutos(a.horaFim);
-                    return minSlot >= minIni && minSlot < minFim;
-                });
-
-                const opt = document.createElement('option');
-                opt.value = slot;
-                opt.textContent = slot + (ehOcupado ? " (Ocupado)" : "");
-                if (ehOcupado) opt.classList.add('text-red-400');
-                inpHora.appendChild(opt);
-
-                if (gridTimeline) {
-                    const btn = document.createElement('button');
-                    btn.type = "button";
-                    btn.className = `p-1 text-[10px] font-mono font-bold rounded ${ehOcupado ? 'bg-red-950/80 text-red-400 border border-red-500/30' : 'bg-slate-900 text-emerald-400 hover:bg-emerald-600 hover:text-white transition cursor-pointer'}`;
-                    btn.textContent = slot;
-                    btn.onclick = () => {
-                        if (!ehOcupado) {
-                            inpHora.value = slot;
-                            window.atualizarHorarioFimMinimo();
-                        }
-                    };
-                    gridTimeline.appendChild(btn);
-                }
-            });
-            window.atualizarHorarioFimMinimo();
-        };
-        window.atualizarHorarioFimMinimo = function() {
-            const hi = document.getElementById('inpHora');
-            const hf = document.getElementById('inpHoraFim');
-            if(!hi || !hf) return;
-            const min = window.horaParaMinutos(hi.value);
-            hf.innerHTML = "";
-            slotsDia24h.forEach(s => {
-                if(window.horaParaMinutos(s) > min) {
-                    const opt = document.createElement('option');
-                    opt.value = s; opt.textContent = s;
-                    hf.appendChild(opt);
-                }
-            });
-        };
-
-        window.alternarAbaPCP = function(aba) {
-            ['individual', 'massa', 'texto'].forEach(t => {
-                document.getElementById(`conteudo${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.add('hidden');
-                document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`).className = "flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white";
-            });
-            document.getElementById(`conteudo${aba.charAt(0).toUpperCase() + aba.slice(1)}`).classList.remove('hidden');
-            document.getElementById(`tab${aba.charAt(0).toUpperCase() + aba.slice(1)}Btn`).className = "flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow";
-        };
-
-        window.selecionarTipoCarga = function(t) { window.exibirToast("Tipo", t.toUpperCase()); };
-
-        window.mudarPerfil = function(p) {
-            document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
-            const target = document.getElementById(`perfil-${p}`);
-            if(target) target.classList.remove('hidden');
-            if(p === 'pcp') window.renderizarGradePCP();
-        };
-
-        window.fazerLogoutGlobal = function() {
-            window.ymsStore.usuarioLogado = null;
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
-            document.getElementById('boxSenhaLogin').classList.add('hidden');
-        };
-
-        // Inicialização
-        window.onload = function() {
-            window.atualizarRelogioDigital();
-            setInterval(window.atualizarRelogioDigital, 1000);
+        // TOTEM
+        window.processarCheckInTotem = () => {
+            const ordem = document.getElementById('totemOrdem').value.toUpperCase();
+            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
+            if(idx === -1) return alert("Ordem não encontrada!");
             
-            const dt = document.getElementById('inpData');
-            if(dt) dt.value = window.obterDataHojeISO();
+            window.ymsStore.agendamentos[idx].status = 'NO PÁTIO';
+            window.ymsStore.agendamentos[idx].checkIn = new Date().toLocaleTimeString();
+            db.ref('yms_agendamentos_oficiais').set(window.ymsStore.agendamentos).then(() => {
+                imprimirTicket(window.ymsStore.agendamentos[idx]);
+                document.getElementById('totemOrdem').value = '';
+            });
+        };
 
-            const sel = document.getElementById('inpDoca');
-            if(sel) {
-                sel.innerHTML = "";
-                window.listaTodasDocas.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d; opt.textContent = d;
-                    sel.appendChild(opt);
+        function imprimirTicket(a) {
+            const t = document.getElementById('ticketImpressao');
+            t.innerHTML = `<h2>TICKET YMS</h2><p>Ordem: ${a.ordem}</p><p>Forn: ${a.fornecedor}</p><p>Doca: ${a.doca}</p><div id="qrcode"></div>`;
+            new QRCode(document.getElementById("qrcode"), { text: a.ordem, width: 100, height: 100 });
+            setTimeout(() => { window.print(); t.innerHTML = ''; }, 500);
+        }
+
+        // MÓDULOS OPERACIONAIS
+        window.atualizarStatus = (ordem, novoStatus) => {
+            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
+            window.ymsStore.agendamentos[idx].status = novoStatus;
+            if(novoStatus === 'EM OPERAÇÃO') window.ymsStore.agendamentos[idx].inicioOp = new Date().toLocaleTimeString();
+            if(novoStatus === 'FINALIZADO') window.ymsStore.agendamentos[idx].fimOp = new Date().toLocaleTimeString();
+            db.ref('yms_agendamentos_oficiais').set(window.ymsStore.agendamentos);
+        };
+
+        // MOTORISTAS
+        window.salvarMotorista = () => {
+            const m = { nome: document.getElementById('motNome').value, cpf: document.getElementById('motCPF').value, placa: document.getElementById('motPlaca').value };
+            db.ref('yms_motoristas').push(m);
+            document.querySelectorAll('#perfil-motoristas input').forEach(i => i.value = '');
+        };
+
+        // RENDERIZAÇÃO
+        function renderizarListas() {
+            const rasc = window.ymsStore.rascunhoAgendamentos;
+            const oficiais = window.ymsStore.agendamentos;
+            
+            // PCP
+            const cont = document.getElementById('containerJanelas');
+            cont.innerHTML = '';
+            [...rasc, ...oficiais].forEach(a => {
+                const ehRasc = rasc.includes(a);
+                cont.innerHTML += `<div class="bg-slate-900 p-3 rounded-xl border ${ehRasc ? 'border-amber-500' : 'border-slate-700'} flex justify-between items-center">
+                    <div class="text-[10px]"><b>${a.ordem}</b> - ${a.fornecedor}<br>${a.doca}</div>
+                    <div class="text-[10px] text-right">${a.data}<br>${a.horaIni}-${a.horaFim}</div>
+                </div>`;
+            });
+            document.getElementById('painelAcaoSubir').classList.toggle('hidden', rasc.length === 0);
+
+            // Fiscal (NO PÁTIO)
+            const fsc = document.getElementById('listaFiscal');
+            fsc.innerHTML = '';
+            oficiais.filter(a => a.status === 'NO PÁTIO').forEach(a => {
+                fsc.innerHTML += `<div class="bg-slate-900 p-4 rounded-xl flex justify-between items-center">
+                    <span>${a.ordem} | ${a.fornecedor}</span>
+                    <button onclick="atualizarStatus('${a.ordem}', 'TRIAGEM')" class="bg-indigo-600 px-4 py-2 rounded-lg text-[10px]">INICIAR TRIAGEM</button>
+                </div>`;
+            });
+
+            // Doca (TRIAGEM)
+            const dca = document.getElementById('listaDoca');
+            dca.innerHTML = '';
+            oficiais.filter(a => a.status === 'TRIAGEM' || a.status === 'EM OPERAÇÃO').forEach(a => {
+                const emOp = a.status === 'EM OPERAÇÃO';
+                dca.innerHTML += `<div class="bg-slate-900 p-4 rounded-xl flex justify-between items-center">
+                    <span>${a.ordem} | ${a.doca}</span>
+                    <button onclick="atualizarStatus('${a.ordem}', '${emOp ? 'FINALIZADO' : 'EM OPERAÇÃO'}')" class="${emOp ? 'bg-red-600' : 'bg-emerald-600'} px-4 py-2 rounded-lg text-[10px]">
+                        ${emOp ? 'FINALIZAR DOCA' : 'INICIAR CARGA'}
+                    </button>
+                </div>`;
+            });
+
+            // Checkout (FINALIZADO)
+            const chk = document.getElementById('listaCheckout');
+            chk.innerHTML = '';
+            oficiais.filter(a => a.status === 'FINALIZADO').forEach(a => {
+                chk.innerHTML += `<div class="bg-slate-900 p-4 rounded-xl flex justify-between items-center">
+                    <span>${a.ordem} | ${a.fornecedor}</span>
+                    <button onclick="atualizarStatus('${a.ordem}', 'CONCLUÍDO')" class="bg-slate-600 px-4 py-2 rounded-lg text-[10px]">LIBERAR SAÍDA</button>
+                </div>`;
+            });
+        }
+
+        function renderizarTorre() {
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            const janHoje = window.ymsStore.agendamentos.filter(a => a.data === hoje);
+            document.getElementById('statsJanelas').textContent = janHoje.length;
+            document.getElementById('statsPatio').textContent = window.ymsStore.agendamentos.filter(a => a.status !== 'AGENDADO' && a.status !== 'CONCLUÍDO').length;
+            
+            const ctx = document.getElementById('chartTorre').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Agendado', 'No Pátio', 'Triagem', 'Operação', 'Finalizado'],
+                    datasets: [{
+                        label: 'Status das Janelas',
+                        data: [
+                            janHoje.filter(a => a.status === 'AGENDADO').length,
+                            janHoje.filter(a => a.status === 'NO PÁTIO').length,
+                            janHoje.filter(a => a.status === 'TRIAGEM').length,
+                            janHoje.filter(a => a.status === 'EM OPERAÇÃO').length,
+                            janHoje.filter(a => a.status === 'FINALIZADO').length
+                        ],
+                        backgroundColor: '#4f46e5'
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true, grid: { color: '#1e293b' } } } }
+            });
+        }
+
+        // INIT
+        window.onload = () => {
+            setInterval(() => document.getElementById('relogioGlobal').textContent = new Date().toLocaleTimeString(), 1000);
+            
+            const pcpForn = document.getElementById('inpFornecedor');
+            ['5 ESTRELAS', 'WEG', 'BELENUS', 'CSN', 'KLABIN'].forEach(f => pcpForn.innerHTML += `<option value="${f}">${f}</option>`);
+            
+            const pcpDoca = document.getElementById('inpDoca');
+            window.listaTodasDocas.forEach(d => pcpDoca.innerHTML += `<option value="${d}">${d}</option>`);
+            
+            const pcpHora = document.getElementById('inpHora');
+            const pcpHoraF = document.getElementById('inpHoraFim');
+            slotsDia.forEach(s => {
+                pcpHora.innerHTML += `<option value="${s}">${s}</option>`;
+                pcpHoraF.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+
+            db.ref('yms_agendamentos_oficiais').on('value', snap => {
+                window.ymsStore.agendamentos = snap.val() || [];
+                renderizarListas();
+            });
+
+            db.ref('yms_motoristas').on('value', snap => {
+                const list = document.getElementById('listaMotoristas');
+                list.innerHTML = '';
+                Object.values(snap.val() || {}).forEach(m => {
+                    list.innerHTML += `<div class="text-[10px] bg-slate-800 p-2 rounded border border-slate-700">${m.nome} | ${m.placa}</div>`;
                 });
-            }
-
-            window.popularSelectFornecedores(window.obterListaNomesFornecedores());
-            inicializarEscutadoresFirebase();
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            });
         };
     </script>
 </body>
