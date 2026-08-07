@@ -584,19 +584,7 @@
             window.atualizarHorariosDisponiveis();
         };
 
-     // 1. CONSERTO DO BOTÃO DE APAGAR O FIREBASE
-        window.limparJanelasSubidas = function() {
-            if(!confirm("Tem certeza que deseja ZERAR toda a base do Firebase?")) return;
-            
-            // O Firebase exige o comando .remove() para deletar dados em massa
-            firebase.database().ref('yms_agendamentos_oficiais').remove().then(() => {
-                window.ymsStore.agendamentos = [];
-                window.renderizarGradePCP();
-                window.exibirToast("Sucesso!", "Banco de dados do Firebase foi zerado.", "🗑️");
-            }).catch(err => alert("Erro ao limpar Firebase: " + err));
-        };
-
-        // 2. CONSERTO DO MAPEAMENTO DA SUA PLANILHA "GREEN TRUCK"
+        // CONSERTO DO MAPEAMENTO DA SUA PLANILHA "GREEN TRUCK"
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -641,8 +629,27 @@
             };
             reader.readAsArrayBuffer(file);
         };
-            reader.readAsArrayBuffer(file);
+
+        window.processarTextoBruto = function() {
+            const texto = document.getElementById('txtBruto')?.value.trim();
+            if(!texto) return alert("Cole o texto!");
+            texto.split('\n').forEach(linha => {
+                const col = linha.split(/\t|;| ,/);
+                if(col.length >= 2) {
+                    window.ymsStore.rascunhoAgendamentos.push({
+                        ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
+                        fornecedor: String(col[0]).trim(), doca: String(col[1]).trim(),
+                        data: window.normalizarDataPtBR(String(col[2] || window.obterDataHojePtBR())),
+                        horaIni: String(col[3] || '08:00').trim(), horaFim: String(col[4] || '09:00').trim(),
+                        tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
+                    });
+                }
+            });
+            localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
+            window.renderizarGradePCP();
+            document.getElementById('txtBruto').value = '';
         };
+
         window.confirmarESubirJanelas = function() {
             if(window.ymsStore.rascunhoAgendamentos.length === 0) return alert("Rascunho vazio!");
             if(!confirm("Subir para o Firebase?")) return;
@@ -661,7 +668,7 @@
             });
         };
 
-      window.renderizarGradePCP = function() {
+        window.renderizarGradePCP = function() {
             const container = document.getElementById('containerJanelas');
             if (!container) return;
             container.innerHTML = "";
@@ -673,8 +680,6 @@
             if (todasJanelasExibicao.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no sistema.</p>`;
                 if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.add('hidden');
-                
-                // Garante que os horários carreguem mesmo com a grade zerada
                 window.atualizarHorariosDisponiveis();
                 return;
             }
@@ -712,8 +717,6 @@
                 `;
                 container.insertAdjacentHTML('beforeend', card);
             });
-
-            // Atualiza a barrinha de horários toda vez que o Firebase devolver um dado
             window.atualizarHorariosDisponiveis();
         };
 
@@ -726,7 +729,17 @@
             window.renderizarGradePCP();
         };
 
-     
+        // CONSERTO DO BOTÃO DE APAGAR O FIREBASE
+        window.limparJanelasSubidas = function() {
+            if(!confirm("Tem certeza que deseja ZERAR toda a base do Firebase?")) return;
+            
+            // O Firebase exige o comando .remove() para deletar dados em massa
+            firebase.database().ref('yms_agendamentos_oficiais').remove().then(() => {
+                window.ymsStore.agendamentos = [];
+                window.renderizarGradePCP();
+                window.exibirToast("Sucesso!", "Banco de dados do Firebase foi zerado.", "🗑️");
+            }).catch(err => alert("Erro ao limpar Firebase: " + err));
+        };
 
         window.limparGradeTotal = function() {
             window.ymsStore.rascunhoAgendamentos = [];
@@ -850,30 +863,6 @@
             window.popularSelectFornecedores(window.obterListaNomesFornecedores());
             window.inicializarEscutadoresFirebase();
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
-        };
-        // Inicialização
-        window.onload = function() {
-            window.atualizarRelogioDigital();
-            setInterval(window.atualizarRelogioDigital, 1000);
-            
-            const dt = document.getElementById('inpData');
-            if(dt) dt.value = window.obterDataHojeISO();
-
-            const sel = document.getElementById('inpDoca');
-            if(sel) {
-                sel.innerHTML = "";
-                window.listaTodasDocas.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d; opt.textContent = d;
-                    sel.appendChild(opt);
-                });
-            }
-
-            window.popularSelectFornecedores(window.obterListaNomesFornecedores());
-            window.inicializarEscutadoresFirebase();
-            document.getElementById('modalLoginGlobal').classList.remove('hidden');
-            
-            // ADICIONE ESTA LINHA PARA CARREGAR OS HORÁRIOS AUTOMATICAMENTE!
             window.atualizarHorariosDisponiveis();
         };
     </script>
