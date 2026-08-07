@@ -492,26 +492,35 @@
             window.popularSelectFornecedores(filtrados);
         };
 
-        window.criarJanelaManual = function(e) {
+      window.criarJanelaManual = function(e) {
             if(e) e.preventDefault();
-            const f = document.getElementById('inpFornecedor')?.value;
-            const d = document.getElementById('inpDoca')?.value;
-            const dt = document.getElementById('inpData')?.value; 
-            const hi = document.getElementById('inpHora')?.value;
-            const hf = document.getElementById('inpHoraFim')?.value;
+            const fornecedor = document.getElementById('inpFornecedor')?.value;
+            const doca = document.getElementById('inpDoca')?.value;
+            const dataRaw = document.getElementById('inpData')?.value; 
+            const horaIni = document.getElementById('inpHora')?.value;
+            const horaFim = document.getElementById('inpHoraFim')?.value;
 
-            if(!f || !d || !dt || !hi || !hf) return alert("Preencha tudo!");
+            if(!fornecedor || !doca || !dataRaw || !horaIni || !horaFim) {
+                alert("Preencha todos os campos obrigatórios da janela!"); return;
+            }
 
-            const nova = {
-                ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
-                fornecedor: f, doca: d, data: window.normalizarDataPtBR(dt),
-                horaIni: hi, horaFim: hf, tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
+            const dataFormatada = window.normalizarDataPtBR(dataRaw);
+            const tipo = window.tipoCargaSelecionado || 'COTIDIANO';
+            const numOrdem = Math.floor(Math.random() * 90000) + 10000;
+
+            let obj = {
+                ordem: `REQ-${numOrdem}`, fornecedor: fornecedor, doca: doca,
+                data: dataFormatada, horaIni: horaIni, horaFim: horaFim,
+                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true
             };
 
-            window.ymsStore.rascunhoAgendamentos.push(nova);
+            if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
+            window.ymsStore.rascunhoAgendamentos.push(obj);
             localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
+
             window.exibirToast("Rascunho Adicionado", "Janela pronta para subida.", "📝");
             window.renderizarGradePCP();
+            window.atualizarHorariosDisponiveis();
         };
 
         window.lerPlanilhaExcel = function(e) {
@@ -582,46 +591,54 @@
             });
         };
 
-        window.renderizarGradePCP = function() {
+       window.renderizarGradePCP = function() {
             const container = document.getElementById('containerJanelas');
             if (!container) return;
             container.innerHTML = "";
 
-            const todas = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
-            document.getElementById('contadorJanelas').textContent = todas.length;
+            const todasJanelasExibicao = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
+            const contadorEl = document.getElementById('contadorJanelas');
+            if (contadorEl) contadorEl.textContent = todasJanelasExibicao.length;
 
-            if (todas.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela.</p>`;
-                document.getElementById('painelAcaoSubir').classList.add('hidden');
+            if (todasJanelasExibicao.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no sistema.</p>`;
+                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.add('hidden');
                 return;
             }
 
-            const rascunhos = window.ymsStore.rascunhoAgendamentos || [];
-            if (rascunhos.length > 0) {
-                document.getElementById('painelAcaoSubir').classList.remove('hidden');
-                document.getElementById('subtituloGrade').textContent = `⚠️ ${rascunhos.length} em rascunho`;
+            if ((window.ymsStore.rascunhoAgendamentos || []).length > 0) {
+                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.remove('hidden');
             } else {
-                document.getElementById('painelAcaoSubir').classList.add('hidden');
-                document.getElementById('subtituloGrade').textContent = "🟢 Sincronizado";
+                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.add('hidden');
             }
 
-            todas.forEach(item => {
-                const ehRascunho = rascunhos.some(r => r.ordem === item.ordem);
-                container.insertAdjacentHTML('beforeend', `
+            todasJanelasExibicao.forEach(item => {
+                const ehRascunho = item.isRascunho || (window.ymsStore.rascunhoAgendamentos || []).some(r => r.ordem === item.ordem);
+                let badgeTag = ehRascunho 
+                    ? `<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-500/50 px-2 py-0.5 rounded">📝 RASCUNHO</span>`
+                    : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status || 'AGENDADO'}</span>`;
+
+                const card = `
                     <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
                         <div>
-                            <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2 py-0.5 rounded-full">${item.fornecedor}</span>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
+                                ${badgeTag}
+                                <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
+                            </div>
                             <p class="text-sm font-black text-white">📍 ${item.doca}</p>
                         </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-yellow-400 block">${item.data}</span>
-                            <span class="text-emerald-400 font-mono text-xs">${item.horaIni} - ${item.horaFim}</span>
-                            <button onclick="removerJanelaIndividual('${item.ordem}')" class="text-red-400 ml-2">🗑️</button>
+                        <div class="flex items-center gap-3">
+                            <div class="text-right">
+                                <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
+                                <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
+                            </div>
+                            <button type="button" onclick="window.removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 transition text-xs cursor-pointer ml-1">🗑️</button>
                         </div>
                     </div>
-                `);
+                `;
+                container.insertAdjacentHTML('beforeend', card);
             });
-            window.atualizarHorariosDisponiveis();
         };
 
         window.removerJanelaIndividual = function(ordem) {
@@ -648,39 +665,52 @@
 
         window.atualizarHorariosDisponiveis = function() {
             const inpHora = document.getElementById('inpHora');
-            const grid = document.getElementById('gridTimelineHorarios');
-            const doca = document.getElementById('inpDoca')?.value;
-            const data = window.normalizarDataPtBR(document.getElementById('inpData')?.value);
+            const gridTimeline = document.getElementById('gridTimelineHorarios');
+            const docaSel = document.getElementById('inpDoca')?.value;
+            const dataSelRaw = document.getElementById('inpData')?.value;
 
-            if(!inpHora) return;
-            const ocupados = [...window.ymsStore.agendamentos, ...window.ymsStore.rascunhoAgendamentos].filter(a => 
-                window.normalizarTexto(a.doca) === window.normalizarTexto(doca) &&
-                window.normalizarDataPtBR(a.data) === data
+            if (!inpHora) return;
+            const dataSelFormatted = window.normalizarDataPtBR(dataSelRaw);
+
+            const todosAg = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
+            const agendamentosOcupados = todosAg.filter(a => 
+                window.normalizarTexto(a.doca) === window.normalizarTexto(docaSel) &&
+                window.normalizarDataPtBR(a.data) === dataSelFormatted
             );
 
             inpHora.innerHTML = "";
-            if(grid) grid.innerHTML = "";
+            if (gridTimeline) gridTimeline.innerHTML = "";
 
-            slotsDia24h.forEach(slot => {
-                const min = window.horaParaMinutos(slot);
-                const ehOcupado = ocupados.some(a => min >= window.horaParaMinutos(a.horaIni) && min < window.horaParaMinutos(a.horaFim));
-                
+            window.slotsDia24h.forEach(slot => {
+                const minSlot = window.horaParaMinutos(slot);
+                const ehOcupado = agendamentosOcupados.some(a => {
+                    const minIni = window.horaParaMinutos(a.horaIni);
+                    const minFim = window.horaParaMinutos(a.horaFim);
+                    return minSlot >= minIni && minSlot < minFim;
+                });
+
                 const opt = document.createElement('option');
-                opt.value = slot; opt.textContent = slot + (ehOcupado ? " (Ocupado)" : "");
-                if(ehOcupado) opt.classList.add('text-red-400');
+                opt.value = slot;
+                opt.textContent = slot + (ehOcupado ? " (Ocupado)" : "");
+                if (ehOcupado) opt.classList.add('text-red-400');
                 inpHora.appendChild(opt);
 
-                if(grid) {
+                if (gridTimeline) {
                     const btn = document.createElement('button');
-                    btn.className = `p-1 text-[10px] rounded ${ehOcupado ? 'bg-red-900 text-red-400' : 'bg-slate-900 text-emerald-400'}`;
+                    btn.type = "button";
+                    btn.className = `p-1 text-[10px] font-mono font-bold rounded ${ehOcupado ? 'bg-red-950/80 text-red-400 border border-red-500/30' : 'bg-slate-900 text-emerald-400 hover:bg-emerald-600 hover:text-white transition cursor-pointer'}`;
                     btn.textContent = slot;
-                    btn.onclick = () => { if(!ehOcupado) { inpHora.value = slot; window.atualizarHorarioFimMinimo(); } };
-                    grid.appendChild(btn);
+                    btn.onclick = () => {
+                        if (!ehOcupado) {
+                            inpHora.value = slot;
+                            window.atualizarHorarioFimMinimo();
+                        }
+                    };
+                    gridTimeline.appendChild(btn);
                 }
             });
             window.atualizarHorarioFimMinimo();
         };
-
         window.atualizarHorarioFimMinimo = function() {
             const hi = document.getElementById('inpHora');
             const hf = document.getElementById('inpHoraFim');
