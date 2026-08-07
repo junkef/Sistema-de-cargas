@@ -584,7 +584,7 @@
             window.atualizarHorariosDisponiveis();
         };
 
-        window.lerPlanilhaExcel = function(e) {
+       window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -594,19 +594,22 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     
-                    // O SEGREDO ESTÁ AQUI: raw: false obriga a ler como texto (evita o 0.65625 nas horas)
+                    // raw: false força o Excel a entregar a hora como texto ao invés de fração decimal
                     const json = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: false, dateNF: 'dd/mm/yyyy'});
 
                     json.slice(1).forEach(row => {
-                        if (!row || row.length < 2) return;
+                        // Se a linha não tiver no mínimo a data e o fornecedor, pula
+                        if (!row || row.length < 2 || !row[0]) return;
                         
+                        // Mapeamento específico para a planilha "Green Truck"
+                        // row[0] = DIA | row[1] = FORNECEDORES | row[2] = EMAIL (ignora) | row[3] = LOCAL DOCA | row[4] = entrada | row[5] = SAÍDA
                         window.ymsStore.rascunhoAgendamentos.push({
                             ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
-                            fornecedor: String(row[0] || 'FORNECEDOR').trim(),
-                            doca: String(row[1] || 'Doca - (04N/06N)').trim(),
-                            data: window.normalizarDataPtBR(String(row[2] || window.obterDataHojePtBR())),
-                            horaIni: String(row[3] || '08:00').trim(),
-                            horaFim: String(row[4] || '09:30').trim(),
+                            fornecedor: String(row[1] || 'NÃO INFORMADO').trim(),
+                            doca: String(row[3] || 'Doca - (04N/06N)').trim(),
+                            data: window.normalizarDataPtBR(String(row[0] || window.obterDataHojePtBR())),
+                            horaIni: String(row[4] || '08:00').trim().substring(0, 5), // Limita para "00:00" em vez de "00:00:00"
+                            horaFim: String(row[5] || '09:00').trim().substring(0, 5),
                             tipo: 'COTIDIANO', 
                             status: 'AGENDADO', 
                             isRascunho: true
@@ -614,37 +617,16 @@
                     });
                     localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
                     
-                    window.exibirToast("Planilha Carregada", "Rascunhos gerados com sucesso.", "📊");
+                    window.exibirToast("Planilha Carregada", "Rascunhos lidos com sucesso.", "📊");
                     window.renderizarGradePCP();
                     
-                    // Limpa o input para permitir subir a mesma planilha de novo se precisar
-                    e.target.value = '';
+                    e.target.value = ''; // Limpa o input
                 } catch(err) { 
-                    alert("Erro ao ler a planilha. Verifique o formato."); 
+                    alert("Erro ao ler a planilha. Verifique o arquivo."); 
                 }
             };
             reader.readAsArrayBuffer(file);
         };
-        window.processarTextoBruto = function() {
-            const texto = document.getElementById('txtBruto')?.value.trim();
-            if(!texto) return alert("Cole o texto!");
-            texto.split('\n').forEach(linha => {
-                const col = linha.split(/\t|;| ,/);
-                if(col.length >= 2) {
-                    window.ymsStore.rascunhoAgendamentos.push({
-                        ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
-                        fornecedor: String(col[0]).trim(), doca: String(col[1]).trim(),
-                        data: window.normalizarDataPtBR(String(col[2] || window.obterDataHojePtBR())),
-                        horaIni: String(col[3] || '08:00').trim(), horaFim: String(col[4] || '09:00').trim(),
-                        tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
-                    });
-                }
-            });
-            localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
-            window.renderizarGradePCP();
-            document.getElementById('txtBruto').value = '';
-        };
-
         window.confirmarESubirJanelas = function() {
             if(window.ymsStore.rascunhoAgendamentos.length === 0) return alert("Rascunho vazio!");
             if(!confirm("Subir para o Firebase?")) return;
