@@ -244,7 +244,7 @@
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="window.lerPlanilhaExcel(event)">
                             <div class="text-4xl mb-2">📂</div>
                             <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv</p>
+                            <p class="text-[11px] text-slate-400">O YMS identificará as colunas de "DIA", "FORNECEDOR" e "HORA" automaticamente!</p>
                         </div>
                     </div>
 
@@ -720,6 +720,9 @@
             window.atualizarHorariosDisponiveis();
         };
 
+        // ==========================================
+        // LEITURA INTELIGENTE DE PLANILHA
+        // ==========================================
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -732,12 +735,38 @@
                     
                     const json = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: false, dateNF: 'dd/mm/yyyy'});
 
+                    if (json.length < 2) return alert("A planilha está vazia!");
+
+                    // IDENTIFICAÇÃO DINÂMICA DE COLUNAS
+                    const cabecalho = json[0];
+                    let cData = -1, cForn = -1, cDoca = -1, cHIni = -1, cHFim = -1;
+
+                    cabecalho.forEach((txt, idx) => {
+                        if(!txt) return;
+                        let nome = String(txt).toUpperCase().trim();
+                        if (nome === 'DIA' || nome === 'DATA') cData = idx;
+                        if (nome.includes('FORNECEDOR')) cForn = idx;
+                        if (nome.includes('DOCA')) cDoca = idx;
+                        if (nome === 'ENTRADA' || nome.includes('INICIO') || nome.includes('INÍCIO')) cHIni = idx;
+                        if (nome === 'SAÍDA' || nome === 'SAIDA' || nome.includes('FIM')) cHFim = idx;
+                    });
+
+                    // Caso a planilha seja totalmente diferente, usa as colunas padrão do GreenTruck como fallback
+                    if (cData === -1) cData = 0;
+                    if (cForn === -1) cForn = 1;
+                    if (cDoca === -1) cDoca = 3;
+                    if (cHIni === -1) cHIni = 4;
+                    if (cHFim === -1) cHFim = 5;
+
                     let janelasIgnoradas = 0;
+                    let janelasAdicionadas = 0;
 
                     json.slice(1).forEach(row => {
-                        if (!row || row.length < 2 || !row[0]) return;
+                        if (!row || row.length === 0) return;
                         
-                        const dataPlanilha = window.normalizarDataPtBR(String(row[0] || window.obterDataHojePtBR()));
+                        if (!row[cData] || !row[cForn]) return;
+                        
+                        const dataPlanilha = window.normalizarDataPtBR(String(row[cData]));
                         
                         if (window.isDataPassada(dataPlanilha)) {
                             janelasIgnoradas++;
@@ -746,23 +775,31 @@
 
                         window.ymsStore.rascunhoAgendamentos.push({
                             ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
-                            fornecedor: String(row[1] || 'NÃO INFORMADO').trim(),
-                            doca: String(row[3] || 'Doca - (04N/06N)').trim(),
+                            fornecedor: String(row[cForn] || 'NÃO INFORMADO').trim(),
+                            doca: String(row[cDoca] || 'Doca - (04N/06N)').trim(),
                             data: dataPlanilha,
-                            horaIni: String(row[4] || '08:00').trim().substring(0, 5),
-                            horaFim: String(row[5] || '09:00').trim().substring(0, 5),
+                            horaIni: String(row[cHIni] || '08:00').trim().substring(0, 5),
+                            horaFim: String(row[cHFim] || '09:00').trim().substring(0, 5),
                             tipo: 'COTIDIANO', 
                             status: 'AGENDADO', 
                             isRascunho: true,
                             notaFiscal: '', placa: '', cpf: '', celular: ''
                         });
+                        janelasAdicionadas++;
                     });
                     
                     localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
                     window.renderizarGradePCP();
                     
-                    if (janelasIgnoradas > 0) alert(`Aviso: O YMS detectou e apagou automaticamente ${janelasIgnoradas} agendamentos antigos contidos na planilha.`);
-                    else window.exibirToast("Planilha Carregada", "Rascunhos lidos com sucesso.", "📊");
+                    if (janelasAdicionadas > 0 && janelasIgnoradas > 0) {
+                        alert(`Sucesso! ${janelasAdicionadas} janelas lidas. O YMS ignorou ${janelasIgnoradas} agendamentos de dias anteriores.`);
+                    } else if (janelasAdicionadas > 0) {
+                        window.exibirToast("Planilha Carregada", `${janelasAdicionadas} Rascunhos lidos com sucesso.`, "📊");
+                    } else if (janelasIgnoradas > 0) {
+                        alert(`Atenção: A planilha foi lida, mas todas as ${janelasIgnoradas} janelas eram do passado e foram descartadas!`);
+                    } else {
+                        alert("Nenhuma janela válida encontrada. Verifique as colunas da planilha.");
+                    }
                     
                     e.target.value = ''; 
                 } catch(err) { alert("Erro ao ler a planilha. Verifique o formato do arquivo."); }
@@ -1105,18 +1142,9 @@
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
             
-            const hojeISO = window.obterDataHojeISO();
-            
             const dt = document.getElementById('inpData');
             if(dt) {
-                dt.value = hojeISO;
-            }
-
-            const dtFiltro = document.getElementById('filtroDataFornecedor');
-            if(dtFiltro) {
-                // Apenas garante que não tem valor de início, mas não precisa do min aqui
-                // porque a injeção no onclick (no html) é o que está garantindo o funcionamento.
-                dtFiltro.value = ''; 
+                dt.value = window.obterDataHojeISO();
             }
 
             const sel = document.getElementById('inpDoca');
