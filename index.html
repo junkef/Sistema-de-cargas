@@ -304,7 +304,7 @@
                 </div>
                 
                 <div class="flex items-center gap-4 flex-wrap">
-                    <!-- NOVO FILTRO DE DATA -->
+                    <!-- NOVO FILTRO DE DATA (AGORA COM O HTML CORRETO!) -->
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
                         <span class="text-xs px-1" title="Filtrar por data">📅</span>
                         <input type="date" id="filtroDataFornecedor" onchange="window.renderizarPortalFornecedor()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer">
@@ -477,7 +477,7 @@
             { empresa: "SCHOTT", senha: "schott@2026" }, { empresa: "SG/LEAS", senha: "sgleas@2026" },
             { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" }, { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
             { empresa: "TESA", senha: "tesa@2026" }, { empresa: "UNIPLAST", senha: "uniplast@2026" },
-            { empresa: "UNITAAL",ষ্ঠunitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
+            { empresa: "UNITAAL", senha: "unitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
             { empresa: "VEXILIOM", senha: "vexiliom@2026" }, { empresa: "VIPRADO", senha: "viprado@2026" },
             { empresa: "VITROCOLOR", senha: "vitrocolor@2026" }, { empresa: "WEG MOTORES", senha: "weg@2026" },
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
@@ -970,7 +970,7 @@
         window.selecionarTipoCarga = function(t) { window.exibirToast("Tipo", t.toUpperCase()); };
 
         // ==========================================
-        // PORTAL DO FORNECEDOR LOGIC (COM FILTRO E ORDENAÇÃO)
+        // PORTAL DO FORNECEDOR LOGIC
         // ==========================================
         window.renderizarPortalFornecedor = function() {
             const container = document.getElementById('listaAgendamentosFornecedor');
@@ -999,13 +999,11 @@
                 agendamentosValidos = agendamentosValidos.filter(a => window.normalizarTexto(a.fornecedor).includes(nomeDigitado));
             }
 
-            // APLICA O FILTRO DE DATA
             if (filtroDataRaw) {
                 const dataFormatadaFiltro = window.normalizarDataPtBR(filtroDataRaw);
                 agendamentosValidos = agendamentosValidos.filter(a => a.data === dataFormatadaFiltro);
             }
 
-            // ORDENAÇÃO CRONOLÓGICA (Data e Hora)
             agendamentosValidos.sort((a, b) => {
                 const dataA = a.data.split('/').reverse().join('');
                 const dataB = b.data.split('/').reverse().join('');
