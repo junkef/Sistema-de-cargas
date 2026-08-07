@@ -652,7 +652,7 @@
             });
         };
 
-        window.renderizarGradePCP = function() {
+      window.renderizarGradePCP = function() {
             const container = document.getElementById('containerJanelas');
             if (!container) return;
             container.innerHTML = "";
@@ -664,6 +664,9 @@
             if (todasJanelasExibicao.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no sistema.</p>`;
                 if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.add('hidden');
+                
+                // Garante que os horários carreguem mesmo com a grade zerada
+                window.atualizarHorariosDisponiveis();
                 return;
             }
 
@@ -700,6 +703,9 @@
                 `;
                 container.insertAdjacentHTML('beforeend', card);
             });
+
+            // Atualiza a barrinha de horários toda vez que o Firebase devolver um dado
+            window.atualizarHorariosDisponiveis();
         };
 
         window.removerJanelaIndividual = function(ordem) {
