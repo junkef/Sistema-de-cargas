@@ -363,28 +363,44 @@
         <!-- ========================================================================= -->
         <section id="perfil-totem" class="perfil-modulo flex-1 flex items-center justify-center p-6 hidden">
             
-            <!-- TELA DO TOTEM (Visível na tela) -->
-            <div id="totemInterface" class="bg-slate-900 border-4 border-indigo-500/30 rounded-[3rem] max-w-xl w-full p-10 shadow-2xl text-center space-y-8 relative overflow-hidden mx-auto my-auto">
-                <!-- Efeito visual de luz no topo -->
+            <div id="totemInterface" class="bg-slate-900 border-4 border-indigo-500/30 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6 relative overflow-hidden mx-auto my-auto">
+                <!-- Efeito visual -->
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50 blur-sm"></div>
 
-                <div class="space-y-2">
-                    <span class="text-5xl inline-block drop-shadow-[0_0_15px_rgba(99,102,241,0.8)]">🏭</span>
-                    <h2 class="text-3xl font-black text-white tracking-wider uppercase">Autoatendimento</h2>
-                    <p class="text-sm text-slate-400">Bem-vindo(a) motorista! Digite seu CPF para iniciar.</p>
+                <div class="space-y-1">
+                    <span class="text-4xl inline-block drop-shadow-[0_0_15px_rgba(99,102,241,0.8)]">🏭</span>
+                    <h2 class="text-2xl font-black text-white tracking-wider uppercase">Autoatendimento</h2>
+                    <p class="text-xs text-slate-400">Digite seu CPF para imprimir o ticket</p>
                 </div>
 
-                <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-inner">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">CPF DO MOTORISTA</label>
-                    <input type="text" id="inpTotemCpf" placeholder="000.000.000-00" onkeydown="if(event.key==='Enter') window.buscarCargaTotem();" class="w-full bg-slate-900 border-2 border-slate-700 focus:border-indigo-500 rounded-2xl px-6 py-5 text-2xl text-center text-white font-black tracking-widest outline-none transition shadow-lg">
+                <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">CPF DO MOTORISTA</label>
+                    <!-- Readonly = Trava o teclado nativo do tablet/celular -->
+                    <input type="text" id="inpTotemCpf" readonly placeholder="000.000.000-00" class="w-full bg-slate-900 border-2 border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-4 text-xl text-center text-white font-black tracking-widest outline-none shadow-lg mb-5 cursor-default">
+                    
+                    <!-- NOVO: TECLADO VIRTUAL -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="window.tecladoTotem('1')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">1</button>
+                        <button type="button" onclick="window.tecladoTotem('2')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">2</button>
+                        <button type="button" onclick="window.tecladoTotem('3')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">3</button>
+                        <button type="button" onclick="window.tecladoTotem('4')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">4</button>
+                        <button type="button" onclick="window.tecladoTotem('5')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">5</button>
+                        <button type="button" onclick="window.tecladoTotem('6')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">6</button>
+                        <button type="button" onclick="window.tecladoTotem('7')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">7</button>
+                        <button type="button" onclick="window.tecladoTotem('8')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">8</button>
+                        <button type="button" onclick="window.tecladoTotem('9')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">9</button>
+                        <button type="button" onclick="window.tecladoTotem('C')" class="bg-red-950/80 hover:bg-red-900 text-red-400 border border-red-500/30 text-xl font-black py-4 rounded-xl active:scale-95 transition shadow">C</button>
+                        <button type="button" onclick="window.tecladoTotem('0')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">0</button>
+                        <button type="button" onclick="window.tecladoTotem('back')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-400 border border-amber-500/30 text-xl font-black py-4 rounded-xl active:scale-95 transition shadow flex items-center justify-center">⌫</button>
+                    </div>
                 </div>
 
-                <button type="button" onclick="window.buscarCargaTotem()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-lg py-5 rounded-2xl uppercase tracking-widest shadow-[0_10px_20px_-10px_rgba(79,70,229,1)] transition transform active:scale-95 flex items-center justify-center gap-3">
+                <button type="button" onclick="window.buscarCargaTotem()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-4 rounded-2xl uppercase tracking-widest shadow-[0_10px_20px_-10px_rgba(79,70,229,1)] transition transform active:scale-95 flex items-center justify-center gap-3">
                     <span>🔍</span> BUSCAR AGENDAMENTO
                 </button>
             </div>
 
-            <!-- MODAL DE CONFIRMAÇÃO DO TICKET (Ainda na tela) -->
+            <!-- MODAL DE CONFIRMAÇÃO DO TICKET -->
             <div id="modalTicketPreview" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex justify-center items-center p-4 z-50 hidden">
                 <div class="bg-slate-900 border border-emerald-500/50 rounded-3xl max-w-md w-full p-8 shadow-2xl text-center space-y-6">
                     <div class="space-y-1">
@@ -774,7 +790,10 @@
             
             if(p === 'pcp') window.renderizarGradePCP();
             if(p === 'fornecedor') window.renderizarPortalFornecedor();
-            if(p === 'totem') document.getElementById('inpTotemCpf').focus();
+            if(p === 'totem') {
+                window.tecladoTotemRaw = "";
+                document.getElementById('inpTotemCpf').value = "";
+            }
 
             if (window.ymsStore.usuarioLogado) {
                 window.aplicarPermissoesMenu();
@@ -1127,9 +1146,6 @@
 
         window.selecionarTipoCarga = function(t) { window.exibirToast("Tipo", t.toUpperCase()); };
 
-        // ==========================================
-        // PORTAL DO FORNECEDOR LOGIC
-        // ==========================================
         window.renderizarPortalFornecedor = function() {
             const container = document.getElementById('listaAgendamentosFornecedor');
             const contador = document.getElementById('contadorFornecedor');
@@ -1258,14 +1274,35 @@
         };
 
         // ==========================================
-        // TOTEM (AUTOATENDIMENTO) LOGIC COM A FÓRMULA SLA
+        // TOTEM (AUTOATENDIMENTO) LOGIC
         // ==========================================
+        window.tecladoTotemRaw = "";
+
+        window.tecladoTotem = function(val) {
+            if (val === 'C') {
+                window.tecladoTotemRaw = "";
+            } else if (val === 'back') {
+                window.tecladoTotemRaw = window.tecladoTotemRaw.slice(0, -1);
+            } else {
+                if (window.tecladoTotemRaw.length < 11) {
+                    window.tecladoTotemRaw += val;
+                }
+            }
+
+            // Aplica máscara de CPF automaticamente
+            let formatado = window.tecladoTotemRaw;
+            if (formatado.length > 9) {
+                formatado = formatado.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, "$1.$2.$3-$4");
+            } else if (formatado.length > 6) {
+                formatado = formatado.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
+            } else if (formatado.length > 3) {
+                formatado = formatado.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+            }
+
+            document.getElementById('inpTotemCpf').value = formatado;
+        };
+
         window.calcularStatusChegadaSLA = function(horaAgendada) {
-            // Tradução exata da sua fórmula de Excel para Javascript
-            // F3 < L3 - TEMPO(1;0;0) -> ANTECIPADO (Menos de 1 hora antes)
-            // F3 > L3 -> FORNECEDOR ATRASADO (Chegou depois da hora exata do agendamento)
-            // Senão -> NO HORÁRIO
-            
             const agora = new Date();
             const minAtual = (agora.getHours() * 60) + agora.getMinutes();
             
@@ -1283,12 +1320,10 @@
 
         window.buscarCargaTotem = function() {
             const cpfDigitado = window.normalizarTexto(document.getElementById('inpTotemCpf').value);
-            if(!cpfDigitado) return alert("Por favor, digite seu CPF!");
+            if(!cpfDigitado || cpfDigitado.length < 11) return alert("Por favor, digite o CPF completo (11 números)!");
 
-            // O totem só olha para as cargas de HOJE
             const hoje = window.obterDataHojePtBR();
             
-            // Procura a carga que bate com o CPF, que é de hoje, e que ainda não entrou (status AGENDADO)
             const cargaEncontrada = window.ymsStore.agendamentos.find(a => 
                 window.normalizarTexto(a.cpf) === cpfDigitado && 
                 a.data === hoje &&
@@ -1296,12 +1331,11 @@
             );
 
             if (!cargaEncontrada) {
-                return alert("Nenhum agendamento ativo encontrado para este CPF na data de hoje. Verifique com seu despachante se os dados foram enviados.");
+                return alert("Nenhum agendamento ativo encontrado para este CPF na data de hoje. Verifique com seu despachante se os dados de transporte foram enviados.");
             }
 
             window.ymsStore.cargaEmProcessoTotem = cargaEncontrada;
 
-            // Calcula o SLA no momento exato em que ele bateu o dedo na tela
             const sla = window.calcularStatusChegadaSLA(cargaEncontrada.horaIni);
             
             document.getElementById('lblTotemCpf').textContent = cargaEncontrada.cpf;
@@ -1334,7 +1368,7 @@
                 window.salvarAgendamentosNaMemoria();
             }
 
-            // 2. Prepara o Ticket de Impressão Térmica
+            // 2. Prepara o Ticket
             document.getElementById('printOrdem').textContent = carga.ordem;
             document.getElementById('printForn').textContent = carga.fornecedor;
             document.getElementById('printPlaca').textContent = carga.placa;
@@ -1346,18 +1380,17 @@
             const printStatus = document.getElementById('printStatus');
             printStatus.textContent = `SLA: ${sla.status}`;
 
-            // Gera o QR Code
             document.getElementById('printQrCode').innerHTML = "";
             new QRCode(document.getElementById("printQrCode"), {
                 text: carga.ordem,
                 width: 100, height: 100
             });
 
-            // 3. Imprime
+            // 3. Imprime e reseta o totem para o próximo motorista
             document.getElementById('modalTicketPreview').classList.add('hidden');
+            window.tecladoTotemRaw = "";
             document.getElementById('inpTotemCpf').value = "";
             
-            // Dá um milissegundo para o QR Code renderizar antes de chamar a janela de impressão
             setTimeout(() => {
                 window.print();
             }, 300);
