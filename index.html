@@ -138,14 +138,14 @@
         </div>
 
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button type="button" onclick="window.mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
-            <button type="button" onclick="window.mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
-            <button type="button" onclick="window.mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
-            <button type="button" onclick="window.mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
-            <button type="button" onclick="window.mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
-            <button type="button" onclick="window.mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
-            <button type="button" onclick="window.mudarPerfil('motoristas')" id="btn-motoristas" data-modulo="motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
-            <button type="button" onclick="window.mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
+            <button type="button" onclick="window.mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
+            <button type="button" onclick="window.mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
+            <button type="button" onclick="window.mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
+            <button type="button" onclick="window.mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
+            <button type="button" onclick="window.mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
+            <button type="button" onclick="window.mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
+            <button type="button" onclick="window.mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
+            <button type="button" onclick="window.mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
 
         <div class="flex items-center gap-3">
@@ -293,16 +293,67 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) PARA EVITAR TELA PRETA AO CLICAR NOS BOTÕES -->
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR (PREENCHIMENTO DE DADOS)                   -->
         <!-- ========================================================================= -->
-        
-        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
-                <h2 class="text-2xl font-black text-white mb-2">🏢 Portal do Fornecedor</h2>
-                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
+            
+            <!-- CABEÇALHO DO PORTAL DO FORNECEDOR -->
+            <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2">🏢 Portal do Fornecedor</h2>
+                    <p class="text-sm text-slate-400 mt-1" id="lblBemVindoFornecedor">Carregando seus agendamentos...</p>
+                </div>
+                <div class="bg-indigo-600/20 border border-indigo-500/30 px-5 py-3 rounded-2xl text-center shadow-inner min-w-[150px]">
+                    <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Cargas Agendadas</span>
+                    <span class="text-3xl font-black text-white" id="contadorFornecedor">0</span>
+                </div>
+            </div>
+
+            <!-- GRID DE CARGAS -->
+            <div id="listaAgendamentosFornecedor" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
+                <!-- Cards injetados via JavaScript -->
+            </div>
+
+            <!-- MODAL PARA PREENCHER DADOS DE TRANSPORTE -->
+            <div id="modalDadosTransporte" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center items-center p-4 z-50 hidden">
+                <div class="bg-slate-900 border border-indigo-500/50 rounded-3xl max-w-sm w-full p-6 shadow-2xl">
+                    <div class="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
+                        <h3 class="text-lg font-black text-white flex items-center gap-2">🚛 Dados de Transporte</h3>
+                        <button type="button" onclick="window.fecharModalTransporte()" class="text-slate-400 hover:text-red-400 font-black text-2xl transition">&times;</button>
+                    </div>
+                    
+                    <input type="hidden" id="inpOrdemTransporte">
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Nota Fiscal *</label>
+                            <input type="text" id="inpNotaFiscal" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner" placeholder="Nº da Nota">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Placa do Veículo (Cavalo) *</label>
+                            <input type="text" id="inpPlaca" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner uppercase" placeholder="ABC-1234">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">CPF do Motorista *</label>
+                            <input type="text" id="inpCPF" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner" placeholder="000.000.000-00">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Celular do Motorista *</label>
+                            <input type="text" id="inpCelular" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner" placeholder="(00) 00000-0000">
+                        </div>
+                    </div>
+                    
+                    <button type="button" onclick="window.salvarDadosTransporte()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-4 rounded-xl uppercase shadow-lg transition border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
+                        💾 Salvar Dados
+                    </button>
+                </div>
             </div>
         </section>
 
+        <!-- ========================================================================= -->
+        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
+        <!-- ========================================================================= -->
+        
         <section id="perfil-totem" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
             <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
                 <h2 class="text-2xl font-black text-white mb-2">🏭 Totem Autoatendimento</h2>
@@ -472,10 +523,9 @@
             return `${dia}/${mes}/${ano}`;
         };
 
-      window.normalizarDataPtBR = function(dataStr) {
+        window.normalizarDataPtBR = function(dataStr) {
             if (!dataStr) return window.obterDataHojePtBR();
             dataStr = dataStr.trim();
-            
             if (dataStr.includes('-')) {
                 const p = dataStr.split('-');
                 return `${p[2].substring(0,2)}/${p[1]}/${p[0]}`;
@@ -483,7 +533,6 @@
             if (dataStr.includes('/')) {
                 const p = dataStr.split('/');
                 let ano = p[2];
-                // A MÁGICA: Se o Excel mandar o ano só com 2 dígitos (ex: 26), nós forçamos virar 2026!
                 if (ano && ano.length === 2) ano = "20" + ano; 
                 return `${String(p[0]).padStart(2, '0')}/${String(p[1]).padStart(2, '0')}/${ano}`;
             }
@@ -495,7 +544,16 @@
             db.ref('yms_agendamentos_oficiais').on('value', (snapshot) => {
                 const data = snapshot.val();
                 window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                window.renderizarGradePCP();
+                
+                // Atualiza o PCP se estiver visível
+                if(!document.getElementById('perfil-pcp').classList.contains('hidden')) {
+                    window.renderizarGradePCP();
+                }
+                
+                // Atualiza o Fornecedor se estiver visível
+                if(!document.getElementById('perfil-fornecedor').classList.contains('hidden')) {
+                    window.renderizarPortalFornecedor();
+                }
             });
         };
 
@@ -530,7 +588,9 @@
             document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
         };
 
-        // PCP Módulo
+        // ==========================================
+        // PCP MÓDULO LOGIC
+        // ==========================================
         window.obterListaNomesFornecedores = function() {
             const conjuntoUnico = new Set();
             window.listaPadrao60Fornecedores.forEach(item => conjuntoUnico.add(window.limparNomeFornecedor(item.empresa)));
@@ -576,7 +636,8 @@
             let obj = {
                 ordem: `REQ-${numOrdem}`, fornecedor: fornecedor, doca: doca,
                 data: dataFormatada, horaIni: horaIni, horaFim: horaFim,
-                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true
+                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true,
+                notaFiscal: '', placa: '', cpf: '', celular: ''
             };
 
             if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
@@ -588,7 +649,6 @@
             window.atualizarHorariosDisponiveis();
         };
 
-        // CONSERTO DO MAPEAMENTO DA SUA PLANILHA "GREEN TRUCK"
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -599,15 +659,11 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     
-                    // raw: false força o Excel a entregar a hora bonitinha como texto
                     const json = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: false, dateNF: 'dd/mm/yyyy'});
 
                     json.slice(1).forEach(row => {
-                        // Ignora linhas vazias ou sem data na coluna 1
                         if (!row || row.length < 2 || !row[0]) return;
                         
-                        // Mapeamento EXATO das colunas do seu arquivo Green Truck:
-                        // row[0] = DIA | row[1] = FORNECEDORES | row[2] = EMAIL | row[3] = DOCA | row[4] = ENTRADA | row[5] = SAÍDA
                         window.ymsStore.rascunhoAgendamentos.push({
                             ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
                             fornecedor: String(row[1] || 'NÃO INFORMADO').trim(),
@@ -617,7 +673,8 @@
                             horaFim: String(row[5] || '09:00').trim().substring(0, 5),
                             tipo: 'COTIDIANO', 
                             status: 'AGENDADO', 
-                            isRascunho: true
+                            isRascunho: true,
+                            notaFiscal: '', placa: '', cpf: '', celular: ''
                         });
                     });
                     
@@ -625,7 +682,6 @@
                     window.exibirToast("Planilha Carregada", "Rascunhos lidos com sucesso.", "📊");
                     window.renderizarGradePCP();
                     
-                    // Limpa o input para você conseguir subir a mesma planilha de novo se precisar
                     e.target.value = ''; 
                 } catch(err) { 
                     alert("Erro ao ler a planilha. Verifique o formato do arquivo."); 
@@ -645,7 +701,8 @@
                         fornecedor: String(col[0]).trim(), doca: String(col[1]).trim(),
                         data: window.normalizarDataPtBR(String(col[2] || window.obterDataHojePtBR())),
                         horaIni: String(col[3] || '08:00').trim(), horaFim: String(col[4] || '09:00').trim(),
-                        tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
+                        tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true,
+                        notaFiscal: '', placa: '', cpf: '', celular: ''
                     });
                 }
             });
@@ -656,7 +713,7 @@
 
         window.confirmarESubirJanelas = function() {
             if(window.ymsStore.rascunhoAgendamentos.length === 0) return alert("Rascunho vazio!");
-            if(!confirm("Subir para o Firebase?")) return;
+            if(!confirm("Subir para o Firebase? O Portal do Fornecedor será atualizado!")) return;
 
             db.ref('yms_agendamentos_oficiais').get().then(snap => {
                 const atual = snap.val();
@@ -667,7 +724,7 @@
                     window.ymsStore.rascunhoAgendamentos = [];
                     localStorage.removeItem('yms_rascunho_temp');
                     window.renderizarGradePCP();
-                    window.exibirToast("Sucesso!", "Janelas ativas no Firebase.", "🚀");
+                    window.exibirToast("Sucesso!", "Janelas enviadas para o Fornecedor.", "🚀");
                 });
             });
         };
@@ -733,11 +790,9 @@
             window.renderizarGradePCP();
         };
 
-        // CONSERTO DO BOTÃO DE APAGAR O FIREBASE
         window.limparJanelasSubidas = function() {
             if(!confirm("Tem certeza que deseja ZERAR toda a base do Firebase?")) return;
             
-            // O Firebase exige o comando .remove() para deletar dados em massa
             firebase.database().ref('yms_agendamentos_oficiais').remove().then(() => {
                 window.ymsStore.agendamentos = [];
                 window.renderizarGradePCP();
@@ -826,6 +881,136 @@
 
         window.selecionarTipoCarga = function(t) { window.exibirToast("Tipo", t.toUpperCase()); };
 
+        // ==========================================
+        // PORTAL DO FORNECEDOR LOGIC
+        // ==========================================
+        window.renderizarPortalFornecedor = function() {
+            const container = document.getElementById('listaAgendamentosFornecedor');
+            const contador = document.getElementById('contadorFornecedor');
+            const lblBemVindo = document.getElementById('lblBemVindoFornecedor');
+            if(!container) return;
+
+            container.innerHTML = '';
+            
+            const user = window.ymsStore.usuarioLogado;
+            if (!user) {
+                container.innerHTML = `<p class="col-span-full text-center text-slate-500 py-10">Faça login para visualizar.</p>`;
+                return;
+            }
+
+            const isAdmin = user.perfil === 'admin' || user.perfil === 'pcp';
+            
+            if(isAdmin) {
+                lblBemVindo.textContent = "Visão Administrativa: Exibindo todas as janelas confirmadas do sistema.";
+            } else {
+                lblBemVindo.innerHTML = `Bem-vindo(a), <span class="text-indigo-400 font-bold uppercase">${user.nome}</span>. Adicione os dados de transporte nas suas cargas.`;
+            }
+
+            // O Fornecedor só vê agendamentos reais (não vê rascunhos)
+            let agendamentosValidos = (window.ymsStore.agendamentos || []).filter(a => !a.isRascunho);
+
+            if (!isAdmin) {
+                // Filtra pelo nome digitado no login (Ex: digitou 'CSN', vê todos que tem CSN)
+                const nomeDigitado = window.normalizarTexto(user.nome);
+                agendamentosValidos = agendamentosValidos.filter(a => window.normalizarTexto(a.fornecedor).includes(nomeDigitado));
+            }
+
+            contador.textContent = agendamentosValidos.length;
+
+            if (agendamentosValidos.length === 0) {
+                container.innerHTML = `<div class="col-span-full bg-slate-800/50 border border-slate-700 p-10 rounded-3xl text-center shadow-inner">
+                    <span class="text-4xl block mb-3 opacity-50">📭</span>
+                    <h3 class="text-lg font-bold text-slate-300">Nenhuma carga agendada</h3>
+                    <p class="text-xs text-slate-500 mt-1">O PCP ainda não liberou janelas para o seu perfil ou não existem agendamentos ativos.</p>
+                </div>`;
+                return;
+            }
+
+            agendamentosValidos.forEach(item => {
+                const hasDados = item.placa && item.cpf;
+                const statusColor = hasDados ? 'emerald' : 'amber';
+                const statusText = hasDados ? '✅ Dados Preenchidos' : '⚠️ Aguardando Dados';
+
+                const card = `
+                    <div class="bg-slate-800/80 border border-slate-700 hover:border-indigo-500/50 p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all group">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-${statusColor}-500"></div>
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[11px] font-black text-indigo-300 uppercase truncate pr-2 tracking-wider" title="${item.fornecedor}">🏢 ${item.fornecedor}</span>
+                                <span class="bg-${statusColor}-500/20 text-${statusColor}-400 border border-${statusColor}-500/30 px-2 py-0.5 rounded-full text-[9px] font-black uppercase whitespace-nowrap">${statusText}</span>
+                            </div>
+                            <h3 class="text-sm font-black text-white mb-2">📍 ${item.doca}</h3>
+                            <div class="text-[11px] font-bold text-slate-400 bg-slate-900/50 p-2 rounded-xl border border-slate-700/50 flex flex-col gap-1">
+                                <div class="flex justify-between"><span>📅 Data:</span> <span class="text-yellow-400">${item.data}</span></div>
+                                <div class="flex justify-between"><span>🕒 Horário:</span> <span class="text-emerald-400">${item.horaIni} às ${item.horaFim}</span></div>
+                                <div class="flex justify-between border-t border-slate-700 pt-1 mt-1"><span>🎟️ Ordem YMS:</span> <span class="font-mono text-slate-300">${item.ordem}</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-950 rounded-xl p-3 border border-slate-700 text-[11px] space-y-1.5 shadow-inner">
+                            <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">NF:</span> <span class="text-slate-300">${item.notaFiscal || '<span class="opacity-30">Não inf.</span>'}</span></p>
+                            <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Placa:</span> <span class="text-slate-300 font-mono font-bold">${item.placa || '<span class="opacity-30">Não inf.</span>'}</span></p>
+                            <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">CPF:</span> <span class="text-slate-300">${item.cpf || '<span class="opacity-30">Não inf.</span>'}</span></p>
+                            <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Cel:</span> <span class="text-slate-300">${item.celular || '<span class="opacity-30">Não inf.</span>'}</span></p>
+                        </div>
+
+                        <button type="button" onclick="window.abrirModalTransporte('${item.ordem}')" class="w-full bg-slate-700 hover:bg-indigo-600 text-white font-black text-[11px] py-3 rounded-xl uppercase transition cursor-pointer border border-slate-600 hover:border-indigo-500 shadow-lg">
+                            ${hasDados ? '✏️ Alterar Dados' : '🚛 Inserir Dados do Motorista'}
+                        </button>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        };
+
+        window.abrirModalTransporte = function(ordem) {
+            const agendamento = window.ymsStore.agendamentos.find(a => a.ordem === ordem);
+            if(!agendamento) return;
+
+            document.getElementById('inpOrdemTransporte').value = ordem;
+            document.getElementById('inpNotaFiscal').value = agendamento.notaFiscal || '';
+            document.getElementById('inpPlaca').value = agendamento.placa || '';
+            document.getElementById('inpCPF').value = agendamento.cpf || '';
+            document.getElementById('inpCelular').value = agendamento.celular || '';
+
+            document.getElementById('modalDadosTransporte').classList.remove('hidden');
+        };
+
+        window.fecharModalTransporte = function() {
+            document.getElementById('modalDadosTransporte').classList.add('hidden');
+        };
+
+        window.salvarDadosTransporte = function() {
+            const ordem = document.getElementById('inpOrdemTransporte').value;
+            const nf = document.getElementById('inpNotaFiscal').value.trim();
+            const placa = document.getElementById('inpPlaca').value.trim().toUpperCase();
+            const cpf = document.getElementById('inpCPF').value.trim();
+            const celular = document.getElementById('inpCelular').value.trim();
+
+            if(!nf || !placa || !cpf || !celular) {
+                return alert("Por favor, preencha todos os campos obrigatórios (NF, Placa, CPF e Celular).");
+            }
+
+            // Localiza e atualiza no array
+            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
+            if(idx > -1) {
+                window.ymsStore.agendamentos[idx].notaFiscal = nf;
+                window.ymsStore.agendamentos[idx].placa = placa;
+                window.ymsStore.agendamentos[idx].cpf = cpf;
+                window.ymsStore.agendamentos[idx].celular = celular;
+                
+                // Salva no Firebase
+                window.salvarAgendamentosNaMemoria();
+                
+                window.fecharModalTransporte();
+                window.exibirToast("Dados Salvos!", "As informações foram sincronizadas com a portaria.", "✅");
+                window.renderizarPortalFornecedor(); // Atualiza a tela instantaneamente
+            }
+        };
+
+        // ==========================================
+        // GERENCIAMENTO DE MÓDULOS E LOGIN
+        // ==========================================
         window.mudarPerfil = function(p) {
             document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
             
@@ -844,6 +1029,7 @@
             if(target) target.classList.remove('hidden');
             
             if(p === 'pcp') window.renderizarGradePCP();
+            if(p === 'fornecedor') window.renderizarPortalFornecedor();
         };
 
         // Inicialização
