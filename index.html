@@ -493,7 +493,7 @@
                 window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 window.renderizarGradePCP();
             });
-        }
+        };
 
         window.salvarAgendamentosNaMemoria = function() { 
             db.ref('yms_agendamentos_oficiais').set(window.ymsStore.agendamentos);
