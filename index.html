@@ -291,6 +291,66 @@
                 </div>
             </div>
         </section>
+
+        <!-- ========================================================================= -->
+        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) PARA EVITAR TELA PRETA AO CLICAR NOS BOTÕES -->
+        <!-- ========================================================================= -->
+        
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
+                <h2 class="text-2xl font-black text-white mb-2">🏢 Portal do Fornecedor</h2>
+                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+            </div>
+        </section>
+
+        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
+                <h2 class="text-2xl font-black text-white mb-2">🏭 Totem Autoatendimento</h2>
+                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+            </div>
+        </section>
+
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
+                <h2 class="text-2xl font-black text-white mb-2">📑 Recebimento Fiscal</h2>
+                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+            </div>
+        </section>
+
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
+                <h2 class="text-2xl font-black text-white mb-2">🚛 Operador de Doca</h2>
+                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+            </div>
+        </section>
+
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
+                <h2 class="text-2xl font-black text-white mb-2">🚪 Check-out Portaria</h2>
+                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+            </div>
+        </section>
+
+        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
+                <h2 class="text-2xl font-black text-white mb-2">🪪 Cadastro de Motoristas</h2>
+                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+            </div>
+        </section>
+
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
+                <h2 class="text-2xl font-black text-white mb-2">📡 Torre de Controle</h2>
+                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+            </div>
+        </section>
+
+        <section id="perfil-admin" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
+                <h2 class="text-2xl font-black text-white mb-2">👑 Painel do Administrador</h2>
+                <p class="text-slate-400">Área exclusiva da gestão YMS. Escolha um módulo na barra superior para operar.</p>
+            </div>
+        </section>
         
         <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 z-50 min-w-[320px] pointer-events-none">
             <span id="toastIcon" class="text-2xl">✨</span>
@@ -741,8 +801,21 @@
 
         window.mudarPerfil = function(p) {
             document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
+            
+            // Remove o visual de 'ativo' (roxo) de todos os botões e volta para cinza
+            document.querySelectorAll('.btn-perfil').forEach(btn => {
+                btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
+            });
+            
+            // Pinta o botão selecionado de roxo
+            const btnAtivo = document.getElementById(`btn-${p}`);
+            if(btnAtivo) {
+                btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow";
+            }
+
             const target = document.getElementById(`perfil-${p}`);
             if(target) target.classList.remove('hidden');
+            
             if(p === 'pcp') window.renderizarGradePCP();
         };
 
