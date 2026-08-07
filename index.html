@@ -472,16 +472,20 @@
             return `${dia}/${mes}/${ano}`;
         };
 
-        window.normalizarDataPtBR = function(dataStr) {
+      window.normalizarDataPtBR = function(dataStr) {
             if (!dataStr) return window.obterDataHojePtBR();
             dataStr = dataStr.trim();
+            
             if (dataStr.includes('-')) {
                 const p = dataStr.split('-');
-                return `${p[2]}/${p[1]}/${p[0]}`;
+                return `${p[2].substring(0,2)}/${p[1]}/${p[0]}`;
             }
             if (dataStr.includes('/')) {
                 const p = dataStr.split('/');
-                return `${String(p[0]).padStart(2, '0')}/${String(p[1]).padStart(2, '0')}/${p[2]}`;
+                let ano = p[2];
+                // A MÁGICA: Se o Excel mandar o ano só com 2 dígitos (ex: 26), nós forçamos virar 2026!
+                if (ano && ano.length === 2) ano = "20" + ano; 
+                return `${String(p[0]).padStart(2, '0')}/${String(p[1]).padStart(2, '0')}/${ano}`;
             }
             return dataStr;
         };
