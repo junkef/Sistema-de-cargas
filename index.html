@@ -364,7 +364,7 @@
         <section id="perfil-totem" class="perfil-modulo flex-1 flex items-center justify-center p-6 hidden">
             
             <!-- TELA DO TOTEM (Visível na tela) -->
-            <div id="totemInterface" class="bg-slate-900 border-4 border-indigo-500/30 rounded-[3rem] max-w-xl w-full p-10 shadow-2xl text-center space-y-8 relative overflow-hidden">
+            <div id="totemInterface" class="bg-slate-900 border-4 border-indigo-500/30 rounded-[3rem] max-w-xl w-full p-10 shadow-2xl text-center space-y-8 relative overflow-hidden mx-auto my-auto">
                 <!-- Efeito visual de luz no topo -->
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50 blur-sm"></div>
 
@@ -520,7 +520,7 @@
             rascunhoAgendamentos: JSON.parse(localStorage.getItem('yms_rascunho_temp') || '[]'),
             usuarioLogado: null,
             perfilSolicitadoTemp: null,
-            cargaEmProcessoTotem: null // Guarda a carga sendo processada no totem
+            cargaEmProcessoTotem: null
         };
 
         window.listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis', 'Doca - Devolução'];
@@ -638,6 +638,7 @@
         };
 
         window.normalizarTexto = function(txt) { return String(txt || '').toLowerCase().replace(/[\s\.\-\/]/g, '').trim(); };
+        
         window.horaParaMinutos = function(horaStr) {
             if (!horaStr || horaStr === '---') return 0;
             const partes = String(horaStr).trim().split(':');
@@ -750,8 +751,6 @@
 
         window.mudarPerfil = function(p) {
             const perfilUser = window.ymsStore.usuarioLogado?.perfil;
-            // Se for totem, admin ou pcp acessam, mas a ideia é que o totem fique numa tela rodando sozinha.
-            // Para fim de testes, liberado.
             if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem') {
                 window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
                 return;
@@ -843,6 +842,9 @@
             window.atualizarHorariosDisponiveis();
         };
 
+        // ==========================================
+        // LEITURA INTELIGENTE DE PLANILHA
+        // ==========================================
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1125,6 +1127,9 @@
 
         window.selecionarTipoCarga = function(t) { window.exibirToast("Tipo", t.toUpperCase()); };
 
+        // ==========================================
+        // PORTAL DO FORNECEDOR LOGIC
+        // ==========================================
         window.renderizarPortalFornecedor = function() {
             const container = document.getElementById('listaAgendamentosFornecedor');
             const contador = document.getElementById('contadorFornecedor');
