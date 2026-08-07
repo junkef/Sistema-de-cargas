@@ -482,10 +482,6 @@
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
         ];
 
-        // ==========================================
-        // O TRADUTOR UNIVERSAL BLINDADO
-        // ==========================================
-        
         window.normalizarHoraExcel = function(horaVal) {
             if (horaVal === undefined || horaVal === null || horaVal === '') return "08:00";
             if (typeof horaVal === 'number') {
@@ -517,7 +513,6 @@
             }
 
             if (!isNaN(dataVal) && typeof dataVal === 'number' && dataVal > 10000) {
-                // Remove o bug de fuso horário do Excel adicionando os minutos de offset
                 const dataJS = new Date((dataVal - 25569) * 86400 * 1000);
                 dataJS.setMinutes(dataJS.getMinutes() + dataJS.getTimezoneOffset());
                 const dia = String(dataJS.getDate()).padStart(2, '0');
@@ -534,17 +529,11 @@
             }
             if (str.includes('/')) {
                 const p = str.split('/');
-                let p1 = parseInt(p[0], 10);
-                let p2 = parseInt(p[1], 10);
+                let p1 = String(p[0]).padStart(2, '0');
+                let p2 = String(p[1]).padStart(2, '0');
                 let ano = p[2];
                 if (ano && ano.length === 2) ano = "20" + ano; 
-                if (p1 > 12) {
-                    return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${ano}`;
-                } else if (p2 > 12) {
-                    return `${String(p2).padStart(2, '0')}/${String(p1).padStart(2, '0')}/${ano}`;
-                } else {
-                    return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${ano}`;
-                }
+                return `${p1}/${p2}/${ano}`;
             }
             return str;
         };
@@ -708,9 +697,6 @@
             }
         };
 
-        // ==========================================
-        // PCP MÓDULO LOGIC
-        // ==========================================
         window.obterListaNomesFornecedores = function() {
             const conjuntoUnico = new Set();
             window.listaPadrao60Fornecedores.forEach(item => conjuntoUnico.add(window.limparNomeFornecedor(item.empresa)));
@@ -769,9 +755,6 @@
             window.atualizarHorariosDisponiveis();
         };
 
-        // ==========================================
-        // LEITURA INTELIGENTE DE PLANILHA
-        // ==========================================
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -779,10 +762,11 @@
             reader.onload = function(evt) {
                 try {
                     const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, {type: 'array', cellDates: true});
+                    const workbook = XLSX.read(data, {type: 'array'});
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     
-                    const json = XLSX.utils.sheet_to_json(sheet, {header: 1}); 
+                    // FORÇA O EXCEL A ENTREGAR EM TEXTO E NO PADRÃO PT-BR (DD/MM/YYYY)
+                    const json = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: false, dateNF: 'dd/mm/yyyy'}); 
 
                     if (json.length < 2) return alert("A planilha está vazia!");
 
@@ -1054,9 +1038,6 @@
 
         window.selecionarTipoCarga = function(t) { window.exibirToast("Tipo", t.toUpperCase()); };
 
-        // ==========================================
-        // PORTAL DO FORNECEDOR LOGIC
-        // ==========================================
         window.renderizarPortalFornecedor = function() {
             const container = document.getElementById('listaAgendamentosFornecedor');
             const contador = document.getElementById('contadorFornecedor');
@@ -1184,7 +1165,6 @@
             }
         };
 
-        // Inicialização
         window.onload = function() {
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
