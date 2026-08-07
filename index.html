@@ -1086,16 +1086,30 @@
         // ==========================================
         // MUDANÇA DE TELAS
         // ==========================================
+      // ==========================================
+        // MUDANÇA DE TELAS E SEGURANÇA
+        // ==========================================
         window.mudarPerfil = function(p) {
+            // TRAVA DE SEGURANÇA 1: Se não for admin nem pcp, bloqueia acessar outras telas
+            const perfilUser = window.ymsStore.usuarioLogado?.perfil;
+            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser) {
+                window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
+                return;
+            }
+
             document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
             
+            // Remove a cor roxa sem destruir os botões que estão escondidos
             document.querySelectorAll('.btn-perfil').forEach(btn => {
-                btn.className = "btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white";
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'rounded-lg');
             });
             
+            // Pinta o botão da tela atual de roxo
             const btnAtivo = document.getElementById(`btn-${p}`);
             if(btnAtivo) {
-                btnAtivo.className = "btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow";
+                btnAtivo.classList.remove('text-slate-400', 'hover:text-white', 'rounded-lg');
+                btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
             }
 
             const target = document.getElementById(`perfil-${p}`);
@@ -1103,6 +1117,11 @@
             
             if(p === 'pcp') window.renderizarGradePCP();
             if(p === 'fornecedor') window.renderizarPortalFornecedor();
+
+            // TRAVA DE SEGURANÇA 2: Garante que os botões errados continuem invisíveis
+            if (window.ymsStore.usuarioLogado) {
+                window.aplicarPermissoesMenu();
+            }
         };
 
         // Inicialização
