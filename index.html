@@ -297,7 +297,6 @@
         <!-- ========================================================================= -->
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
             
-            <!-- CABEÇALHO DO PORTAL DO FORNECEDOR -->
             <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
                 <div>
                     <h2 class="text-2xl font-black text-white flex items-center gap-2">🏢 Portal do Fornecedor</h2>
@@ -309,12 +308,10 @@
                 </div>
             </div>
 
-            <!-- GRID DE CARGAS -->
             <div id="listaAgendamentosFornecedor" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
-                <!-- Cards injetados via JavaScript -->
+                <!-- Cards -->
             </div>
 
-            <!-- MODAL PARA PREENCHER DADOS DE TRANSPORTE -->
             <div id="modalDadosTransporte" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center items-center p-4 z-50 hidden">
                 <div class="bg-slate-900 border border-indigo-500/50 rounded-3xl max-w-sm w-full p-6 shadow-2xl">
                     <div class="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
@@ -425,7 +422,6 @@
             appId: "1:789675229632:web:b209d3dc57b702c8710825"
         };
 
-        // Inicialização Global (Compat Mode)
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -477,25 +473,16 @@
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
         ];
 
-        // ==========================================
-        // GUARDIÃO DE DATAS (VERIFICA SE É DO PASSADO)
-        // ==========================================
         window.isDataPassada = function(dataStr) {
             if (!dataStr) return false;
             const p = dataStr.split('/');
-            if (p.length !== 3) return false; // Espera formato DD/MM/YYYY
-            
-            // O JavaScript conta os meses de 0 a 11, por isso p[1] - 1
+            if (p.length !== 3) return false; 
             const dataAgendamento = new Date(p[2], p[1] - 1, p[0]);
-            
             const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0); // Zera o relógio para comparar só os dias
-            
-            // Se a data do agendamento for menor que as 00:00 de hoje, é passado!
+            hoje.setHours(0, 0, 0, 0); 
             return dataAgendamento < hoje;
         };
 
-        // Utilitários
         window.limparNomeFornecedor = function(nome) {
             let str = String(nome || '').trim().toUpperCase();
             if (!str) return '';
@@ -557,22 +544,15 @@
             return dataStr;
         };
 
-        // Firebase Handlers com LIMPEZA AUTOMÁTICA
         window.inicializarEscutadoresFirebase = function() {
             db.ref('yms_agendamentos_oficiais').on('value', (snapshot) => {
                 const data = snapshot.val();
                 let listaBruta = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
                 
-                // AUTO-LIMPEZA: Ignora os agendamentos que já ficaram no passado!
                 window.ymsStore.agendamentos = listaBruta.filter(a => !window.isDataPassada(a.data));
                 
-                // Atualiza as telas abertas
-                if(!document.getElementById('perfil-pcp').classList.contains('hidden')) {
-                    window.renderizarGradePCP();
-                }
-                if(!document.getElementById('perfil-fornecedor').classList.contains('hidden')) {
-                    window.renderizarPortalFornecedor();
-                }
+                if(!document.getElementById('perfil-pcp').classList.contains('hidden')) window.renderizarGradePCP();
+                if(!document.getElementById('perfil-fornecedor').classList.contains('hidden')) window.renderizarPortalFornecedor();
             });
         };
 
@@ -580,9 +560,6 @@
             db.ref('yms_agendamentos_oficiais').set(window.ymsStore.agendamentos);
         };
 
-        // ==========================================
-        // LOGIN E TRAVA DE MENU
-        // ==========================================
         window.solicitarAcessoPerfil = function(perfil) {
             window.ymsStore.perfilSolicitadoTemp = perfil;
             document.getElementById('boxSenhaLogin').classList.remove('hidden');
@@ -595,11 +572,9 @@
             const botoes = document.querySelectorAll('.btn-perfil');
             
             botoes.forEach(btn => {
-                // Se for Admin ou PCP, mostra a barra toda
                 if (perfil === 'admin' || perfil === 'pcp') {
                     btn.classList.remove('hidden');
                 } else {
-                    // Se for Fornecedor (ou outro), mostra só o próprio botão!
                     if (btn.id === `btn-${perfil}`) {
                         btn.classList.remove('hidden');
                     } else {
@@ -609,19 +584,34 @@
             });
         };
 
+        // ==========================================
+        // TRAVA MÁXIMA DE LOGIN APLICADA AQUI
+        // ==========================================
         window.confirmarLoginComSenha = function() {
-            const user = document.getElementById('inputUserLogin').value;
-            const pass = document.getElementById('inputPinLogin').value;
+            const user = document.getElementById('inputUserLogin').value.trim();
+            const pass = document.getElementById('inputPinLogin').value.trim();
             if(!user || !pass) return alert("Preencha login e senha!");
             
-            window.ymsStore.usuarioLogado = { nome: user, perfil: window.ymsStore.perfilSolicitadoTemp };
+            let perfilSelecionado = window.ymsStore.perfilSolicitadoTemp;
+            const userNormalizado = window.normalizarTexto(user);
+
+            // Verifica se quem digitou é um Fornecedor da nossa lista padrão
+            const isFornecedor = window.listaPadrao60Fornecedores.some(f => window.normalizarTexto(f.empresa) === userNormalizado);
+
+            // SEGREDO DA TRAVA: Se for fornecedor, ele VIRA fornecedor, mesmo que tenha clicado em "Admin" ou "PCP"
+            if (isFornecedor) {
+                perfilSelecionado = 'fornecedor';
+            } else if (user.toUpperCase() === 'ADMIN' || user.toUpperCase() === 'PCP') {
+                perfilSelecionado = user.toLowerCase();
+            }
+
+            window.ymsStore.usuarioLogado = { nome: user, perfil: perfilSelecionado };
+            
             document.getElementById('modalLoginGlobal').classList.add('hidden');
             document.getElementById('lblNomeUsuarioLogado').textContent = user.toUpperCase();
             
-            // Oculta os botões proibidos
             window.aplicarPermissoesMenu();
-            
-            window.mudarPerfil(window.ymsStore.perfilSolicitadoTemp);
+            window.mudarPerfil(perfilSelecionado);
         };
 
         window.fazerLogoutGlobal = function() {
@@ -629,13 +619,47 @@
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
             document.getElementById('boxSenhaLogin').classList.add('hidden');
             document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
-            
-            // Restaura todos os botões do menu para a próxima pessoa logar
             document.querySelectorAll('.btn-perfil').forEach(btn => btn.classList.remove('hidden'));
         };
 
         // ==========================================
-        // PCP MÓDULO LOGIC (COM BLOQUEIO DE PASSADO)
+        // MUDANÇA DE TELAS E SEGURANÇA
+        // ==========================================
+        window.mudarPerfil = function(p) {
+            // TRAVA DE SEGURANÇA: Se não for admin nem pcp, bloqueia acessar outras telas que não sejam a dele próprio
+            const perfilUser = window.ymsStore.usuarioLogado?.perfil;
+            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser) {
+                window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
+                return;
+            }
+
+            document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
+            
+            // Remove a cor roxa sem destruir o "hidden"
+            document.querySelectorAll('.btn-perfil').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'rounded-lg');
+            });
+            
+            const btnAtivo = document.getElementById(`btn-${p}`);
+            if(btnAtivo) {
+                btnAtivo.classList.remove('text-slate-400', 'hover:text-white', 'rounded-lg');
+                btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
+            }
+
+            const target = document.getElementById(`perfil-${p}`);
+            if(target) target.classList.remove('hidden');
+            
+            if(p === 'pcp') window.renderizarGradePCP();
+            if(p === 'fornecedor') window.renderizarPortalFornecedor();
+
+            if (window.ymsStore.usuarioLogado) {
+                window.aplicarPermissoesMenu();
+            }
+        };
+
+        // ==========================================
+        // PCP MÓDULO LOGIC
         // ==========================================
         window.obterListaNomesFornecedores = function() {
             const conjuntoUnico = new Set();
@@ -671,16 +695,10 @@
             const horaIni = document.getElementById('inpHora')?.value;
             const horaFim = document.getElementById('inpHoraFim')?.value;
 
-            if(!fornecedor || !doca || !dataRaw || !horaIni || !horaFim) {
-                alert("Preencha todos os campos obrigatórios da janela!"); return;
-            }
+            if(!fornecedor || !doca || !dataRaw || !horaIni || !horaFim) return alert("Preencha todos os campos obrigatórios da janela!");
 
             const dataFormatada = window.normalizarDataPtBR(dataRaw);
-            
-            // TRAVA DE DATA MANUAL
-            if (window.isDataPassada(dataFormatada)) {
-                return alert("⚠️ Bloqueio YMS: Não é permitido agendar janelas para datas do passado!");
-            }
+            if (window.isDataPassada(dataFormatada)) return alert("⚠️ Bloqueio YMS: Não é permitido agendar janelas para datas do passado!");
 
             const tipo = window.tipoCargaSelecionado || 'COTIDIANO';
             const numOrdem = Math.floor(Math.random() * 90000) + 10000;
@@ -720,10 +738,9 @@
                         
                         const dataPlanilha = window.normalizarDataPtBR(String(row[0] || window.obterDataHojePtBR()));
                         
-                        // TRAVA DE DATA PLANILHA
                         if (window.isDataPassada(dataPlanilha)) {
                             janelasIgnoradas++;
-                            return; // Pula as cargas velhas
+                            return; 
                         }
 
                         window.ymsStore.rascunhoAgendamentos.push({
@@ -743,16 +760,11 @@
                     localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
                     window.renderizarGradePCP();
                     
-                    if (janelasIgnoradas > 0) {
-                        alert(`Aviso: O YMS detectou e apagou automaticamente ${janelasIgnoradas} agendamentos antigos contidos na planilha.`);
-                    } else {
-                        window.exibirToast("Planilha Carregada", "Rascunhos lidos com sucesso.", "📊");
-                    }
+                    if (janelasIgnoradas > 0) alert(`Aviso: O YMS detectou e apagou automaticamente ${janelasIgnoradas} agendamentos antigos contidos na planilha.`);
+                    else window.exibirToast("Planilha Carregada", "Rascunhos lidos com sucesso.", "📊");
                     
                     e.target.value = ''; 
-                } catch(err) { 
-                    alert("Erro ao ler a planilha. Verifique o formato do arquivo."); 
-                }
+                } catch(err) { alert("Erro ao ler a planilha. Verifique o formato do arquivo."); }
             };
             reader.readAsArrayBuffer(file);
         };
@@ -760,7 +772,6 @@
         window.processarTextoBruto = function() {
             const texto = document.getElementById('txtBruto')?.value.trim();
             if(!texto) return alert("Cole o texto!");
-            
             let ignoradas = 0;
             
             texto.split('\n').forEach(linha => {
@@ -768,8 +779,7 @@
                 if(col.length >= 2) {
                     const dataTxt = window.normalizarDataPtBR(String(col[2] || window.obterDataHojePtBR()));
                     if (window.isDataPassada(dataTxt)) {
-                        ignoradas++;
-                        return;
+                        ignoradas++; return;
                     }
 
                     window.ymsStore.rascunhoAgendamentos.push({
@@ -785,7 +795,6 @@
             localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
             window.renderizarGradePCP();
             document.getElementById('txtBruto').value = '';
-            
             if (ignoradas > 0) alert(`${ignoradas} textos de datas antigas foram ignorados.`);
         };
 
@@ -796,8 +805,6 @@
             db.ref('yms_agendamentos_oficiais').get().then(snap => {
                 const atual = snap.val();
                 let lista = atual ? (Array.isArray(atual) ? atual : Object.values(atual)) : [];
-                
-                // Limpa o Firebase de coisas antigas antes de salvar as novas
                 lista = lista.filter(a => !window.isDataPassada(a.data));
                 
                 const novos = window.ymsStore.rascunhoAgendamentos.map(r => ({ ...r, isRascunho: false }));
@@ -874,7 +881,6 @@
 
         window.limparJanelasSubidas = function() {
             if(!confirm("Tem certeza que deseja ZERAR toda a base do Firebase?")) return;
-            
             firebase.database().ref('yms_agendamentos_oficiais').remove().then(() => {
                 window.ymsStore.agendamentos = [];
                 window.renderizarGradePCP();
@@ -973,7 +979,6 @@
             if(!container) return;
 
             container.innerHTML = '';
-            
             const user = window.ymsStore.usuarioLogado;
             if (!user) return;
 
@@ -1064,9 +1069,7 @@
             const cpf = document.getElementById('inpCPF').value.trim();
             const celular = document.getElementById('inpCelular').value.trim();
 
-            if(!nf || !placa || !cpf || !celular) {
-                return alert("Por favor, preencha todos os campos obrigatórios (NF, Placa, CPF e Celular).");
-            }
+            if(!nf || !placa || !cpf || !celular) return alert("Por favor, preencha todos os campos obrigatórios (NF, Placa, CPF e Celular).");
 
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
@@ -1076,51 +1079,9 @@
                 window.ymsStore.agendamentos[idx].celular = celular;
                 
                 window.salvarAgendamentosNaMemoria();
-                
                 window.fecharModalTransporte();
                 window.exibirToast("Dados Salvos!", "As informações foram sincronizadas com a portaria.", "✅");
                 window.renderizarPortalFornecedor(); 
-            }
-        };
-
-        // ==========================================
-        // MUDANÇA DE TELAS
-        // ==========================================
-      // ==========================================
-        // MUDANÇA DE TELAS E SEGURANÇA
-        // ==========================================
-        window.mudarPerfil = function(p) {
-            // TRAVA DE SEGURANÇA 1: Se não for admin nem pcp, bloqueia acessar outras telas
-            const perfilUser = window.ymsStore.usuarioLogado?.perfil;
-            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser) {
-                window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
-                return;
-            }
-
-            document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
-            
-            // Remove a cor roxa sem destruir os botões que estão escondidos
-            document.querySelectorAll('.btn-perfil').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
-                btn.classList.add('text-slate-400', 'hover:text-white', 'rounded-lg');
-            });
-            
-            // Pinta o botão da tela atual de roxo
-            const btnAtivo = document.getElementById(`btn-${p}`);
-            if(btnAtivo) {
-                btnAtivo.classList.remove('text-slate-400', 'hover:text-white', 'rounded-lg');
-                btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
-            }
-
-            const target = document.getElementById(`perfil-${p}`);
-            if(target) target.classList.remove('hidden');
-            
-            if(p === 'pcp') window.renderizarGradePCP();
-            if(p === 'fornecedor') window.renderizarPortalFornecedor();
-
-            // TRAVA DE SEGURANÇA 2: Garante que os botões errados continuem invisíveis
-            if (window.ymsStore.usuarioLogado) {
-                window.aplicarPermissoesMenu();
             }
         };
 
