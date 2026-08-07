@@ -212,7 +212,6 @@
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Data (Apenas Hoje/Futura)</label>
-                                <!-- TRAVA MÍNIMA DE DATA INJETADA NO ONCLICK -->
                                 <input type="date" id="inpData" onclick="this.min = window.obterDataHojeISO()" onchange="window.atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white outline-none">
                             </div>
                         </div>
@@ -305,7 +304,6 @@
                 </div>
                 
                 <div class="flex items-center gap-4 flex-wrap">
-                    <!-- TRAVA MÍNIMA DE DATA INJETADA NO ONCLICK -->
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
                         <span class="text-xs px-1" title="Filtrar por data">📅</span>
                         <input type="date" id="filtroDataFornecedor" onclick="this.min = window.obterDataHojeISO()" onchange="window.renderizarPortalFornecedor()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer">
@@ -485,13 +483,11 @@
         ];
 
         // ==========================================
-        // O TRADUTOR UNIVERSAL (DATAS E HORAS)
+        // O TRADUTOR UNIVERSAL BLINDADO
         // ==========================================
         
         window.normalizarHoraExcel = function(horaVal) {
             if (horaVal === undefined || horaVal === null || horaVal === '') return "08:00";
-            
-            // Se for número fracionado do Excel (Ex: 0.33333 = 08:00)
             if (typeof horaVal === 'number') {
                 const totalMinutos = Math.round(horaVal * 24 * 60);
                 let h = Math.floor(totalMinutos / 60);
@@ -499,65 +495,57 @@
                 h = h % 24;
                 return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
             }
-            
-            // Se for Date object
             if (horaVal instanceof Date) {
                 return `${String(horaVal.getUTCHours()).padStart(2, '0')}:${String(horaVal.getUTCMinutes()).padStart(2, '0')}`;
             }
-
-            // Se for String ("08:00:00", "08:00", "8:00")
             let str = String(horaVal).trim();
             if (str.includes(':')) {
                 const p = str.split(':');
                 return `${String(p[0]).padStart(2, '0')}:${String(p[1]).padStart(2, '0')}`;
             }
-
             return "08:00";
         };
 
         window.normalizarDataPtBR = function(dataVal) {
             if (!dataVal) return window.obterDataHojePtBR();
 
-            // 1. Se for um objeto Date nativo do JS
             if (dataVal instanceof Date) {
-                const dia = String(dataVal.getUTCDate()).padStart(2, '0');
-                const mes = String(dataVal.getUTCMonth() + 1).padStart(2, '0');
-                const ano = dataVal.getUTCFullYear();
+                const dia = String(dataVal.getDate()).padStart(2, '0');
+                const mes = String(dataVal.getMonth() + 1).padStart(2, '0');
+                const ano = dataVal.getFullYear();
                 return `${dia}/${mes}/${ano}`;
             }
 
-            // 2. Se for um número (Excel Serial Date)
             if (!isNaN(dataVal) && typeof dataVal === 'number' && dataVal > 10000) {
-                const dataJS = new Date(Math.round((dataVal - 25569) * 86400 * 1000));
-                const dia = String(dataJS.getUTCDate()).padStart(2, '0');
-                const mes = String(dataJS.getUTCMonth() + 1).padStart(2, '0');
-                const ano = dataJS.getUTCFullYear();
+                // Remove o bug de fuso horário do Excel adicionando os minutos de offset
+                const dataJS = new Date((dataVal - 25569) * 86400 * 1000);
+                dataJS.setMinutes(dataJS.getMinutes() + dataJS.getTimezoneOffset());
+                const dia = String(dataJS.getDate()).padStart(2, '0');
+                const mes = String(dataJS.getMonth() + 1).padStart(2, '0');
+                const ano = dataJS.getFullYear();
                 return `${dia}/${mes}/${ano}`;
             }
 
-            // 3. Se for String (Texto)
             let str = String(dataVal).trim().split(' ')[0];
-
             if (str.includes('-')) {
                 const p = str.split('-');
                 if (p[0].length === 4) return `${p[2].substring(0,2)}/${p[1]}/${p[0]}`; 
                 if (p[2].length === 4) return `${String(p[0]).padStart(2, '0')}/${String(p[1]).padStart(2, '0')}/${p[2]}`; 
             }
-            
             if (str.includes('/')) {
                 const p = str.split('/');
                 let p1 = parseInt(p[0], 10);
                 let p2 = parseInt(p[1], 10);
                 let ano = p[2];
                 if (ano && ano.length === 2) ano = "20" + ano; 
-                
-                // Trata a inversão do Excel americano (MM/DD/YYYY)
-                if (p1 <= 12 && p2 > 12) {
+                if (p1 > 12) {
+                    return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${ano}`;
+                } else if (p2 > 12) {
                     return `${String(p2).padStart(2, '0')}/${String(p1).padStart(2, '0')}/${ano}`;
+                } else {
+                    return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${ano}`;
                 }
-                return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${ano}`;
             }
-            
             return str;
         };
 
@@ -791,8 +779,6 @@
             reader.onload = function(evt) {
                 try {
                     const data = new Uint8Array(evt.target.result);
-                    
-                    // A MÁGICA DE TRANSFORMAR QUALQUER DATA DO EXCEL PARA O JAVASCRIPT
                     const workbook = XLSX.read(data, {type: 'array', cellDates: true});
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     
@@ -800,7 +786,6 @@
 
                     if (json.length < 2) return alert("A planilha está vazia!");
 
-                    // IDENTIFICAÇÃO DINÂMICA DE COLUNAS
                     const cabecalho = json[0];
                     let cData = -1, cForn = -1, cDoca = -1, cHIni = -1, cHFim = -1;
 
@@ -814,7 +799,6 @@
                         if (nome === 'SAÍDA' || nome === 'SAIDA' || nome.includes('FIM')) cHFim = idx;
                     });
 
-                    // Caso a planilha seja totalmente diferente, usa as colunas padrão do GreenTruck como fallback
                     if (cData === -1) cData = 0;
                     if (cForn === -1) cForn = 1;
                     if (cDoca === -1) cDoca = 3;
