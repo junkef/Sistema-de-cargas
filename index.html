@@ -304,7 +304,6 @@
                 </div>
                 
                 <div class="flex items-center gap-4 flex-wrap">
-                    <!-- NOVO FILTRO DE DATA (AGORA COM O HTML CORRETO!) -->
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
                         <span class="text-xs px-1" title="Filtrar por data">📅</span>
                         <input type="date" id="filtroDataFornecedor" onchange="window.renderizarPortalFornecedor()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer">
@@ -1104,8 +1103,18 @@
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
             
+            const hojeISO = window.obterDataHojeISO();
+            
             const dt = document.getElementById('inpData');
-            if(dt) dt.value = window.obterDataHojeISO();
+            if(dt) {
+                dt.value = hojeISO;
+                dt.min = hojeISO; // Trava o passado no PCP
+            }
+
+            const dtFiltro = document.getElementById('filtroDataFornecedor');
+            if(dtFiltro) {
+                dtFiltro.min = hojeISO; // Trava o passado no filtro do Fornecedor
+            }
 
             const sel = document.getElementById('inpDoca');
             if(sel) {
