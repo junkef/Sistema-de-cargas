@@ -49,11 +49,27 @@
             background: #4f46e5;
         }
 
+        /* REGRAS BLINDADAS PARA IMPRESSÃO DO TICKET */
+        @media screen {
+            #ticketImpressao { display: none !important; }
+        }
+
         @media print {
+            @page { margin: 0; }
+            body { background: white !important; margin: 0; padding: 0; }
+            /* Esconde tudo no body, EXCETO o ticket */
             body > *:not(#ticketImpressao) { display: none !important; }
+            
             #ticketImpressao {
-                display: block !important; position: absolute; left: 0; top: 0; width: 80mm;
-                padding: 10px; color: black !important; background: white !important; font-family: monospace;
+                display: block !important; 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 80mm; /* Tamanho padrão de impressora térmica */
+                padding: 5mm; 
+                color: black !important; 
+                background: white !important; 
+                font-family: monospace;
             }
         }
     </style>
@@ -364,7 +380,6 @@
         <section id="perfil-totem" class="perfil-modulo flex-1 flex items-center justify-center p-6 hidden">
             
             <div id="totemInterface" class="bg-slate-900 border-4 border-indigo-500/30 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6 relative overflow-hidden mx-auto my-auto">
-                <!-- Efeito visual -->
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50 blur-sm"></div>
 
                 <div class="space-y-1">
@@ -375,10 +390,8 @@
 
                 <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner">
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">CPF DO MOTORISTA</label>
-                    <!-- Readonly = Trava o teclado nativo do tablet/celular -->
                     <input type="text" id="inpTotemCpf" readonly placeholder="000.000.000-00" class="w-full bg-slate-900 border-2 border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-4 text-xl text-center text-white font-black tracking-widest outline-none shadow-lg mb-5 cursor-default">
                     
-                    <!-- NOVO: TECLADO VIRTUAL -->
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="window.tecladoTotem('1')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">1</button>
                         <button type="button" onclick="window.tecladoTotem('2')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">2</button>
@@ -430,34 +443,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- TICKET INVISÍVEL (Visível apenas na impressora térmica) -->
-            <div id="ticketImpressao" class="hidden">
-                <div style="text-align: center; border-bottom: 2px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
-                    <h2 style="margin: 0; font-size: 18px;">YMS ECOSYSTEM</h2>
-                    <p style="margin: 5px 0 0 0; font-size: 12px;">Controle de Pátio</p>
-                </div>
-                
-                <p style="margin: 5px 0; font-size: 14px;"><strong>ORDEM:</strong> <span id="printOrdem"></span></p>
-                <p style="margin: 5px 0; font-size: 14px;"><strong>EMPRESA:</strong> <span id="printForn"></span></p>
-                <p style="margin: 5px 0; font-size: 14px;"><strong>PLACA:</strong> <span id="printPlaca"></span></p>
-                <p style="margin: 5px 0; font-size: 14px;"><strong>CPF:</strong> <span id="printCpf"></span></p>
-                
-                <div style="border: 2px solid black; padding: 5px; margin: 15px 0; text-align: center;">
-                    <p style="margin: 0; font-size: 12px;">DESTINO / DOCA</p>
-                    <h3 style="margin: 5px 0 0 0; font-size: 16px;" id="printDoca"></h3>
-                </div>
-                
-                <p style="margin: 5px 0; font-size: 12px;">AGENDADO: <strong id="printAgendado"></strong></p>
-                <p style="margin: 5px 0; font-size: 12px;">CHEGADA (SLA): <strong id="printChegada"></strong></p>
-                <p style="margin: 5px 0; font-size: 14px; text-align: center; font-weight: bold; border: 1px solid black; padding: 5px; margin-top: 10px;" id="printStatus"></p>
-
-                <div style="margin-top: 20px; display: flex; justify-content: center; align-items: center; flex-direction: column;">
-                    <div id="printQrCode"></div>
-                    <p style="font-size: 10px; margin-top: 5px;">Apresente no faturamento</p>
-                </div>
-            </div>
-
         </section>
 
         <!-- ========================================================================= -->
@@ -512,6 +497,38 @@
                 <p id="toastTitulo" class="font-black text-sm uppercase tracking-wider"></p>
                 <p id="toastSub" class="text-xs text-indigo-200 font-bold"></p>
             </div>
+        </div>
+    </div>
+
+    <!-- TICKET INVISÍVEL NA TELA, VISÍVEL SÓ NA IMPRESSORA -->
+    <div id="ticketImpressao">
+        <div style="text-align: center; border-bottom: 2px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
+            <!-- COLOQUE O LINK DA SUA LOGO AQUI NO SRC -->
+            <img src="https://cdn-icons-png.flaticon.com/512/2760/2760147.png" alt="Logo YMS" style="width: 45px; height: 45px; margin: 0 auto 5px auto; filter: grayscale(100%);">
+            <h2 style="margin: 0; font-size: 18px; text-transform: uppercase;">YMS Ecosystem</h2>
+            <p style="margin: 5px 0 0 0; font-size: 11px;">Controle de Pátio e Docas</p>
+        </div>
+        
+        <p style="margin: 5px 0; font-size: 13px;"><strong>ORDEM:</strong> <span id="printOrdem"></span></p>
+        <p style="margin: 5px 0; font-size: 13px;"><strong>EMPRESA:</strong> <span id="printForn"></span></p>
+        <p style="margin: 5px 0; font-size: 13px;"><strong>PLACA:</strong> <span id="printPlaca"></span></p>
+        <p style="margin: 5px 0; font-size: 13px;"><strong>CPF:</strong> <span id="printCpf"></span></p>
+        
+        <div style="border: 2px solid black; padding: 5px; margin: 15px 0; text-align: center;">
+            <p style="margin: 0; font-size: 10px;">DESTINO / DOCA</p>
+            <h3 style="margin: 5px 0 0 0; font-size: 15px; font-weight: bold;" id="printDoca"></h3>
+        </div>
+        
+        <p style="margin: 5px 0; font-size: 11px;">AGENDADO: <strong id="printAgendado"></strong></p>
+        <p style="margin: 5px 0; font-size: 11px;">CHEGADA REAL: <strong id="printChegada"></strong></p>
+        
+        <div style="border: 2px dashed black; padding: 8px; margin: 10px 0; text-align: center; background-color: #f0f0f0 !important;">
+            <p style="margin: 0; font-size: 13px; font-weight: bold; text-transform: uppercase;" id="printStatus"></p>
+        </div>
+
+        <div style="margin-top: 15px; text-align: center;">
+            <div id="printQrCode" style="display: inline-block;"></div>
+            <p style="font-size: 10px; margin-top: 8px;">Apresente este ticket na portaria e recepção fiscal.</p>
         </div>
     </div>
 
@@ -861,9 +878,6 @@
             window.atualizarHorariosDisponiveis();
         };
 
-        // ==========================================
-        // LEITURA INTELIGENTE DE PLANILHA
-        // ==========================================
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1289,7 +1303,6 @@
                 }
             }
 
-            // Aplica máscara de CPF automaticamente
             let formatado = window.tecladoTotemRaw;
             if (formatado.length > 9) {
                 formatado = formatado.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, "$1.$2.$3-$4");
@@ -1359,7 +1372,6 @@
             const horaChegadaReal = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
             const sla = window.calcularStatusChegadaSLA(carga.horaIni);
 
-            // 1. Atualiza no Firebase
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === carga.ordem);
             if(idx > -1) {
                 window.ymsStore.agendamentos[idx].status = 'AGUARDANDO FISCAL';
@@ -1368,7 +1380,6 @@
                 window.salvarAgendamentosNaMemoria();
             }
 
-            // 2. Prepara o Ticket
             document.getElementById('printOrdem').textContent = carga.ordem;
             document.getElementById('printForn').textContent = carga.fornecedor;
             document.getElementById('printPlaca').textContent = carga.placa;
@@ -1383,10 +1394,12 @@
             document.getElementById('printQrCode').innerHTML = "";
             new QRCode(document.getElementById("printQrCode"), {
                 text: carga.ordem,
-                width: 100, height: 100
+                width: 120, height: 120,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
             });
 
-            // 3. Imprime e reseta o totem para o próximo motorista
             document.getElementById('modalTicketPreview').classList.add('hidden');
             window.tecladoTotemRaw = "";
             document.getElementById('inpTotemCpf').value = "";
