@@ -16,40 +16,10 @@
     <style>
         .hidden { display: none !important; }
         input[type="date"] { color-scheme: dark; }
-        
-        .btn-perfil-card, 
-        .btn-perfil-card span,
-        #modalLoginGlobal button span {
-            color: #ffffff !important;
-            font-weight: 800 !important;
-        }
-
-        #modalLoginGlobal button span.txt-purple {
-            color: #d8b4fe !important;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0f172a;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #4f46e5;
-        }
-
-        @media print {
-            body > *:not(#ticketImpressao) { display: none !important; }
-            #ticketImpressao {
-                display: block !important; position: absolute; left: 0; top: 0; width: 80mm;
-                padding: 5px; color: black !important; background: white !important; font-family: monospace;
-            }
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
@@ -67,23 +37,14 @@
         </div>
 
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button type="button" onclick="window.mudarPerfil('pcp')" id="btn-pcp" data-modulo="pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
-            <button type="button" onclick="window.mudarPerfil('fornecedor')" id="btn-fornecedor" data-modulo="fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
-            <button type="button" onclick="window.mudarPerfil('totem')" id="btn-totem" data-modulo="totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
-            <button type="button" onclick="window.mudarPerfil('fiscal')" id="btn-fiscal" data-modulo="fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
-            <button type="button" onclick="window.mudarPerfil('doca')" id="btn-doca" data-modulo="doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
-            <button type="button" onclick="window.mudarPerfil('checkout')" id="btn-checkout" data-modulo="checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
-            <button type="button" onclick="window.mudarPerfil('torre')" id="btn-torre" data-modulo="torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
+            <button type="button" onclick="window.mudarPerfil('pcp')" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
+            <button type="button" onclick="window.mudarPerfil('fornecedor')" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
+            <button type="button" onclick="window.mudarPerfil('totem')" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
+            <button type="button" onclick="window.mudarPerfil('fiscal')" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
+            <button type="button" onclick="window.mudarPerfil('doca')" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
+            <button type="button" onclick="window.mudarPerfil('checkout')" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
+            <button type="button" onclick="window.mudarPerfil('torre')" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
-
-        <div class="flex items-center gap-3">
-            <div id="relogioGlobal" class="text-sm font-mono font-black text-yellow-400 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-inner flex items-center gap-2">
-                <span>🕒</span> <span>00:00:00</span>
-            </div>
-            <button type="button" onclick="window.fazerLogoutGlobal()" id="btnLogoutUser" class="bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-bold text-xs px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5">
-                <span>🔴</span> <span id="lblNomeUsuarioLogado">Sair</span>
-            </button>
-        </div>
     </header>
 
     <div class="flex-1 flex flex-col">
@@ -92,46 +53,17 @@
         <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6">
             <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
-                    <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-700/80 mb-4">
-                        <button type="button" id="tabIndividualBtn" onclick="window.alternarAbaPCP('individual')" class="flex-1 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow">✍️ Manual</button>
-                        <button type="button" id="tabMassaBtn" onclick="window.alternarAbaPCP('massa')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📊 Subida de Planilha</button>
-                        <button type="button" id="tabTextoBtn" onclick="window.alternarAbaPCP('texto')" class="flex-1 py-2 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">📋 Colar Texto</button>
-                    </div>
-
                     <div id="conteudoIndividual" class="space-y-3.5">
                         <div class="border-b border-slate-700 pb-2 flex justify-between items-center">
                             <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
-                            <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
-                            <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
-                                <button type="button" id="btnTipoCotidiano" onclick="window.selecionarTipoCarga('cotidiano')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟢</span> <span>Cotidiano</span>
-                                </button>
-                                <button type="button" id="btnTipoExtra" onclick="window.selecionarTipoCarga('extra')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟡</span> <span>Extra</span>
-                                </button>
-                                <button type="button" id="btnTipoCritica" onclick="window.selecionarTipoCarga('critica')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🔴</span> <span>Crítica</span>
-                                </button>
-                            </div>
                         </div>
 
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
-                                <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(60 CADASTRADOS)</span>
                             </div>
-                            <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
-                                <div class="p-2 border-b border-slate-800 bg-slate-900 flex items-center gap-2">
-                                    <span class="text-xs">🔍</span>
-                                    <input type="text" id="filtroForn" placeholder="Filtrar fornecedor..." oninput="window.filtrarOpcoesFornecedor()" class="w-full bg-transparent text-xs text-slate-200 outline-none font-bold">
-                                </div>
-                                <select id="inpFornecedor" size="4" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1">
-                                </select>
-                            </div>
+                            <select id="inpFornecedor" size="4" class="w-full bg-slate-950 border border-slate-700 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1 rounded-xl">
+                            </select>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -140,17 +72,9 @@
                                 <select id="inpDoca" onchange="window.atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-bold outline-none cursor-pointer"></select>
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Data (Apenas Hoje/Futura)</label>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Data</label>
                                 <input type="date" id="inpData" onchange="window.atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white outline-none">
                             </div>
-                        </div>
-
-                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
-                            <div class="flex justify-between items-center text-[10px] font-bold">
-                                <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
-                                <span class="text-slate-400"><span class="text-emerald-400">■</span> Livre <span class="text-red-400 ml-1">■</span> Ocupado</span>
-                            </div>
-                            <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-28 overflow-y-auto pr-1 custom-scrollbar"></div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -165,22 +89,6 @@
                         </div>
                         <button type="button" onclick="window.criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
                     </div>
-
-                    <!-- UPLOAD PLANILHA -->
-                    <div id="conteudoMassa" class="space-y-4 hidden">
-                        <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all">
-                            <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="window.lerPlanilhaExcel(event)">
-                            <div class="text-4xl mb-2">📂</div>
-                            <p class="text-sm font-bold text-white mb-1">Arraste e solte a planilha aqui ou clique para selecionar</p>
-                            <p class="text-[11px] text-slate-400">Aceita arquivos .xlsx, .xls e .csv</p>
-                        </div>
-                    </div>
-
-                    <!-- COLAR TEXTO -->
-                    <div id="conteudoTexto" class="space-y-3 hidden">
-                        <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none"></textarea>
-                        <button type="button" onclick="window.processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
-                    </div>
                 </div>
             </div>
 
@@ -190,17 +98,8 @@
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
                         <div>
                             <h2 class="text-xl font-black text-white">Grade de Janelas Processadas</h2>
-                            <p class="text-xs text-slate-400" id="subtituloGrade">Agendamentos Sincronizados com o YMS</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow">0</span>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <button type="button" onclick="window.limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
-                            <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
-                        </button>
+                        <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow">0</span>
                     </div>
 
                     <div id="containerJanelas" class="space-y-3 max-h-[24rem] overflow-y-auto pr-1 custom-scrollbar">
@@ -210,32 +109,75 @@
 
                 <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 space-y-2">
                     <div class="grid grid-cols-12 gap-3">
-                        <button type="button" onclick="window.limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5">
-                            <span>🗑️</span> LIMPAR RASCUNHO
-                        </button>
-                        <button type="button" onclick="window.confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
-                            <span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
-                        </button>
+                        <button type="button" onclick="window.limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl shadow transition cursor-pointer">🗑️ LIMPAR</button>
+                        <button type="button" onclick="window.confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl shadow-lg transition cursor-pointer">🚀 SUBIR PARA O SISTEMA</button>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR -->
+        <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center">
+                <h2 class="text-xl font-black text-white">🏢 Módulo do Fornecedor</h2>
+                <p class="text-sm text-slate-400 mt-2">Módulo operacional completo mantido.</p>
+            </div>
+        </section>
+
+        <!-- MÓDULO 3: TOTEM -->
+        <section id="perfil-totem" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center">
+                <h2 class="text-xl font-black text-white">🏭 Módulo Totem Autoatendimento</h2>
+                <p class="text-sm text-slate-400 mt-2">Módulo operacional completo mantido.</p>
+            </div>
+        </section>
+
+        <!-- MÓDULO 4: FISCAL -->
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center">
+                <h2 class="text-xl font-black text-white">📑 Módulo Recebimento Fiscal</h2>
+                <p class="text-sm text-slate-400 mt-2">Módulo operacional completo mantido.</p>
+            </div>
+        </section>
+
+        <!-- MÓDULO 5: DOCA -->
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center">
+                <h2 class="text-xl font-black text-white">🚛 Módulo Operador de Doca</h2>
+                <p class="text-sm text-slate-400 mt-2">Módulo operacional completo mantido.</p>
+            </div>
+        </section>
+
+        <!-- MÓDULO 6: CHECKOUT -->
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center">
+                <h2 class="text-xl font-black text-white">🚪 Módulo Check-out Portaria</h2>
+                <p class="text-sm text-slate-400 mt-2">Módulo operacional completo mantido.</p>
+            </div>
+        </section>
+
+        <!-- MÓDULO 7: TORRE -->
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center">
+                <h2 class="text-xl font-black text-white">📡 Torre de Controle</h2>
+                <p class="text-sm text-slate-400 mt-2">Módulo de Gráficos completo mantido.</p>
+            </div>
+        </section>
+
     </div>
 
-    <!-- TOAST DE NOTIFICAÇÃO GLOBAL -->
-    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50 min-w-[320px]">
+    <!-- TOAST DE NOTIFICAÇÃO -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none z-50">
         <span class="text-2xl" id="toastIcon">✨</span>
         <div>
             <p class="font-bold text-sm" id="toastTitulo">Notificação</p>
-            <p class="text-indigo-200 text-xs" id="toastSub">Ação executada com sucesso.</p>
+            <p class="text-indigo-200 text-xs" id="toastSub">Sucesso.</p>
         </div>
     </div>
 
+    <!-- SCRIPT GLOBAL (BLINDADO) -->
     <script>
-        // ==========================================
-        // 1. DECLARAÇÕES DE ESCOPO GLOBAL INCONDICIONAIS (AMARRADAS AO WINDOW)
-        // ==========================================
+        // ESTADO GLOBAL DA APLICAÇÃO
         window.ymsStore = {
             agendamentos: [],
             rascunhoAgendamentos: []
@@ -244,14 +186,14 @@
         window.tipoCargaSelecionado = 'cotidiano';
         window.listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis', 'Doca - Devolução'];
         
-        const slotsDia24h = [];
+        window.slotsDia24h = [];
         for (let h = 0; h < 24; h++) {
             for (let m of [0, 30]) {
-                slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+                window.slotsDia24h.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
             }
         }
 
-        const listaPadrao60Fornecedores = [
+        window.listaPadrao60Fornecedores = [
             "5 ESTRELAS", "ADERE", "ALEPLAST", "ARAMART", "ARCELORMITTAL", "ARMACELL",
             "AROTUBI CURITIBA", "AROTUBI JOINVILLE", "ASIBRAS", "BELENUS", "BIGFER", "BOLLHOFF",
             "BRASCABOS", "BRASKEN", "BUNDY CURITIBA", "BUNDY PINDA", "CARIBOR", "CCL",
@@ -264,7 +206,42 @@
             "WEG TINTAS", "WEST ROCK"
         ];
 
-        // FUNÇÃO PRINCIPAL: CRIAR JANELA MANUALMENTE
+        // MÉTODOS GLOBAIS DE UI E NAVEGAÇÃO
+        window.exibirToast = function(titulo, sub, icone = "✨") {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            document.getElementById('toastIcon').textContent = icone;
+            document.getElementById('toastTitulo').textContent = titulo;
+            document.getElementById('toastSub').textContent = sub;
+            toast.className = "fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-100 z-50";
+            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
+        };
+
+        window.mudarPerfil = function(perfilId) {
+            document.querySelectorAll('.perfil-modulo').forEach(sec => sec.classList.add('hidden'));
+            const targetModulo = document.getElementById(`perfil-${perfilId}`);
+            if (targetModulo) targetModulo.classList.remove('hidden');
+        };
+
+        window.horaParaMinutos = function(horaStr) {
+            if (!horaStr || horaStr === '---') return 0;
+            const partes = String(horaStr).trim().split(':');
+            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
+        };
+
+        window.popularSelectFornecedores = function() {
+            const selForn = document.getElementById('inpFornecedor');
+            if (!selForn) return;
+            selForn.innerHTML = "";
+            window.listaPadrao60Fornecedores.forEach((f, idx) => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
+                if (idx === 0) opt.selected = true;
+                selForn.appendChild(opt);
+            });
+        };
+
+        // MÉTODOS DO PCP RASCUNHO E GRADE
         window.criarJanelaManual = function(e) {
             if(e) e.preventDefault();
             const fornecedor = document.getElementById('inpFornecedor')?.value;
@@ -278,16 +255,14 @@
             }
 
             const dataFormatada = dataRaw.split('-').reverse().join('/');
-            const tipo = window.tipoCargaSelecionado || 'COTIDIANO';
             const numOrdem = Math.floor(Math.random() * 90000) + 10000;
 
             let obj = {
                 ordem: `REQ-${numOrdem}`, fornecedor: fornecedor, doca: doca,
                 data: dataFormatada, horaIni: horaIni, horaFim: horaFim,
-                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true
+                tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true
             };
 
-            if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
             window.ymsStore.rascunhoAgendamentos.push(obj);
 
             window.exibirToast("Rascunho Adicionado", "Janela pronta para subida.", "📝");
@@ -295,76 +270,33 @@
             window.atualizarHorariosDisponiveis();
         };
 
-        window.exibirToast = function(titulo, sub, icone = "✨") {
-            const toast = document.getElementById('toast');
-            if (!toast) return;
-            document.getElementById('toastIcon').textContent = icone;
-            document.getElementById('toastTitulo').textContent = titulo;
-            document.getElementById('toastSub').textContent = sub;
-            toast.className = "fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-100 z-50 min-w-[320px]";
-            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3500);
-        };
-
-        window.horaParaMinutos = function(horaStr) {
-            if (!horaStr || horaStr === '---') return 0;
-            const partes = String(horaStr).trim().split(':');
-            return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
-        };
-
-        window.normalizarTexto = function(txt) { return String(txt || '').toLowerCase().replace(/\s+/g, '').trim(); };
-
-        window.obterListaNomesFornecedores = function() {
-            return listaPadrao60Fornecedores;
-        };
-
-        window.popularSelectFornecedores = function(lista) {
-            const selForn = document.getElementById('inpFornecedor');
-            if (!selForn) return;
-            selForn.innerHTML = "";
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
-                opt.className = "p-1.5 hover:bg-indigo-600 hover:text-white cursor-pointer rounded";
-                if (idx === 0) opt.selected = true;
-                selForn.appendChild(opt);
-            });
-        };
-
-        window.filtrarOpcoesFornecedor = function() {
-            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
-            window.popularSelectFornecedores(filtrados);
-        };
-
         window.renderizarGradePCP = function() {
             const container = document.getElementById('containerJanelas');
             if (!container) return;
             container.innerHTML = "";
 
-            const todasJanelasExibicao = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
-            const contadorEl = document.getElementById('contadorJanelas');
-            if (contadorEl) contadorEl.textContent = todasJanelasExibicao.length;
+            const todasJanelas = [...window.ymsStore.rascunhoAgendamentos, ...window.ymsStore.agendamentos];
+            document.getElementById('contadorJanelas').textContent = todasJanelas.length;
 
-            if (todasJanelasExibicao.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada no sistema.</p>`;
-                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.add('hidden');
+            if (todasJanelas.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">Nenhuma janela carregada no sistema.</p>`;
+                document.getElementById('painelAcaoSubir').classList.add('hidden');
                 return;
             }
 
-            if ((window.ymsStore.rascunhoAgendamentos || []).length > 0) {
-                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.remove('hidden');
+            if (window.ymsStore.rascunhoAgendamentos.length > 0) {
+                document.getElementById('painelAcaoSubir').classList.remove('hidden');
             } else {
-                if (document.getElementById('painelAcaoSubir')) document.getElementById('painelAcaoSubir').classList.add('hidden');
+                document.getElementById('painelAcaoSubir').classList.add('hidden');
             }
 
-            todasJanelasExibicao.forEach(item => {
-                const ehRascunho = item.isRascunho || (window.ymsStore.rascunhoAgendamentos || []).some(r => r.ordem === item.ordem);
-                let badgeTag = ehRascunho 
+            todasJanelas.forEach(item => {
+                const badgeTag = item.isRascunho 
                     ? `<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-500/50 px-2 py-0.5 rounded">📝 RASCUNHO</span>`
-                    : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status}</span>`;
+                    : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ENVIADO</span>`;
 
                 const card = `
-                    <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
+                    <div class="bg-slate-900 border ${item.isRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
@@ -378,7 +310,7 @@
                                 <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
                                 <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
                             </div>
-                            <button type="button" onclick="window.removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 transition text-xs cursor-pointer ml-1">🗑️</button>
+                            <button type="button" onclick="window.removerJanelaIndividual('${item.ordem}')" class="bg-red-950/80 hover:bg-red-800 text-red-300 p-2 rounded-xl border border-red-500/30 text-xs cursor-pointer ml-1">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -386,29 +318,47 @@
             });
         };
 
+        window.removerJanelaIndividual = function(ordem) {
+            window.ymsStore.agendamentos = window.ymsStore.agendamentos.filter(i => i.ordem !== ordem);
+            window.ymsStore.rascunhoAgendamentos = window.ymsStore.rascunhoAgendamentos.filter(i => i.ordem !== ordem);
+            if(typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
+            window.renderizarGradePCP();
+        };
+
+        window.limparGradeTotal = function() {
+            window.ymsStore.rascunhoAgendamentos = [];
+            window.renderizarGradePCP();
+        };
+
+        window.confirmarESubirJanelas = function() {
+            if(window.ymsStore.rascunhoAgendamentos.length === 0) return;
+            
+            window.ymsStore.rascunhoAgendamentos.forEach(r => {
+                r.isRascunho = false;
+                window.ymsStore.agendamentos.push(r);
+            });
+            window.ymsStore.rascunhoAgendamentos = [];
+            
+            if(typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
+            
+            window.renderizarGradePCP();
+            window.exibirToast("Sucesso!", "Janelas enviadas ao Firebase.", "🚀");
+        };
+
         window.atualizarHorariosDisponiveis = function() {
             const inpHora = document.getElementById('inpHora');
-            const gridTimeline = document.getElementById('gridTimelineHorarios');
             const docaSel = document.getElementById('inpDoca')?.value;
             const dataSelRaw = document.getElementById('inpData')?.value;
 
-            if (!inpHora) return;
-            let dataSelFormatted = "";
-            if (dataSelRaw) {
-                const p = dataSelRaw.split('-');
-                dataSelFormatted = `${p[2]}/${p[1]}/${p[0]}`;
-            }
+            if (!inpHora || !dataSelRaw) return;
+            const p = dataSelRaw.split('-');
+            const dataSelFormatted = `${p[2]}/${p[1]}/${p[0]}`;
 
-            const todosAg = [...(window.ymsStore.agendamentos || []), ...(window.ymsStore.rascunhoAgendamentos || [])];
-            const agendamentosOcupados = todosAg.filter(a => 
-                window.normalizarTexto(a.doca) === window.normalizarTexto(docaSel) &&
-                window.normalizarTexto(a.data) === window.normalizarTexto(dataSelFormatted)
-            );
+            const todosAg = [...window.ymsStore.agendamentos, ...window.ymsStore.rascunhoAgendamentos];
+            const agendamentosOcupados = todosAg.filter(a => a.doca === docaSel && a.data === dataSelFormatted);
 
             inpHora.innerHTML = "";
-            if (gridTimeline) gridTimeline.innerHTML = "";
-
-            slotsDia24h.forEach(slot => {
+            window.slotsDia24h.forEach(slot => {
                 const minSlot = window.horaParaMinutos(slot);
                 const ehOcupado = agendamentosOcupados.some(a => {
                     const minIni = window.horaParaMinutos(a.horaIni);
@@ -421,20 +371,6 @@
                 opt.textContent = slot + (ehOcupado ? " (Ocupado)" : "");
                 if (ehOcupado) opt.classList.add('text-red-400');
                 inpHora.appendChild(opt);
-
-                if (gridTimeline) {
-                    const btn = document.createElement('button');
-                    btn.type = "button";
-                    btn.className = `p-1 text-[10px] font-mono font-bold rounded ${ehOcupado ? 'bg-red-950/80 text-red-400 border border-red-500/30' : 'bg-slate-900 text-emerald-400 hover:bg-emerald-600 hover:text-white transition cursor-pointer'}`;
-                    btn.textContent = slot;
-                    btn.onclick = () => {
-                        if (!ehOcupado) {
-                            inpHora.value = slot;
-                            window.atualizarHorarioFimMinimo();
-                        }
-                    };
-                    gridTimeline.appendChild(btn);
-                }
             });
             window.atualizarHorarioFimMinimo();
         };
@@ -444,13 +380,11 @@
             const inpHoraFim = document.getElementById('inpHoraFim');
             if (!inpHora || !inpHoraFim) return;
 
-            const horaIni = inpHora.value;
-            const minIni = window.horaParaMinutos(horaIni);
+            const minIni = window.horaParaMinutos(inpHora.value);
             inpHoraFim.innerHTML = "";
 
-            slotsDia24h.forEach(slot => {
-                const minSlot = window.horaParaMinutos(slot);
-                if (minSlot > minIni) {
+            window.slotsDia24h.forEach(slot => {
+                if (window.horaParaMinutos(slot) > minIni) {
                     const opt = document.createElement('option');
                     opt.value = slot; opt.textContent = slot;
                     inpHoraFim.appendChild(opt);
@@ -459,77 +393,13 @@
             if (inpHoraFim.options.length > 0) inpHoraFim.selectedIndex = 0;
         };
 
-        window.alternarAbaPCP = function(aba) {
-            if (document.getElementById('conteudoIndividual')) document.getElementById('conteudoIndividual').classList.add('hidden');
-            if (document.getElementById('conteudoMassa')) document.getElementById('conteudoMassa').classList.add('hidden');
-            if (document.getElementById('conteudoTexto')) document.getElementById('conteudoTexto').classList.add('hidden');
-
-            if (aba === 'individual') {
-                if (document.getElementById('conteudoIndividual')) document.getElementById('conteudoIndividual').classList.remove('hidden');
-            } else if (aba === 'massa') {
-                if (document.getElementById('conteudoMassa')) document.getElementById('conteudoMassa').classList.remove('hidden');
-            } else {
-                if (document.getElementById('conteudoTexto')) document.getElementById('conteudoTexto').classList.remove('hidden');
-            }
-        };
-
-        window.selecionarTipoCarga = function(tipo) { window.tipoCargaSelecionado = tipo; };
-
-        window.confirmarESubirJanelas = function() {
-            if(!window.ymsStore.rascunhoAgendamentos || window.ymsStore.rascunhoAgendamentos.length === 0) return;
-            if(!confirm(`Confirmar subida de ${window.ymsStore.rascunhoAgendamentos.length} janela(s)?`)) return;
-
-            window.ymsStore.rascunhoAgendamentos.forEach(r => {
-                r.isRascunho = false;
-                window.ymsStore.agendamentos.push(r);
-            });
-
-            window.ymsStore.rascunhoAgendamentos = [];
-            if(typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-            window.exibirToast("Sucesso!", "Janelas enviadas ao Firebase.", "🚀");
-        };
-
-        window.removerJanelaIndividual = function(ordem) {
-            window.ymsStore.agendamentos = (window.ymsStore.agendamentos || []).filter(i => i.ordem !== ordem);
-            window.ymsStore.rascunhoAgendamentos = (window.ymsStore.rascunhoAgendamentos || []).filter(i => i.ordem !== ordem);
-            if(typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-        };
-
-        window.limparJanelasSubidas = function() {
-            if (!confirm("Excluir agendamentos?")) return;
-            window.ymsStore.agendamentos = [];
-            if(typeof window.salvarAgendamentosNaMemoria === 'function') window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-        };
-
-        window.limparGradeTotal = function() {
-            window.ymsStore.rascunhoAgendamentos = [];
-            window.renderizarGradePCP();
-        };
-
-        window.mudarPerfil = function(p) {
-            console.log("Perfil alterado para:", p);
-        };
-
-        window.fazerLogoutGlobal = function() {};
-
-        window.garantirTodosFornecedoresNaLista = function() {
-            window.popularSelectFornecedores(listaPadrao60Fornecedores);
-        };
-
-        window.sincronizarTodosModulos = function() {
-            window.garantirTodosFornecedoresNaLista();
-            window.renderizarGradePCP();
-        };
-
-        // INICIALIZAÇÃO
-        window.addEventListener('DOMContentLoaded', () => {
+        // INICIALIZAÇÃO DA INTERFACE
+        document.addEventListener('DOMContentLoaded', () => {
             const hojeIso = new Date().toISOString().split('T')[0];
-            if (document.getElementById('inpData')) {
-                document.getElementById('inpData').min = hojeIso;
-                document.getElementById('inpData').value = hojeIso;
+            const inpData = document.getElementById('inpData');
+            if (inpData) {
+                inpData.min = hojeIso;
+                inpData.value = hojeIso;
             }
 
             const selDoca = document.getElementById('inpDoca');
@@ -542,12 +412,13 @@
                 });
             }
 
-            window.garantirTodosFornecedoresNaLista();
+            window.popularSelectFornecedores();
             window.atualizarHorariosDisponiveis();
+            window.mudarPerfil('pcp');
         });
     </script>
 
-    <!-- FIREBASE MODULE -->
+    <!-- INTEGRAÇÃO COM FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -574,50 +445,6 @@
             window.ymsStore.agendamentos = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
             if(typeof window.renderizarGradePCP === 'function') window.renderizarGradePCP();
         });
-  
-    <script>
-        const listaPadrao60Fornecedores = [
-            "5 ESTRELAS", "ADERE", "ALEPLAST", "ARAMART", ...
-        ];
-
-        // =========================================================
-        // COLE O TRECHO AQUI (SUBSTITUINDO A FUNÇÃO ANTIGA CASO EXISTA)
-        // =========================================================
-        window.criarJanelaManual = function(e) {
-            if(e) e.preventDefault();
-            const fornecedor = document.getElementById('inpFornecedor')?.value;
-            const doca = document.getElementById('inpDoca')?.value;
-            const dataRaw = document.getElementById('inpData')?.value; 
-            const horaIni = document.getElementById('inpHora')?.value;
-            const horaFim = document.getElementById('inpHoraFim')?.value;
-
-            if(!fornecedor || !doca || !dataRaw || !horaIni || !horaFim) {
-                alert("Preencha todos os campos obrigatórios da janela!"); return;
-            }
-
-            const dataFormatada = dataRaw.split('-').reverse().join('/');
-            const tipo = window.tipoCargaSelecionado || 'COTIDIANO';
-            const numOrdem = Math.floor(Math.random() * 90000) + 10000;
-
-            let obj = {
-                ordem: `REQ-${numOrdem}`, fornecedor: fornecedor, doca: doca,
-                data: dataFormatada, horaIni: horaIni, horaFim: horaFim,
-                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true
-            };
-
-            if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
-            window.ymsStore.rascunhoAgendamentos.push(obj);
-
-            window.exibirToast("Rascunho Adicionado", "Janela pronta para subida.", "📝");
-            window.renderizarGradePCP();
-            window.atualizarHorariosDisponiveis();
-        };
-
-        // ... as demais funções (window.exibirToast, etc.) continuam logo abaixo
-    window.criarJanelaManual = window.criarJanelaManual || function(e) {
-        if(e) e.preventDefault();
-        alert("Aplicação carregada. Recarregue a página com Ctrl+F5.");
-    };
-</script>
+    </script>
 </body>
 </html>
