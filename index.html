@@ -841,6 +841,31 @@
             window.inicializarEscutadoresFirebase();
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
         };
+        // Inicialização
+        window.onload = function() {
+            window.atualizarRelogioDigital();
+            setInterval(window.atualizarRelogioDigital, 1000);
+            
+            const dt = document.getElementById('inpData');
+            if(dt) dt.value = window.obterDataHojeISO();
+
+            const sel = document.getElementById('inpDoca');
+            if(sel) {
+                sel.innerHTML = "";
+                window.listaTodasDocas.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    sel.appendChild(opt);
+                });
+            }
+
+            window.popularSelectFornecedores(window.obterListaNomesFornecedores());
+            window.inicializarEscutadoresFirebase();
+            document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            
+            // ADICIONE ESTA LINHA PARA CARREGAR OS HORÁRIOS AUTOMATICAMENTE!
+            window.atualizarHorariosDisponiveis();
+        };
     </script>
 </body>
 </html>
