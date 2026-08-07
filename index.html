@@ -302,9 +302,19 @@
                     <h2 class="text-2xl font-black text-white flex items-center gap-2">🏢 Portal do Fornecedor</h2>
                     <p class="text-sm text-slate-400 mt-1" id="lblBemVindoFornecedor">Carregando seus agendamentos...</p>
                 </div>
-                <div class="bg-indigo-600/20 border border-indigo-500/30 px-5 py-3 rounded-2xl text-center shadow-inner min-w-[150px]">
-                    <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Cargas Agendadas</span>
-                    <span class="text-3xl font-black text-white" id="contadorFornecedor">0</span>
+                
+                <div class="flex items-center gap-4 flex-wrap">
+                    <!-- NOVO FILTRO DE DATA -->
+                    <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
+                        <span class="text-xs px-1" title="Filtrar por data">📅</span>
+                        <input type="date" id="filtroDataFornecedor" onchange="window.renderizarPortalFornecedor()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer">
+                        <button type="button" onclick="document.getElementById('filtroDataFornecedor').value=''; window.renderizarPortalFornecedor();" class="text-slate-500 hover:text-red-400 px-2 text-sm font-bold transition" title="Limpar Filtro de Data">&times;</button>
+                    </div>
+
+                    <div class="bg-indigo-600/20 border border-indigo-500/30 px-5 py-3 rounded-2xl text-center shadow-inner min-w-[150px]">
+                        <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Cargas Agendadas</span>
+                        <span class="text-3xl font-black text-white" id="contadorFornecedor">0</span>
+                    </div>
                 </div>
             </div>
 
@@ -467,7 +477,7 @@
             { empresa: "SCHOTT", senha: "schott@2026" }, { empresa: "SG/LEAS", senha: "sgleas@2026" },
             { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" }, { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
             { empresa: "TESA", senha: "tesa@2026" }, { empresa: "UNIPLAST", senha: "uniplast@2026" },
-            { empresa: "UNITAAL", senha: "unitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
+            { empresa: "UNITAAL",ষ্ঠunitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
             { empresa: "VEXILIOM", senha: "vexiliom@2026" }, { empresa: "VIPRADO", senha: "viprado@2026" },
             { empresa: "VITROCOLOR", senha: "vitrocolor@2026" }, { empresa: "WEG MOTORES", senha: "weg@2026" },
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
@@ -584,9 +594,6 @@
             });
         };
 
-        // ==========================================
-        // TRAVA MÁXIMA DE LOGIN APLICADA AQUI
-        // ==========================================
         window.confirmarLoginComSenha = function() {
             const user = document.getElementById('inputUserLogin').value.trim();
             const pass = document.getElementById('inputPinLogin').value.trim();
@@ -595,10 +602,8 @@
             let perfilSelecionado = window.ymsStore.perfilSolicitadoTemp;
             const userNormalizado = window.normalizarTexto(user);
 
-            // Verifica se quem digitou é um Fornecedor da nossa lista padrão
             const isFornecedor = window.listaPadrao60Fornecedores.some(f => window.normalizarTexto(f.empresa) === userNormalizado);
 
-            // SEGREDO DA TRAVA: Se for fornecedor, ele VIRA fornecedor, mesmo que tenha clicado em "Admin" ou "PCP"
             if (isFornecedor) {
                 perfilSelecionado = 'fornecedor';
             } else if (user.toUpperCase() === 'ADMIN' || user.toUpperCase() === 'PCP') {
@@ -622,11 +627,7 @@
             document.querySelectorAll('.btn-perfil').forEach(btn => btn.classList.remove('hidden'));
         };
 
-        // ==========================================
-        // MUDANÇA DE TELAS E SEGURANÇA
-        // ==========================================
         window.mudarPerfil = function(p) {
-            // TRAVA DE SEGURANÇA: Se não for admin nem pcp, bloqueia acessar outras telas que não sejam a dele próprio
             const perfilUser = window.ymsStore.usuarioLogado?.perfil;
             if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser) {
                 window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
@@ -635,7 +636,6 @@
 
             document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
             
-            // Remove a cor roxa sem destruir o "hidden"
             document.querySelectorAll('.btn-perfil').forEach(btn => {
                 btn.classList.remove('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
                 btn.classList.add('text-slate-400', 'hover:text-white', 'rounded-lg');
@@ -970,12 +970,14 @@
         window.selecionarTipoCarga = function(t) { window.exibirToast("Tipo", t.toUpperCase()); };
 
         // ==========================================
-        // PORTAL DO FORNECEDOR LOGIC
+        // PORTAL DO FORNECEDOR LOGIC (COM FILTRO E ORDENAÇÃO)
         // ==========================================
         window.renderizarPortalFornecedor = function() {
             const container = document.getElementById('listaAgendamentosFornecedor');
             const contador = document.getElementById('contadorFornecedor');
             const lblBemVindo = document.getElementById('lblBemVindoFornecedor');
+            const filtroDataRaw = document.getElementById('filtroDataFornecedor')?.value; 
+            
             if(!container) return;
 
             container.innerHTML = '';
@@ -997,13 +999,27 @@
                 agendamentosValidos = agendamentosValidos.filter(a => window.normalizarTexto(a.fornecedor).includes(nomeDigitado));
             }
 
+            // APLICA O FILTRO DE DATA
+            if (filtroDataRaw) {
+                const dataFormatadaFiltro = window.normalizarDataPtBR(filtroDataRaw);
+                agendamentosValidos = agendamentosValidos.filter(a => a.data === dataFormatadaFiltro);
+            }
+
+            // ORDENAÇÃO CRONOLÓGICA (Data e Hora)
+            agendamentosValidos.sort((a, b) => {
+                const dataA = a.data.split('/').reverse().join('');
+                const dataB = b.data.split('/').reverse().join('');
+                if (dataA !== dataB) return dataA.localeCompare(dataB);
+                return a.horaIni.localeCompare(b.horaIni);
+            });
+
             contador.textContent = agendamentosValidos.length;
 
             if (agendamentosValidos.length === 0) {
                 container.innerHTML = `<div class="col-span-full bg-slate-800/50 border border-slate-700 p-10 rounded-3xl text-center shadow-inner">
                     <span class="text-4xl block mb-3 opacity-50">📭</span>
                     <h3 class="text-lg font-bold text-slate-300">Nenhuma carga agendada</h3>
-                    <p class="text-xs text-slate-500 mt-1">O PCP ainda não liberou janelas para o seu perfil ou não existem agendamentos ativos.</p>
+                    <p class="text-xs text-slate-500 mt-1">O PCP ainda não liberou janelas para você ou não há agendamentos na data selecionada.</p>
                 </div>`;
                 return;
             }
