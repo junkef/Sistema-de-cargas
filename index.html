@@ -584,7 +584,20 @@
             window.atualizarHorariosDisponiveis();
         };
 
-       window.lerPlanilhaExcel = function(e) {
+     // 1. CONSERTO DO BOTÃO DE APAGAR O FIREBASE
+        window.limparJanelasSubidas = function() {
+            if(!confirm("Tem certeza que deseja ZERAR toda a base do Firebase?")) return;
+            
+            // O Firebase exige o comando .remove() para deletar dados em massa
+            firebase.database().ref('yms_agendamentos_oficiais').remove().then(() => {
+                window.ymsStore.agendamentos = [];
+                window.renderizarGradePCP();
+                window.exibirToast("Sucesso!", "Banco de dados do Firebase foi zerado.", "🗑️");
+            }).catch(err => alert("Erro ao limpar Firebase: " + err));
+        };
+
+        // 2. CONSERTO DO MAPEAMENTO DA SUA PLANILHA "GREEN TRUCK"
+        window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -594,37 +607,40 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     
-                    // raw: false força o Excel a entregar a hora como texto ao invés de fração decimal
+                    // raw: false força o Excel a entregar a hora bonitinha como texto
                     const json = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: false, dateNF: 'dd/mm/yyyy'});
 
                     json.slice(1).forEach(row => {
-                        // Se a linha não tiver no mínimo a data e o fornecedor, pula
+                        // Ignora linhas vazias ou sem data na coluna 1
                         if (!row || row.length < 2 || !row[0]) return;
                         
-                        // Mapeamento específico para a planilha "Green Truck"
-                        // row[0] = DIA | row[1] = FORNECEDORES | row[2] = EMAIL (ignora) | row[3] = LOCAL DOCA | row[4] = entrada | row[5] = SAÍDA
+                        // Mapeamento EXATO das colunas do seu arquivo Green Truck:
+                        // row[0] = DIA | row[1] = FORNECEDORES | row[2] = EMAIL | row[3] = DOCA | row[4] = ENTRADA | row[5] = SAÍDA
                         window.ymsStore.rascunhoAgendamentos.push({
                             ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
                             fornecedor: String(row[1] || 'NÃO INFORMADO').trim(),
                             doca: String(row[3] || 'Doca - (04N/06N)').trim(),
                             data: window.normalizarDataPtBR(String(row[0] || window.obterDataHojePtBR())),
-                            horaIni: String(row[4] || '08:00').trim().substring(0, 5), // Limita para "00:00" em vez de "00:00:00"
+                            horaIni: String(row[4] || '08:00').trim().substring(0, 5),
                             horaFim: String(row[5] || '09:00').trim().substring(0, 5),
                             tipo: 'COTIDIANO', 
                             status: 'AGENDADO', 
                             isRascunho: true
                         });
                     });
-                    localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
                     
+                    localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
                     window.exibirToast("Planilha Carregada", "Rascunhos lidos com sucesso.", "📊");
                     window.renderizarGradePCP();
                     
-                    e.target.value = ''; // Limpa o input
+                    // Limpa o input para você conseguir subir a mesma planilha de novo se precisar
+                    e.target.value = ''; 
                 } catch(err) { 
-                    alert("Erro ao ler a planilha. Verifique o arquivo."); 
+                    alert("Erro ao ler a planilha. Verifique o formato do arquivo."); 
                 }
             };
+            reader.readAsArrayBuffer(file);
+        };
             reader.readAsArrayBuffer(file);
         };
         window.confirmarESubirJanelas = function() {
@@ -710,12 +726,7 @@
             window.renderizarGradePCP();
         };
 
-        window.limparJanelasSubidas = function() {
-            if(!confirm("Zerar tudo?")) return;
-            window.ymsStore.agendamentos = [];
-            window.salvarAgendamentosNaMemoria();
-            window.renderizarGradePCP();
-        };
+     
 
         window.limparGradeTotal = function() {
             window.ymsStore.rascunhoAgendamentos = [];
