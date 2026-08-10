@@ -25,8 +25,8 @@
         
         /* FORÇA TODOS OS MENUS DROPDOWN (SELECTS) A FICAREM NO MODO ESCURO */
         option {
-            background-color: #0f172a !important; /* bg-slate-900 */
-            color: #f1f5f9 !important; /* text-slate-100 */
+            background-color: #0f172a !important; 
+            color: #f1f5f9 !important; 
         }
         
         .btn-perfil-card, 
@@ -687,7 +687,7 @@
             { empresa: "SCHOTT", senha: "schott@2026" }, { empresa: "SG/LEAS", senha: "sgleas@2026" },
             { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" }, { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
             { empresa: "TESA", senha: "tesa@2026" }, { empresa: "UNIPLAST", senha: "uniplast@2026" },
-            { empresa: "UNITAAL", senha: "unitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
+            { empresa: "UNITAAL", senha: "unitaal@2026" }, { empresa: "USIMINAS", usiminas: "usiminas@2026" },
             { empresa: "VEXILIOM", senha: "vexiliom@2026" }, { empresa: "VIPRADO", senha: "viprado@2026" },
             { empresa: "VITROCOLOR", senha: "vitrocolor@2026" }, { empresa: "WEG MOTORES", senha: "weg@2026" },
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
@@ -1536,7 +1536,6 @@
             if (!container) return;
             container.innerHTML = '';
 
-            // Agora inclui os que estão AGUARDANDO FISCAL e também os COM PROBLEMA
             let aguardando = (window.ymsStore.agendamentos || []).filter(a => a.status === 'AGUARDANDO FISCAL' || a.status === 'COM PROBLEMA');
 
             if (busca) {
@@ -1573,7 +1572,6 @@
                 const isSelected = window.ymsStore.fiscalCargaSelecionada && window.ymsStore.fiscalCargaSelecionada.ordem === item.ordem;
                 const isComProblema = item.status === 'COM PROBLEMA';
                 
-                // Muda a cor da borda se tiver problema relatado
                 let borderClass = 'border-amber-500/50 hover:border-indigo-500/50';
                 if (isSelected) borderClass = 'border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]';
                 else if (isComProblema) borderClass = 'border-red-500/80 hover:border-indigo-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]';
@@ -1637,8 +1635,8 @@
             
             const btnReprovar = document.getElementById('btnFiscalReprovar');
             const btnAprovar = document.getElementById('btnFiscalAprovar');
-            btnReprovar.disabled = false; btnReprovar.classList.remove('opacity-50', 'cursor-not-allowed');
-            btnAprovar.disabled = false; btnAprovar.classList.remove('opacity-50', 'cursor-not-allowed');
+            if(btnReprovar) { btnReprovar.disabled = false; btnReprovar.classList.remove('opacity-50', 'cursor-not-allowed'); }
+            if(btnAprovar) { btnAprovar.disabled = false; btnAprovar.classList.remove('opacity-50', 'cursor-not-allowed'); }
 
             window.limparRotaFiscal(); 
             window.renderizarFiscal(); 
@@ -1666,7 +1664,8 @@
 
         window.limparRotaFiscal = function() {
             window.ymsStore.fiscalRotaSelecionada = [];
-            document.getElementById('fiscalRotaDisplay').textContent = "Nenhuma doca selecionada";
+            const display = document.getElementById('fiscalRotaDisplay');
+            if(display) display.textContent = "Nenhuma doca selecionada";
         };
 
         window.aprovarFiscal = function() {
@@ -1688,7 +1687,6 @@
                 window.ymsStore.agendamentos[idx].docaAtual = rotaArray[0];
                 window.ymsStore.agendamentos[idx].rotaFiscal = rotaArray.join(' ➔ ');
                 
-                // Se estava com problema e foi resolvido, limpa a pendência
                 if(window.ymsStore.agendamentos[idx].motivoProblema) {
                     window.ymsStore.agendamentos[idx].motivoProblema = "";
                 }
@@ -1703,8 +1701,11 @@
                 document.getElementById('fiscalInfoAgendada').textContent = '-';
                 document.getElementById('lblRotaAlerta').classList.remove('hidden');
                 document.getElementById('gridBotoesDocasFiscal').classList.add('opacity-50', 'pointer-events-none');
-                document.getElementById('btnFiscalReprovar').disabled = true; document.getElementById('btnFiscalReprovar').classList.add('opacity-50', 'cursor-not-allowed');
-                document.getElementById('btnFiscalAprovar').disabled = true; document.getElementById('btnFiscalAprovar').classList.add('opacity-50', 'cursor-not-allowed');
+                
+                const btnReprovar = document.getElementById('btnFiscalReprovar');
+                const btnAprovar = document.getElementById('btnFiscalAprovar');
+                if(btnReprovar) { btnReprovar.disabled = true; btnReprovar.classList.add('opacity-50', 'cursor-not-allowed'); }
+                if(btnAprovar) { btnAprovar.disabled = true; btnAprovar.classList.add('opacity-50', 'cursor-not-allowed'); }
                 
                 window.limparRotaFiscal();
                 window.renderizarFiscal();
@@ -1713,13 +1714,12 @@
             }
         };
 
-        // NOVA FUNÇÃO: RELATAR PROBLEMA FISCAL (Mantendo no Painel Fiscal)
         window.relatarProblemaFiscal = function() {
             const carga = window.ymsStore.fiscalCargaSelecionada;
             if(!carga) return;
 
             const motivo = prompt(`Descreva o problema encontrado na documentação/NF do veículo placa ${carga.placa}:`);
-            if(motivo === null || motivo.trim() === '') return; // Abortou se cancelou ou deixou vazio
+            if(motivo === null || motivo.trim() === '') return; 
             
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === carga.ordem);
             if(idx > -1) {
@@ -1735,8 +1735,11 @@
                 document.getElementById('fiscalInfoAgendada').textContent = '-';
                 document.getElementById('lblRotaAlerta').classList.remove('hidden');
                 document.getElementById('gridBotoesDocasFiscal').classList.add('opacity-50', 'pointer-events-none');
-                document.getElementById('btnFiscalReprovar').disabled = true; document.getElementById('btnFiscalReprovar').classList.add('opacity-50', 'cursor-not-allowed');
-                document.getElementById('btnFiscalAprovar').disabled = true; document.getElementById('btnFiscalAprovar').classList.add('opacity-50', 'cursor-not-allowed');
+                
+                const btnReprovar = document.getElementById('btnFiscalReprovar');
+                const btnAprovar = document.getElementById('btnFiscalAprovar');
+                if(btnReprovar) { btnReprovar.disabled = true; btnReprovar.classList.add('opacity-50', 'cursor-not-allowed'); }
+                if(btnAprovar) { btnAprovar.disabled = true; btnAprovar.classList.add('opacity-50', 'cursor-not-allowed'); }
                 
                 window.limparRotaFiscal();
                 window.renderizarFiscal();
