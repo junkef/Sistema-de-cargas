@@ -642,7 +642,17 @@
             fiscalRotaSelecionada: []
         };
 
-        window.listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis', 'Doca - Devolução'];
+        window.listaTodasDocas = [
+            'Doca - (04N/06N)', 
+            'Doca - Rua F2 (7S)', 
+            'Doca - 1 F2 (7S)', 
+            'Doca - 2 F2 (7S)', 
+            'Doca - Basico F2 (5S)', 
+            'Doca - Basico F3 (CS1)', 
+            'Doca - Inflamáveis', 
+            'Doca - Devolução'
+        ];
+        
         window.slotsDia24h = [];
         for (let h = 0; h < 24; h++) {
             for (let m of [0, 30]) {
@@ -1645,12 +1655,17 @@
             if(idx > -1) {
                 const agora = new Date();
                 
-                let rotaFinal = window.ymsStore.fiscalRotaSelecionada.join(' ➔ ');
-                if(!rotaFinal) rotaFinal = carga.doca;
+                let rotaArray = [...window.ymsStore.fiscalRotaSelecionada];
+                if(rotaArray.length === 0) rotaArray = [carga.doca];
 
                 window.ymsStore.agendamentos[idx].status = 'AGUARDANDO DOCA';
                 window.ymsStore.agendamentos[idx].horaLiberacaoFiscal = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
-                window.ymsStore.agendamentos[idx].rotaFiscal = rotaFinal;
+                
+                // Grava a "Máquina de Estados" da Rota Sequencial
+                window.ymsStore.agendamentos[idx].rotaArray = rotaArray;
+                window.ymsStore.agendamentos[idx].etapaRotaAtual = 0;
+                window.ymsStore.agendamentos[idx].docaAtual = rotaArray[0];
+                window.ymsStore.agendamentos[idx].rotaFiscal = rotaArray.join(' ➔ '); // Apenas para mostrar como texto
                 
                 window.salvarAgendamentosNaMemoria();
                 window.exibirToast("Fiscal Liberado!", "Rota confirmada. Caminhão enviado para o pátio.", "✅");
@@ -1702,7 +1717,7 @@
         };
 
         // ==========================================
-        // OPERADOR DE DOCA LOGIC
+        // OPERADOR DE DOCA LOGIC COM "MÁQUINA DE ESTADOS"
         // ==========================================
         window.renderizarOperadorDoca = function() {
             const container = document.getElementById('listaDoca');
@@ -1714,7 +1729,8 @@
 
             let fila = (window.ymsStore.agendamentos || []).filter(a => {
                 const statusValido = a.status === 'AGUARDANDO DOCA' || a.status === 'EM OPERACAO';
-                const docaValida = (a.rotaFiscal && a.rotaFiscal.includes(docaSelecionada)) || (a.doca === docaSelecionada);
+                // Mostra a carga SOMENTE para a doca em que ele está atualmente na etapa
+                const docaValida = (a.docaAtual && a.docaAtual === docaSelecionada) || (!a.docaAtual && a.doca === docaSelecionada);
                 return statusValido && docaValida;
             });
 
@@ -1749,6 +1765,9 @@
                     ? `<button type="button" onclick="window.finalizarOperacaoDoca('${item.ordem}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1">✅ Finalizar Operação</button>`
                     : `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Iniciar Operação</button>`;
 
+                // Avisa ao operador qual etapa o caminhão está fazendo agora
+                const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
+
                 const card = `
                     <div class="${bgClass} border ${borderClass} p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all group">
                         <div class="absolute top-0 left-0 w-1.5 h-full ${ribbonClass}"></div>
@@ -1760,12 +1779,23 @@
                             <div class="bg-slate-950/50 rounded-xl p-3 border border-slate-700/50 text-[11px] space-y-1.5 shadow-inner mb-3">
                                 <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Placa:</span> <span class="text-yellow-400 font-mono font-bold text-sm">${item.placa}</span></p>
                                 <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Ticket:</span> <span class="text-white font-mono">${item.ordem}</span></p>
-                                <p class="flex justify-between border-t border-slate-800 pt-1 mt-1"><span class="text-slate-500 font-bold uppercase">Programado:</span> <span class="text-indigo-300 font-bold">${item.horaIni} às ${item.horaFim}</span></p>
-                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Liberação Fiscal:</span> <span class="text-emerald-400 font-bold">${item.horaLiberacaoFiscal || '--:--'}</span></p>
+                                <div class="border-t border-slate-800 pt-1 mt-1 flex flex-col gap-1.5">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-500 font-bold uppercase">Liberação Fiscal:</span> 
+                                        <span class="text-emerald-400 font-bold">${item.horaLiberacaoFiscal || '--:--'}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-500 font-bold uppercase">Programado:</span> 
+                                        <span class="text-indigo-300 font-bold">${item.horaIni} às ${item.horaFim}</span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="text-[10px] text-slate-400 bg-slate-900 p-2 rounded-lg border border-slate-800">
-                                <strong class="block mb-1 text-slate-500">ROTA SEQUENCIAL:</strong>
-                                <span class="text-indigo-200 font-mono">${item.rotaFiscal || item.doca}</span>
+                                <div class="flex justify-between items-center mb-1">
+                                    <strong class="text-slate-500 uppercase">ROTA SEQUENCIAL:</strong>
+                                    <span class="bg-indigo-900/50 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30 font-bold">${etapaTxt}</span>
+                                </div>
+                                <span class="text-indigo-200 font-mono text-[10px] leading-tight block">${item.rotaFiscal || item.doca}</span>
                             </div>
                         </div>
                         ${botaoAcao}
@@ -1781,22 +1811,43 @@
             if(idx > -1) {
                 const agora = new Date();
                 window.ymsStore.agendamentos[idx].status = 'EM OPERACAO';
-                window.ymsStore.agendamentos[idx].horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                
+                // Só grava a hora de início na PRIMEIRA etapa da rota (Para não perder o SLA original)
+                if(!window.ymsStore.agendamentos[idx].horaInicioOperacao || window.ymsStore.agendamentos[idx].etapaRotaAtual === 0) {
+                    window.ymsStore.agendamentos[idx].horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                }
+                
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Operação Iniciada!", "Horário de início registrado.", "⚙️");
+                window.exibirToast("Operação Iniciada!", "A plataforma de descarga foi liberada.", "⚙️");
                 window.renderizarOperadorDoca();
             }
         };
 
         window.finalizarOperacaoDoca = function(ordem) {
-            if(!confirm("Finalizar operação e liberar veículo para Check-out?")) return;
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
-                const agora = new Date();
-                window.ymsStore.agendamentos[idx].status = 'AGUARDANDO CHECKOUT';
-                window.ymsStore.agendamentos[idx].horaFimOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                const carga = window.ymsStore.agendamentos[idx];
+                let proximaEtapa = (carga.etapaRotaAtual !== undefined ? carga.etapaRotaAtual : 0) + 1;
+                
+                if (carga.rotaArray && proximaEtapa < carga.rotaArray.length) {
+                    // SE TEM MAIS UMA DOCA NA SEQUÊNCIA
+                    if(!confirm(`Esta carga ainda tem outras paradas. Enviar caminhão para a próxima doca: ${carga.rotaArray[proximaEtapa]}?`)) return;
+                    
+                    window.ymsStore.agendamentos[idx].etapaRotaAtual = proximaEtapa;
+                    window.ymsStore.agendamentos[idx].docaAtual = carga.rotaArray[proximaEtapa];
+                    window.ymsStore.agendamentos[idx].status = 'AGUARDANDO DOCA'; // Ele volta pro status "Aguardando" só que agora ele aparece na outra doca!
+                    
+                    window.exibirToast("Etapa Concluída!", `Veículo enviado para a doca: ${carga.rotaArray[proximaEtapa]}`, "🔄");
+                } else {
+                    // SE ACABOU A ROTA (OU ERA ROTA ÚNICA)
+                    if(!confirm("Finalizar operação e liberar veículo para a Saída/Check-out?")) return;
+                    const agora = new Date();
+                    window.ymsStore.agendamentos[idx].status = 'AGUARDANDO CHECKOUT';
+                    window.ymsStore.agendamentos[idx].horaFimOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                    window.exibirToast("Operação Finalizada!", "Veículo liberado para Check-out na portaria.", "✅");
+                }
+
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Operação Finalizada!", "Veículo enviado para Check-out.", "✅");
                 window.renderizarOperadorDoca();
             }
         };
