@@ -57,7 +57,6 @@
         @media print {
             @page { margin: 0; }
             body { background: white !important; margin: 0; padding: 0; }
-            /* Esconde tudo no body, EXCETO o ticket */
             body > *:not(#ticketImpressao) { display: none !important; }
             
             #ticketImpressao {
@@ -65,7 +64,7 @@
                 position: absolute; 
                 left: 0; 
                 top: 0; 
-                width: 80mm; /* Tamanho padrão de impressora térmica */
+                width: 80mm; 
                 padding: 5mm; 
                 color: black !important; 
                 background: white !important; 
@@ -210,7 +209,7 @@
 
                         <div>
                             <div class="flex justify-between items-center mb-1">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase">FORNECEDOR *</label>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">FORNECEDOR *</label>
                                 <span id="lblContadorForn" class="text-[10px] font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-500/30">(60 CADASTRADOS)</span>
                             </div>
                             <div class="bg-slate-950 border border-slate-700 rounded-xl overflow-hidden focus-within:border-indigo-500 transition">
@@ -311,10 +310,9 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO 2: PORTAL DO FORNECEDOR (PREENCHIMENTO DE DADOS)                   -->
+        <!-- MÓDULO 2: PORTAL DO FORNECEDOR                                            -->
         <!-- ========================================================================= -->
         <section id="perfil-fornecedor" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
-            
             <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
                 <div>
                     <h2 class="text-2xl font-black text-white flex items-center gap-2">🏢 Portal do Fornecedor</h2>
@@ -335,9 +333,7 @@
                 </div>
             </div>
 
-            <div id="listaAgendamentosFornecedor" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
-                <!-- Cards -->
-            </div>
+            <div id="listaAgendamentosFornecedor" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2"></div>
 
             <div id="modalDadosTransporte" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center items-center p-4 z-50 hidden">
                 <div class="bg-slate-900 border border-indigo-500/50 rounded-3xl max-w-sm w-full p-6 shadow-2xl">
@@ -345,9 +341,7 @@
                         <h3 class="text-lg font-black text-white flex items-center gap-2">🚛 Dados de Transporte</h3>
                         <button type="button" onclick="window.fecharModalTransporte()" class="text-slate-400 hover:text-red-400 font-black text-2xl transition">&times;</button>
                     </div>
-                    
                     <input type="hidden" id="inpOrdemTransporte">
-                    
                     <div class="space-y-4">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Nota Fiscal *</label>
@@ -366,7 +360,6 @@
                             <input type="text" id="inpCelular" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner" placeholder="(00) 00000-0000">
                         </div>
                     </div>
-                    
                     <button type="button" onclick="window.salvarDadosTransporte()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-4 rounded-xl uppercase shadow-lg transition border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
                         💾 Salvar Dados
                     </button>
@@ -378,7 +371,6 @@
         <!-- MÓDULO 3: TOTEM AUTOATENDIMENTO (PORTARIA)                                -->
         <!-- ========================================================================= -->
         <section id="perfil-totem" class="perfil-modulo flex-1 flex items-center justify-center p-6 hidden">
-            
             <div id="totemInterface" class="bg-slate-900 border-4 border-indigo-500/30 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6 relative overflow-hidden mx-auto my-auto">
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50 blur-sm"></div>
 
@@ -446,15 +438,36 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
+        <!-- MÓDULO 4: RECEBIMENTO FISCAL (TRIAGEM)                                    -->
         <!-- ========================================================================= -->
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
+            <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2">📑 Recebimento Fiscal</h2>
+                    <p class="text-sm text-slate-400 mt-1">Validação de notas e liberação para a fila das docas.</p>
+                </div>
+                
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
+                        <span class="text-xs px-2">🔍</span>
+                        <input type="text" id="inpBuscaFiscal" placeholder="Ler Ticket / Digitar Placa..." oninput="window.renderizarFiscal()" class="bg-transparent text-sm text-white font-bold outline-none w-64">
+                    </div>
 
-        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
-                <h2 class="text-2xl font-black text-white mb-2">📑 Recebimento Fiscal</h2>
-                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+                    <div class="bg-amber-500/20 border border-amber-500/30 px-5 py-3 rounded-2xl text-center shadow-inner min-w-[120px]">
+                        <span class="block text-[10px] font-bold text-amber-400 uppercase tracking-wider">Aguardando</span>
+                        <span class="text-3xl font-black text-white" id="contadorFiscal">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="listaFiscal" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
+                <!-- Cards Injetados via JS -->
             </div>
         </section>
+
+        <!-- ========================================================================= -->
+        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
+        <!-- ========================================================================= -->
 
         <section id="perfil-doca" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
             <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
@@ -503,7 +516,6 @@
     <!-- TICKET INVISÍVEL NA TELA, VISÍVEL SÓ NA IMPRESSORA -->
     <div id="ticketImpressao">
         <div style="text-align: center; border-bottom: 2px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
-            <!-- COLOQUE O LINK DA SUA LOGO AQUI NO SRC -->
             <img src="https://cdn-icons-png.flaticon.com/512/2760/2760147.png" alt="Logo YMS" style="width: 45px; height: 45px; margin: 0 auto 5px auto; filter: grayscale(100%);">
             <h2 style="margin: 0; font-size: 18px; text-transform: uppercase;">YMS Ecosystem</h2>
             <p style="margin: 5px 0 0 0; font-size: 11px;">Controle de Pátio e Docas</p>
@@ -718,6 +730,7 @@
                 
                 if(!document.getElementById('perfil-pcp').classList.contains('hidden')) window.renderizarGradePCP();
                 if(!document.getElementById('perfil-fornecedor').classList.contains('hidden')) window.renderizarPortalFornecedor();
+                if(!document.getElementById('perfil-fiscal').classList.contains('hidden')) window.renderizarFiscal();
             });
         };
 
@@ -784,7 +797,7 @@
 
         window.mudarPerfil = function(p) {
             const perfilUser = window.ymsStore.usuarioLogado?.perfil;
-            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem') {
+            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal') {
                 window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
                 return;
             }
@@ -807,6 +820,7 @@
             
             if(p === 'pcp') window.renderizarGradePCP();
             if(p === 'fornecedor') window.renderizarPortalFornecedor();
+            if(p === 'fiscal') window.renderizarFiscal();
             if(p === 'totem') {
                 window.tecladoTotemRaw = "";
                 document.getElementById('inpTotemCpf').value = "";
@@ -1160,6 +1174,9 @@
 
         window.selecionarTipoCarga = function(t) { window.exibirToast("Tipo", t.toUpperCase()); };
 
+        // ==========================================
+        // PORTAL DO FORNECEDOR LOGIC
+        // ==========================================
         window.renderizarPortalFornecedor = function() {
             const container = document.getElementById('listaAgendamentosFornecedor');
             const contador = document.getElementById('contadorFornecedor');
@@ -1407,6 +1424,111 @@
             setTimeout(() => {
                 window.print();
             }, 300);
+        };
+
+        // ==========================================
+        // RECEBIMENTO FISCAL LOGIC
+        // ==========================================
+        window.renderizarFiscal = function() {
+            const container = document.getElementById('listaFiscal');
+            const contador = document.getElementById('contadorFiscal');
+            const busca = window.normalizarTexto(document.getElementById('inpBuscaFiscal')?.value || "");
+
+            if (!container) return;
+            container.innerHTML = '';
+
+            let aguardando = (window.ymsStore.agendamentos || []).filter(a => a.status === 'AGUARDANDO FISCAL');
+
+            if (busca) {
+                aguardando = aguardando.filter(a => 
+                    window.normalizarTexto(a.ordem).includes(busca) || 
+                    window.normalizarTexto(a.placa).includes(busca) ||
+                    window.normalizarTexto(a.fornecedor).includes(busca)
+                );
+            }
+
+            // Ordena FIFO (Chegou primeiro, atende primeiro)
+            aguardando.sort((a, b) => {
+                const hA = window.horaParaMinutos(a.horaChegadaTotem || '23:59');
+                const hB = window.horaParaMinutos(b.horaChegadaTotem || '23:59');
+                return hA - hB;
+            });
+
+            if (contador) contador.textContent = aguardando.length;
+
+            if (aguardando.length === 0) {
+                container.innerHTML = `<div class="col-span-full bg-slate-800/50 border border-slate-700 p-10 rounded-3xl text-center shadow-inner">
+                    <span class="text-4xl block mb-3 opacity-50">📑</span>
+                    <h3 class="text-lg font-bold text-slate-300">Pátio Limpo!</h3>
+                    <p class="text-xs text-slate-500 mt-1">Nenhum motorista aguardando liberação fiscal neste momento.</p>
+                </div>`;
+                return;
+            }
+
+            aguardando.forEach(item => {
+                let badgeSla = '';
+                if(item.statusSlaChegada === 'ANTECIPADO') badgeSla = '<span class="bg-blue-900/50 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-[10px] font-bold">ANTECIPADO</span>';
+                else if(item.statusSlaChegada === 'FORNECEDOR ATRASADO') badgeSla = '<span class="bg-red-900/50 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">ATRASADO</span>';
+                else badgeSla = '<span class="bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">NO HORÁRIO</span>';
+
+                const card = `
+                    <div class="bg-slate-800/80 border border-amber-500/50 p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[11px] font-black text-indigo-300 uppercase truncate pr-2 tracking-wider">🏢 ${item.fornecedor}</span>
+                                <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
+                            </div>
+                            <h3 class="text-sm font-black text-white mb-2">📍 ${item.doca}</h3>
+                            
+                            <div class="bg-slate-900/50 rounded-xl p-3 border border-slate-700 text-[11px] space-y-1.5 shadow-inner">
+                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">NF:</span> <span class="text-emerald-400 font-bold">${item.notaFiscal}</span></p>
+                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Placa:</span> <span class="text-yellow-400 font-mono font-bold">${item.placa}</span></p>
+                                <div class="border-t border-slate-700 pt-1.5 mt-1.5 flex justify-between items-center">
+                                    <span class="text-slate-500 font-bold uppercase">Chegada:</span> 
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-white font-bold">${item.horaChegadaTotem}</span>
+                                        ${badgeSla}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <button type="button" onclick="window.reprovarFiscal('${item.ordem}')" class="bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-500/30 font-bold text-[10px] py-3 rounded-xl uppercase transition cursor-pointer shadow">
+                                ❌ Problema NF
+                            </button>
+                            <button type="button" onclick="window.aprovarFiscal('${item.ordem}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] py-3 rounded-xl uppercase transition cursor-pointer shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 flex justify-center items-center gap-1">
+                                ✅ Liberar Doca
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        };
+
+        window.aprovarFiscal = function(ordem) {
+            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
+            if(idx > -1) {
+                const agora = new Date();
+                window.ymsStore.agendamentos[idx].status = 'AGUARDANDO DOCA';
+                window.ymsStore.agendamentos[idx].horaLiberacaoFiscal = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                window.salvarAgendamentosNaMemoria();
+                window.exibirToast("Fiscal Liberado!", "Caminhão enviado para a fila da doca.", "✅");
+                window.renderizarFiscal();
+            }
+        };
+
+        window.reprovarFiscal = function(ordem) {
+            if(!confirm("Atenção: Tem certeza que deseja bloquear este veículo por pendência fiscal? Ele não poderá ir para a doca!")) return;
+            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
+            if(idx > -1) {
+                window.ymsStore.agendamentos[idx].status = 'BLOQUEADO FISCAL';
+                window.salvarAgendamentosNaMemoria();
+                window.exibirToast("Veículo Bloqueado", "Pendência fiscal registrada.", "❌");
+                window.renderizarFiscal();
+            }
         };
 
         window.onload = function() {
