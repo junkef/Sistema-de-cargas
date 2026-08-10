@@ -640,10 +640,9 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO 8: TORRE DE CONTROLE (NOVO)                                        -->
+        <!-- MÓDULO 8: TORRE DE CONTROLE                                               -->
         <!-- ========================================================================= -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
-            
             <!-- HEADER DA TORRE -->
             <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
                 <div>
@@ -828,7 +827,8 @@
             perfilSolicitadoTemp: null,
             cargaEmProcessoTotem: null,
             fiscalCargaSelecionada: null,
-            fiscalRotaSelecionada: []
+            fiscalRotaSelecionada: [],
+            tipoCargaSelecionado: 'cotidiano' // DEFAULT TIPO DE CARGA
         };
 
         window.listaTodasDocas = [
@@ -1138,7 +1138,7 @@
         };
 
         // ==========================================
-        // PCP MÓDULO LOGIC
+        // PCP MÓDULO LOGIC E TAGS EXTRA/CRITICA
         // ==========================================
         window.obterListaNomesFornecedores = function() {
             const conjuntoUnico = new Set();
@@ -1166,9 +1166,35 @@
             window.popularSelectFornecedores(filtrados);
         };
 
+        // CONTROLE VISUAL E ESTADO DOS BOTÕES DE TIPO DE CARGA
+        window.selecionarTipoCarga = function(t) { 
+            window.ymsStore.tipoCargaSelecionado = t;
+            
+            // Reseta todos para inativo
+            document.getElementById('btnTipoCotidiano').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-emerald-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            document.getElementById('btnTipoExtra').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer";
+            document.getElementById('btnTipoCritica').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer";
+
+            const badge = document.getElementById('badgeTipoJanela');
+
+            if (t === 'cotidiano') {
+                document.getElementById('btnTipoCotidiano').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                badge.innerHTML = "🟢 Cotidiano";
+            } else if (t === 'extra') {
+                document.getElementById('btnTipoExtra').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-600 border-amber-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                badge.innerHTML = "🟡 Extra";
+            } else if (t === 'critica') {
+                document.getElementById('btnTipoCritica').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
+                badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                badge.innerHTML = "🔴 Crítica";
+            }
+        };
+
         window.criarJanelaManual = function(e) {
             if(e) e.preventDefault();
-            const fornecedor = document.getElementById('inpFornecedor')?.value;
+            let fornecedor = document.getElementById('inpFornecedor')?.value;
             const doca = document.getElementById('inpDoca')?.value;
             const dataRaw = document.getElementById('inpData')?.value; 
             const horaIni = document.getElementById('inpHora')?.value;
@@ -1179,7 +1205,15 @@
             const dataFormatada = window.normalizarDataPtBR(dataRaw);
             if (window.isDataPassada(dataFormatada)) return alert("⚠️ Bloqueio YMS: Não é permitido agendar janelas para datas do passado!");
 
-            const tipo = window.tipoCargaSelecionado || 'COTIDIANO';
+            const tipo = window.ymsStore.tipoCargaSelecionado || 'cotidiano';
+            
+            // APLICA O PREFIXO NO NOME DO FORNECEDOR
+            if (tipo === 'extra') {
+                fornecedor = `EXTRA - ${fornecedor}`;
+            } else if (tipo === 'critica') {
+                fornecedor = `CRÍTICA - ${fornecedor}`;
+            }
+
             const numOrdem = Math.floor(Math.random() * 90000) + 10000;
 
             let obj = {
@@ -1194,6 +1228,9 @@
             localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
 
             window.exibirToast("Rascunho Adicionado", "Janela pronta para subida.", "📝");
+            
+            // Reseta botão para cotidiano para a próxima carga
+            window.selecionarTipoCarga('cotidiano');
             window.renderizarGradePCP();
             window.atualizarHorariosDisponiveis();
         };
@@ -1363,11 +1400,16 @@
                 const motivoInfo = item.status === 'COM PROBLEMA' ? `<p class="text-[10px] text-red-400 mt-1 font-bold bg-red-950/50 p-1.5 rounded border border-red-500/30">⚠️ Motivo: ${item.motivoProblema}</p>` : '';
                 const baseBorder = item.status === 'COM PROBLEMA' ? 'border-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : (ehRascunho ? 'border-amber-500/50' : 'border-slate-700');
 
+                // Destaque visual se for Extra ou Critica
+                let bgForn = 'bg-indigo-500/20 text-indigo-300';
+                if(item.fornecedor.includes('EXTRA -')) bgForn = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'bg-red-500/20 text-red-300 border border-red-500/30';
+
                 const card = `
                     <div class="bg-slate-900 border ${baseBorder} p-4 rounded-2xl flex justify-between items-center shadow-md transition-all">
                         <div class="w-full">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
+                                <span class="${bgForn} text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
                                 ${badgeTag}
                                 <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
                             </div>
@@ -1545,12 +1587,17 @@
                 const statusColor = hasDados ? 'emerald' : 'amber';
                 const statusText = hasDados ? '✅ Dados Preenchidos' : '⚠️ Aguardando Dados';
 
+                // Destaque visual se for Extra ou Critica no Portal
+                let bgForn = 'text-indigo-300';
+                if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
+                if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
+
                 const card = `
                     <div class="bg-slate-800/80 border border-slate-700 hover:border-indigo-500/50 p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all group">
                         <div class="absolute top-0 left-0 w-1.5 h-full bg-${statusColor}-500"></div>
                         <div>
                             <div class="flex justify-between items-start mb-2">
-                                <span class="text-[11px] font-black text-indigo-300 uppercase truncate pr-2 tracking-wider" title="${item.fornecedor}">🏢 ${item.fornecedor}</span>
+                                <span class="text-[11px] font-black ${bgForn} uppercase truncate pr-2 tracking-wider" title="${item.fornecedor}">🏢 ${item.fornecedor}</span>
                                 <span class="bg-${statusColor}-500/20 text-${statusColor}-400 border border-${statusColor}-500/30 px-2 py-0.5 rounded-full text-[9px] font-black uppercase whitespace-nowrap">${statusText}</span>
                             </div>
                             <h3 class="text-sm font-black text-white mb-2">📍 ${item.doca}</h3>
@@ -1842,13 +1889,18 @@
                 const badgeProblema = isComProblema ? `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">⚠️ PENDÊNCIA NF</span>` : '';
                 const boxProblema = isComProblema ? `<div class="mt-2 bg-red-950/50 border border-red-500/30 p-2 rounded-lg text-[10px] text-red-300 break-words"><strong>MOTIVO:</strong> ${item.motivoProblema}</div>` : '';
 
+                // Destaque visual se for Extra ou Critica
+                let bgForn = 'text-indigo-300';
+                if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
+                if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
+
                 const card = `
                     <div onclick="window.selecionarCargaFiscal('${item.ordem}')" class="bg-slate-800/80 border ${borderClass} p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all cursor-pointer group">
                         <div class="absolute top-0 left-0 w-1.5 h-full ${leftBarClass}"></div>
                         <div>
                             <div class="flex justify-between items-start mb-2">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[11px] font-black text-indigo-300 uppercase truncate tracking-wider">🏢 ${item.fornecedor}</span>
+                                    <span class="text-[11px] font-black ${bgForn} uppercase truncate tracking-wider">🏢 ${item.fornecedor}</span>
                                     ${badgeProblema}
                                 </div>
                                 <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
@@ -2060,12 +2112,17 @@
 
                 const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
 
+                // Destaque visual se for Extra ou Critica
+                let bgForn = 'text-indigo-300';
+                if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
+                if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
+
                 const card = `
                     <div class="${bgClass} border ${borderClass} p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all group">
                         <div class="absolute top-0 left-0 w-1.5 h-full ${ribbonClass}"></div>
                         <div>
                             <div class="flex justify-between items-start mb-2">
-                                <span class="text-[11px] font-black text-indigo-300 uppercase truncate pr-2 tracking-wider">🏢 ${item.fornecedor}</span>
+                                <span class="text-[11px] font-black ${bgForn} uppercase truncate pr-2 tracking-wider">🏢 ${item.fornecedor}</span>
                                 ${badgeStatus}
                             </div>
                             <div class="bg-slate-950/50 rounded-xl p-3 border border-slate-700/50 text-[11px] space-y-1.5 shadow-inner mb-3">
@@ -2302,12 +2359,16 @@
             }
 
             fila.forEach(item => {
+                let bgForn = 'text-indigo-300';
+                if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
+                if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
+
                 const card = `
                     <div class="bg-slate-800/80 border border-emerald-500/50 hover:border-emerald-400 p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all group">
                         <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
                         <div>
                             <div class="flex justify-between items-start mb-2">
-                                <span class="text-[11px] font-black text-indigo-300 uppercase truncate pr-2 tracking-wider">🏢 ${item.fornecedor}</span>
+                                <span class="text-[11px] font-black ${bgForn} uppercase truncate pr-2 tracking-wider">🏢 ${item.fornecedor}</span>
                                 <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">🏁 LIBERADO</span>
                             </div>
                             <div class="bg-slate-950/50 rounded-xl p-3 border border-slate-700/50 text-[11px] space-y-1.5 shadow-inner mb-3">
@@ -2354,11 +2415,8 @@
         window.calcularTurno = function(horaStr) {
             if (!horaStr || horaStr === '--:--' || horaStr === '') return "-";
             const min = window.horaParaMinutos(horaStr);
-            // T04: 05:01 a 13:30 (301 a 810 minutos)
             if (min >= 301 && min <= 810) return "T04";
-            // T05: 13:31 a 21:59 (811 a 1319 minutos)
             if (min >= 811 && min <= 1319) return "T05";
-            // T06: 22:00 a 05:00 (Maior/igual a 1320 OU menor/igual a 300)
             return "T06";
         };
 
