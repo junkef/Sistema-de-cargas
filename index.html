@@ -1568,11 +1568,17 @@
                             <div class="bg-slate-900/50 rounded-xl p-3 border border-slate-700 text-[11px] space-y-1.5 shadow-inner">
                                 <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">NF:</span> <span class="text-emerald-400 font-bold">${item.notaFiscal}</span></p>
                                 <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Placa:</span> <span class="text-yellow-400 font-mono font-bold">${item.placa}</span></p>
-                                <div class="border-t border-slate-700 pt-1.5 mt-1.5 flex justify-between items-center">
-                                    <span class="text-slate-500 font-bold uppercase">Chegada:</span> 
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-white font-bold">${item.horaChegadaTotem}</span>
-                                        ${badgeSla}
+                                <div class="border-t border-slate-700 pt-1.5 mt-1.5 flex flex-col gap-1.5">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-500 font-bold uppercase">Chegada:</span> 
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-white font-bold">${item.horaChegadaTotem}</span>
+                                            ${badgeSla}
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-500 font-bold uppercase">Programado:</span> 
+                                        <span class="text-indigo-300 font-bold">${item.horaIni} às ${item.horaFim}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1754,7 +1760,8 @@
                             <div class="bg-slate-950/50 rounded-xl p-3 border border-slate-700/50 text-[11px] space-y-1.5 shadow-inner mb-3">
                                 <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Placa:</span> <span class="text-yellow-400 font-mono font-bold text-sm">${item.placa}</span></p>
                                 <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Ticket:</span> <span class="text-white font-mono">${item.ordem}</span></p>
-                                <p class="flex justify-between border-t border-slate-800 pt-1 mt-1"><span class="text-slate-500 font-bold uppercase">Liberação Fiscal:</span> <span class="text-emerald-400 font-bold">${item.horaLiberacaoFiscal || '--:--'}</span></p>
+                                <p class="flex justify-between border-t border-slate-800 pt-1 mt-1"><span class="text-slate-500 font-bold uppercase">Programado:</span> <span class="text-indigo-300 font-bold">${item.horaIni} às ${item.horaFim}</span></p>
+                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Liberação Fiscal:</span> <span class="text-emerald-400 font-bold">${item.horaLiberacaoFiscal || '--:--'}</span></p>
                             </div>
                             <div class="text-[10px] text-slate-400 bg-slate-900 p-2 rounded-lg border border-slate-800">
                                 <strong class="block mb-1 text-slate-500">ROTA SEQUENCIAL:</strong>
