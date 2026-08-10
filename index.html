@@ -503,8 +503,8 @@
                     </div>
 
                     <div class="grid grid-cols-12 gap-3">
-                        <button type="button" id="btnFiscalReprovar" disabled onclick="window.reprovarFiscal()" class="col-span-4 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-not-allowed opacity-50 flex items-center justify-center gap-1.5">
-                            ❌ Problema NF
+                        <button type="button" id="btnFiscalReprovar" disabled onclick="window.relatarProblemaFiscal()" class="col-span-4 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-not-allowed opacity-50 flex items-center justify-center gap-1.5">
+                            ⚠️ Relatar Problema
                         </button>
                         <button type="button" id="btnFiscalAprovar" disabled onclick="window.aprovarFiscal()" class="col-span-8 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 cursor-not-allowed opacity-50 flex items-center justify-center gap-2">
                             ✅ Liberar Rota e Doca
@@ -1139,22 +1139,29 @@
 
             todasJanelasExibicao.forEach(item => {
                 const ehRascunho = item.isRascunho || (window.ymsStore.rascunhoAgendamentos || []).some(r => r.ordem === item.ordem);
+                
                 let badgeTag = ehRascunho 
                     ? `<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-500/50 px-2 py-0.5 rounded">📝 RASCUNHO</span>`
-                    : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status || 'AGENDADO'}</span>`;
+                    : (item.status === 'COM PROBLEMA' 
+                        ? `<span class="text-[10px] font-mono font-bold text-red-400 bg-red-950/80 border border-red-500/50 px-2 py-0.5 rounded animate-pulse">⚠️ PENDÊNCIA NF</span>`
+                        : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status || 'AGENDADO'}</span>`);
+
+                const motivoInfo = item.status === 'COM PROBLEMA' ? `<p class="text-[10px] text-red-400 mt-1 font-bold bg-red-950/50 p-1.5 rounded border border-red-500/30">⚠️ Motivo: ${item.motivoProblema}</p>` : '';
+                const baseBorder = item.status === 'COM PROBLEMA' ? 'border-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : (ehRascunho ? 'border-amber-500/50' : 'border-slate-700');
 
                 const card = `
-                    <div class="bg-slate-900 border ${ehRascunho ? 'border-amber-500/50' : 'border-slate-700'} p-4 rounded-2xl flex justify-between items-center shadow-md">
-                        <div>
+                    <div class="bg-slate-900 border ${baseBorder} p-4 rounded-2xl flex justify-between items-center shadow-md transition-all">
+                        <div class="w-full">
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full">🏢 ${item.fornecedor}</span>
                                 ${badgeTag}
                                 <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
                             </div>
                             <p class="text-sm font-black text-white">📍 ${item.doca}</p>
+                            ${motivoInfo}
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="text-right">
+                            <div class="text-right whitespace-nowrap">
                                 <span class="text-xs font-bold text-yellow-400 block mb-1">📅 ${item.data}</span>
                                 <span class="bg-emerald-500/10 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30">🕒 ${item.horaIni} às ${item.horaFim}</span>
                             </div>
@@ -1529,7 +1536,8 @@
             if (!container) return;
             container.innerHTML = '';
 
-            let aguardando = (window.ymsStore.agendamentos || []).filter(a => a.status === 'AGUARDANDO FISCAL');
+            // Agora inclui os que estão AGUARDANDO FISCAL e também os COM PROBLEMA
+            let aguardando = (window.ymsStore.agendamentos || []).filter(a => a.status === 'AGUARDANDO FISCAL' || a.status === 'COM PROBLEMA');
 
             if (busca) {
                 aguardando = aguardando.filter(a => 
@@ -1563,14 +1571,27 @@
                 else badgeSla = '<span class="bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">NO HORÁRIO</span>';
 
                 const isSelected = window.ymsStore.fiscalCargaSelecionada && window.ymsStore.fiscalCargaSelecionada.ordem === item.ordem;
-                const borderClass = isSelected ? 'border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'border-amber-500/50 hover:border-indigo-500/50';
+                const isComProblema = item.status === 'COM PROBLEMA';
+                
+                // Muda a cor da borda se tiver problema relatado
+                let borderClass = 'border-amber-500/50 hover:border-indigo-500/50';
+                if (isSelected) borderClass = 'border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]';
+                else if (isComProblema) borderClass = 'border-red-500/80 hover:border-indigo-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]';
+
+                const leftBarClass = isSelected ? 'bg-indigo-500' : (isComProblema ? 'bg-red-500' : 'bg-amber-500');
+                
+                const badgeProblema = isComProblema ? `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">⚠️ PENDÊNCIA NF</span>` : '';
+                const boxProblema = isComProblema ? `<div class="mt-2 bg-red-950/50 border border-red-500/30 p-2 rounded-lg text-[10px] text-red-300 break-words"><strong>MOTIVO:</strong> ${item.motivoProblema}</div>` : '';
 
                 const card = `
                     <div onclick="window.selecionarCargaFiscal('${item.ordem}')" class="bg-slate-800/80 border ${borderClass} p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all cursor-pointer group">
-                        <div class="absolute top-0 left-0 w-1.5 h-full ${isSelected ? 'bg-indigo-500' : 'bg-amber-500'}"></div>
+                        <div class="absolute top-0 left-0 w-1.5 h-full ${leftBarClass}"></div>
                         <div>
                             <div class="flex justify-between items-start mb-2">
-                                <span class="text-[11px] font-black text-indigo-300 uppercase truncate pr-2 tracking-wider">🏢 ${item.fornecedor}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[11px] font-black text-indigo-300 uppercase truncate tracking-wider">🏢 ${item.fornecedor}</span>
+                                    ${badgeProblema}
+                                </div>
                                 <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
                             </div>
                             <h3 class="text-sm font-black text-white mb-2">📍 ${item.doca}</h3>
@@ -1592,6 +1613,7 @@
                                     </div>
                                 </div>
                             </div>
+                            ${boxProblema}
                         </div>
                     </div>
                 `;
@@ -1661,12 +1683,16 @@
                 window.ymsStore.agendamentos[idx].status = 'AGUARDANDO DOCA';
                 window.ymsStore.agendamentos[idx].horaLiberacaoFiscal = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
                 
-                // Grava a "Máquina de Estados" da Rota Sequencial
                 window.ymsStore.agendamentos[idx].rotaArray = rotaArray;
                 window.ymsStore.agendamentos[idx].etapaRotaAtual = 0;
                 window.ymsStore.agendamentos[idx].docaAtual = rotaArray[0];
-                window.ymsStore.agendamentos[idx].rotaFiscal = rotaArray.join(' ➔ '); // Apenas para mostrar como texto
+                window.ymsStore.agendamentos[idx].rotaFiscal = rotaArray.join(' ➔ ');
                 
+                // Se estava com problema e foi resolvido, limpa a pendência
+                if(window.ymsStore.agendamentos[idx].motivoProblema) {
+                    window.ymsStore.agendamentos[idx].motivoProblema = "";
+                }
+
                 window.salvarAgendamentosNaMemoria();
                 window.exibirToast("Fiscal Liberado!", "Rota confirmada. Caminhão enviado para o pátio.", "✅");
                 
@@ -1687,17 +1713,20 @@
             }
         };
 
-        window.reprovarFiscal = function() {
+        // NOVA FUNÇÃO: RELATAR PROBLEMA FISCAL (Mantendo no Painel Fiscal)
+        window.relatarProblemaFiscal = function() {
             const carga = window.ymsStore.fiscalCargaSelecionada;
             if(!carga) return;
 
-            if(!confirm(`Atenção: Tem certeza que deseja BLOQUEAR o veículo de placa ${carga.placa} por pendência na Nota Fiscal?`)) return;
+            const motivo = prompt(`Descreva o problema encontrado na documentação/NF do veículo placa ${carga.placa}:`);
+            if(motivo === null || motivo.trim() === '') return; // Abortou se cancelou ou deixou vazio
             
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === carga.ordem);
             if(idx > -1) {
-                window.ymsStore.agendamentos[idx].status = 'BLOQUEADO FISCAL';
+                window.ymsStore.agendamentos[idx].status = 'COM PROBLEMA';
+                window.ymsStore.agendamentos[idx].motivoProblema = motivo.trim();
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Veículo Bloqueado", "Aguardando resolução de pendência.", "❌");
+                window.exibirToast("Problema Relatado", "Veículo sinalizado com pendência.", "⚠️");
                 
                 window.ymsStore.fiscalCargaSelecionada = null;
                 document.getElementById('fiscalInfoMotorista').textContent = '-';
@@ -1729,7 +1758,6 @@
 
             let fila = (window.ymsStore.agendamentos || []).filter(a => {
                 const statusValido = a.status === 'AGUARDANDO DOCA' || a.status === 'EM OPERACAO';
-                // Mostra a carga SOMENTE para a doca em que ele está atualmente na etapa
                 const docaValida = (a.docaAtual && a.docaAtual === docaSelecionada) || (!a.docaAtual && a.doca === docaSelecionada);
                 return statusValido && docaValida;
             });
@@ -1765,7 +1793,6 @@
                     ? `<button type="button" onclick="window.finalizarOperacaoDoca('${item.ordem}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1">✅ Finalizar Operação</button>`
                     : `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Iniciar Operação</button>`;
 
-                // Avisa ao operador qual etapa o caminhão está fazendo agora
                 const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
 
                 const card = `
@@ -1812,7 +1839,6 @@
                 const agora = new Date();
                 window.ymsStore.agendamentos[idx].status = 'EM OPERACAO';
                 
-                // Só grava a hora de início na PRIMEIRA etapa da rota (Para não perder o SLA original)
                 if(!window.ymsStore.agendamentos[idx].horaInicioOperacao || window.ymsStore.agendamentos[idx].etapaRotaAtual === 0) {
                     window.ymsStore.agendamentos[idx].horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
                 }
@@ -1830,16 +1856,14 @@
                 let proximaEtapa = (carga.etapaRotaAtual !== undefined ? carga.etapaRotaAtual : 0) + 1;
                 
                 if (carga.rotaArray && proximaEtapa < carga.rotaArray.length) {
-                    // SE TEM MAIS UMA DOCA NA SEQUÊNCIA
                     if(!confirm(`Esta carga ainda tem outras paradas. Enviar caminhão para a próxima doca: ${carga.rotaArray[proximaEtapa]}?`)) return;
                     
                     window.ymsStore.agendamentos[idx].etapaRotaAtual = proximaEtapa;
                     window.ymsStore.agendamentos[idx].docaAtual = carga.rotaArray[proximaEtapa];
-                    window.ymsStore.agendamentos[idx].status = 'AGUARDANDO DOCA'; // Ele volta pro status "Aguardando" só que agora ele aparece na outra doca!
+                    window.ymsStore.agendamentos[idx].status = 'AGUARDANDO DOCA'; 
                     
                     window.exibirToast("Etapa Concluída!", `Veículo enviado para a doca: ${carga.rotaArray[proximaEtapa]}`, "🔄");
                 } else {
-                    // SE ACABOU A ROTA (OU ERA ROTA ÚNICA)
                     if(!confirm("Finalizar operação e liberar veículo para a Saída/Check-out?")) return;
                     const agora = new Date();
                     window.ymsStore.agendamentos[idx].status = 'AGUARDANDO CHECKOUT';
