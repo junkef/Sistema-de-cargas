@@ -557,6 +557,7 @@
         <!-- MÓDULO 6: CADASTRO DE MOTORISTAS (BLOCKLIST)                              -->
         <!-- ========================================================================= -->
         <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden grid grid-cols-12 gap-6">
+            <!-- FORMULARIO -->
             <div class="col-span-12 lg:col-span-4 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4 h-fit">
                 <div class="border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-black text-white flex items-center gap-2">🪪 Gestão de Motoristas</h2>
@@ -591,6 +592,7 @@
                 </div>
             </div>
 
+            <!-- LISTA DE MOTORISTAS -->
             <div class="col-span-12 lg:col-span-8 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-black text-white flex items-center gap-2">📋 Base de Motoristas</h2>
@@ -604,6 +606,7 @@
                 </div>
                 
                 <div id="listaMotoristasGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
+                    <!-- Cards -->
                 </div>
             </div>
         </section>
@@ -632,13 +635,15 @@
             </div>
 
             <div id="listaCheckout" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
+                <!-- Cards Injetados via JS -->
             </div>
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO 8: TORRE DE CONTROLE (KPIs e Exportação)                           -->
+        <!-- MÓDULO 8: TORRE DE CONTROLE (NOVO)                                        -->
         <!-- ========================================================================= -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
+            
             <!-- HEADER DA TORRE -->
             <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
                 <div>
@@ -2405,15 +2410,12 @@
                 if (parts.length !== 3) return false;
                 const dateIsoFormat = `${parts[2]}-${parts[1]}-${parts[0]}`; 
                 
-                // Filtro de Data
                 let passaData = false;
                 if (tipoFiltro === 'dia') passaData = (dateIsoFormat === filtroData);
                 else passaData = dateIsoFormat.startsWith(filtroMes);
                 
-                // Filtro de Doca
                 let passaDoca = true;
                 if (docaSelecionada !== 'TODAS') {
-                    // Verifica se a doca original era a selecionada OU se a rota passou por ela
                     passaDoca = (a.doca === docaSelecionada) || (a.rotaFiscal && a.rotaFiscal.includes(docaSelecionada));
                 }
 
@@ -2509,7 +2511,7 @@
             }
 
             // ==========================================
-            // CHART.JS CONFIGURAÇÃO
+            // CHART.JS CONFIGURAÇÃO (Com Atualização Suave)
             // ==========================================
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = 'Inter, sans-serif';
@@ -2530,34 +2532,44 @@
             ];
 
             // Gráfico 1: Volume
-            if(window.chartVol) window.chartVol.destroy();
             const ctxVol = document.getElementById('chartVolumeTurno').getContext('2d');
-            window.chartVol = new Chart(ctxVol, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Total Agendado', data: volTotal, backgroundColor: '#3b82f6', borderRadius: 4 },
-                        { label: 'Concluídos', data: volConc, backgroundColor: '#10b981', borderRadius: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
+            if(window.chartVol) {
+                window.chartVol.data.datasets[0].data = volTotal;
+                window.chartVol.data.datasets[1].data = volConc;
+                window.chartVol.update();
+            } else {
+                window.chartVol = new Chart(ctxVol, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Total Agendado', data: volTotal, backgroundColor: '#3b82f6', borderRadius: 4 },
+                            { label: 'Concluídos', data: volConc, backgroundColor: '#10b981', borderRadius: 4 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
 
             // Gráfico 2: Tempo
-            if(window.chartTemp) window.chartTemp.destroy();
             const ctxTemp = document.getElementById('chartTempoTurno').getContext('2d');
-            window.chartTemp = new Chart(ctxTemp, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Programado (h)', data: tProg, backgroundColor: '#60a5fa', borderRadius: 4 },
-                        { label: 'Realizado (h)', data: tReal, backgroundColor: '#fbbf24', borderRadius: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
+            if(window.chartTemp) {
+                window.chartTemp.data.datasets[0].data = tProg;
+                window.chartTemp.data.datasets[1].data = tReal;
+                window.chartTemp.update();
+            } else {
+                window.chartTemp = new Chart(ctxTemp, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Programado (h)', data: tProg, backgroundColor: '#60a5fa', borderRadius: 4 },
+                            { label: 'Realizado (h)', data: tReal, backgroundColor: '#fbbf24', borderRadius: 4 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
         };
 
         window.exportarTorreExcel = function() {
