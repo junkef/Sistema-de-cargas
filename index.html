@@ -890,7 +890,6 @@
             db.ref('yms_agendamentos_oficiais').set(window.ymsStore.agendamentos);
         };
 
-        // Força a atualização do motorista na base central. Se já existir com 'BLOQUEADO', não sobreescreve pra 'LIBERADO' por acidente
         window.salvarMotoristaNaMemoria = function(cpf, nome, celular, statusForcado = null) {
             let lista = [...window.ymsStore.motoristas];
             const idx = lista.findIndex(m => m.cpf === cpf);
@@ -1501,7 +1500,6 @@
 
             if(!nf || !placa || !cpf || !celular || !nomeMotorista) return alert("Por favor, preencha todos os campos obrigatórios, incluindo o nome do motorista.");
 
-            // BARREIRA 1: BLOQUEIO NO PORTAL DO FORNECEDOR
             const motBlocked = window.ymsStore.motoristas.find(m => m.cpf === cpf && m.status === 'BLOQUEADO');
             if (motBlocked) {
                  return alert("⚠️ ATENÇÃO: Este motorista encontra-se com RESTRIÇÃO/BLOQUEIO no sistema YMS. Você não pode vinculá-lo a esta carga. Por favor, contate a administração ou cadastre outro motorista.");
@@ -1515,7 +1513,7 @@
                 window.ymsStore.agendamentos[idx].nomeMotorista = nomeMotorista;
                 window.ymsStore.agendamentos[idx].celular = celular;
                 
-                window.salvarMotoristaNaMemoria(cpf, nomeMotorista, celular); // Se já existir não mexe no status, se for novo salva como LIBERADO
+                window.salvarMotoristaNaMemoria(cpf, nomeMotorista, celular); 
                 
                 window.salvarAgendamentosNaMemoria();
                 window.fecharModalTransporte();
@@ -1572,7 +1570,6 @@
             const cpfDigitado = window.normalizarTexto(document.getElementById('inpTotemCpf').value);
             if(!cpfDigitado || cpfDigitado.length < 11) return alert("Por favor, digite o CPF completo (11 números)!");
 
-            // BARREIRA 2: BLOQUEIO NO TOTEM (Mesmo que ele tenha burlado a etapa 1)
             const motBlocked = window.ymsStore.motoristas.find(m => window.normalizarTexto(m.cpf) === cpfDigitado && m.status === 'BLOQUEADO');
             if (motBlocked) {
                  window.tecladoTotemRaw = "";
