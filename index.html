@@ -883,6 +883,13 @@
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
         ];
 
+        window.obterPesoPrioridade = function(forn) {
+            if (!forn) return 1;
+            if (forn.includes('CRÍTICA -')) return 3;
+            if (forn.includes('EXTRA -')) return 2;
+            return 1;
+        };
+
         window.normalizarHoraExcel = function(horaVal) {
             if (horaVal === undefined || horaVal === null || horaVal === '') return "08:00";
             if (typeof horaVal === 'number') {
@@ -1838,6 +1845,16 @@
         };
 
         // ==========================================
+        // FILA MATEMÁTICA DE PRIORIDADE (CRITICA > EXTRA > NORMAL)
+        // ==========================================
+        window.obterPesoPrioridade = function(forn) {
+            if (!forn) return 1;
+            if (forn.includes('CRÍTICA -')) return 3;
+            if (forn.includes('EXTRA -')) return 2;
+            return 1;
+        };
+
+        // ==========================================
         // RECEBIMENTO FISCAL LOGIC E ROTEIRIZADOR
         // ==========================================
         window.renderizarFiscal = function() {
@@ -1859,6 +1876,12 @@
             }
 
             aguardando.sort((a, b) => {
+                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
+                const pA = window.obterPesoPrioridade(a.fornecedor);
+                const pB = window.obterPesoPrioridade(b.fornecedor);
+                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
+
+                // DESEMPATE POR FIFO (Hora de Chegada)
                 const hA = window.horaParaMinutos(a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -2084,6 +2107,12 @@
             });
 
             fila.sort((a, b) => {
+                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
+                const pA = window.obterPesoPrioridade(a.fornecedor);
+                const pB = window.obterPesoPrioridade(b.fornecedor);
+                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
+
+                // DESEMPATE POR FIFO
                 const hA = window.horaParaMinutos(a.horaLiberacaoFiscal || a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaLiberacaoFiscal || b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -2346,6 +2375,12 @@
             }
 
             fila.sort((a, b) => {
+                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
+                const pA = window.obterPesoPrioridade(a.fornecedor);
+                const pB = window.obterPesoPrioridade(b.fornecedor);
+                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
+
+                // DESEMPATE POR FIFO
                 const hA = window.horaParaMinutos(a.horaFimOperacao || '23:59');
                 const hB = window.horaParaMinutos(b.horaFimOperacao || '23:59');
                 return hA - hB;
