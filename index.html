@@ -1705,12 +1705,10 @@
 
             let fila = (window.ymsStore.agendamentos || []).filter(a => {
                 const statusValido = a.status === 'AGUARDANDO DOCA' || a.status === 'EM OPERACAO';
-                // Mostra a carga se a doca selecionada estiver na rota gerada pelo fiscal, ou se for a doca principal original
                 const docaValida = (a.rotaFiscal && a.rotaFiscal.includes(docaSelecionada)) || (a.doca === docaSelecionada);
                 return statusValido && docaValida;
             });
 
-            // FIFO: Organiza quem foi liberado primeiro pelo fiscal
             fila.sort((a, b) => {
                 const hA = window.horaParaMinutos(a.horaLiberacaoFiscal || a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaLiberacaoFiscal || b.horaChegadaTotem || '23:59');
@@ -1793,16 +1791,19 @@
             }
         };
 
-        // INICIALIZAÇÃO
         window.onload = function() {
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
             
             const dt = document.getElementById('inpData');
-            if(dt) dt.value = window.obterDataHojeISO();
+            if(dt) {
+                dt.value = window.obterDataHojeISO();
+            }
 
             const dtFiltro = document.getElementById('filtroDataFornecedor');
-            if(dtFiltro) dtFiltro.value = ''; 
+            if(dtFiltro) {
+                dtFiltro.value = ''; 
+            }
 
             const sel = document.getElementById('inpDoca');
             const selOp = document.getElementById('filtroDocaOperador');
