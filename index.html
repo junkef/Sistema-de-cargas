@@ -450,6 +450,7 @@
                 <div class="flex items-center gap-4 flex-wrap">
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
                         <span class="text-xs px-2">🔍</span>
+                        <!-- Campo focado para o leitor de código de barras bipar e já filtrar -->
                         <input type="text" id="inpBuscaFiscal" placeholder="Ler Ticket / Digitar Placa..." oninput="window.renderizarFiscal()" class="bg-transparent text-sm text-white font-bold outline-none w-64">
                     </div>
 
@@ -824,6 +825,7 @@
             if(p === 'totem') {
                 window.tecladoTotemRaw = "";
                 document.getElementById('inpTotemCpf').value = "";
+                setTimeout(() => document.getElementById('inpTotemCpf').focus(), 100);
             }
 
             if (window.ymsStore.usuarioLogado) {
@@ -892,6 +894,9 @@
             window.atualizarHorariosDisponiveis();
         };
 
+        // ==========================================
+        // LEITURA INTELIGENTE DE PLANILHA
+        // ==========================================
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1361,7 +1366,7 @@
             );
 
             if (!cargaEncontrada) {
-                return alert("Nenhum agendamento ativo encontrado para este CPF na data de hoje. Verifique com seu despachante se os dados de transporte foram enviados.");
+                return alert("Nenhum agendamento ativo encontrado para este CPF na data de hoje. Verifique se os dados de transporte foram enviados no Portal do Fornecedor.");
             }
 
             window.ymsStore.cargaEmProcessoTotem = cargaEncontrada;
@@ -1447,7 +1452,6 @@
                 );
             }
 
-            // Ordena FIFO (Chegou primeiro, atende primeiro)
             aguardando.sort((a, b) => {
                 const hA = window.horaParaMinutos(a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaChegadaTotem || '23:59');
