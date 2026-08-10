@@ -553,14 +553,14 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO 6: CADASTRO DE MOTORISTAS                                          -->
+        <!-- MÓDULO 6: CADASTRO DE MOTORISTAS (BLOCKLIST)                              -->
         <!-- ========================================================================= -->
         <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden grid grid-cols-12 gap-6">
             <!-- FORMULARIO -->
             <div class="col-span-12 lg:col-span-4 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4 h-fit">
                 <div class="border-b border-slate-700 pb-3">
-                    <h2 class="text-lg font-black text-white flex items-center gap-2">🪪 Novo Motorista</h2>
-                    <p class="text-xs text-slate-400">Cadastre ou edite um motorista na base.</p>
+                    <h2 class="text-lg font-black text-white flex items-center gap-2">🪪 Gestão de Motoristas</h2>
+                    <p class="text-xs text-slate-400">Cadastre, edite ou bloqueie motoristas.</p>
                 </div>
                 <div class="space-y-4">
                     <div>
@@ -575,6 +575,13 @@
                         <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Celular *</label>
                         <input type="text" id="inpCadMotoristaCelular" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner" placeholder="(00) 00000-0000">
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Status do Motorista *</label>
+                        <select id="inpCadMotoristaStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner cursor-pointer">
+                            <option value="LIBERADO">✅ Liberado para Operar</option>
+                            <option value="BLOQUEADO">🚫 Bloqueado (Restrição)</option>
+                        </select>
+                    </div>
                     <button type="button" onclick="window.salvarCadastroMotorista()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-4 rounded-xl uppercase shadow-lg transition border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
                         💾 Salvar Motorista
                     </button>
@@ -584,7 +591,7 @@
                 </div>
             </div>
 
-            <!-- LISTA -->
+            <!-- LISTA DE MOTORISTAS -->
             <div class="col-span-12 lg:col-span-8 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-black text-white flex items-center gap-2">📋 Base de Motoristas</h2>
@@ -883,13 +890,16 @@
             db.ref('yms_agendamentos_oficiais').set(window.ymsStore.agendamentos);
         };
 
-        window.salvarMotoristaNaMemoria = function(cpf, nome, celular) {
+        // Força a atualização do motorista na base central. Se já existir com 'BLOQUEADO', não sobreescreve pra 'LIBERADO' por acidente
+        window.salvarMotoristaNaMemoria = function(cpf, nome, celular, statusForcado = null) {
             let lista = [...window.ymsStore.motoristas];
             const idx = lista.findIndex(m => m.cpf === cpf);
             if(idx > -1) {
-                lista[idx] = { cpf, nome, celular };
+                lista[idx].nome = nome;
+                lista[idx].celular = celular;
+                if (statusForcado) lista[idx].status = statusForcado;
             } else {
-                lista.push({ cpf, nome, celular });
+                lista.push({ cpf, nome, celular, status: statusForcado || 'LIBERADO' });
             }
             db.ref('yms_motoristas').set(lista);
         };
@@ -1491,6 +1501,12 @@
 
             if(!nf || !placa || !cpf || !celular || !nomeMotorista) return alert("Por favor, preencha todos os campos obrigatórios, incluindo o nome do motorista.");
 
+            // BARREIRA 1: BLOQUEIO NO PORTAL DO FORNECEDOR
+            const motBlocked = window.ymsStore.motoristas.find(m => m.cpf === cpf && m.status === 'BLOQUEADO');
+            if (motBlocked) {
+                 return alert("⚠️ ATENÇÃO: Este motorista encontra-se com RESTRIÇÃO/BLOQUEIO no sistema YMS. Você não pode vinculá-lo a esta carga. Por favor, contate a administração ou cadastre outro motorista.");
+            }
+
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
                 window.ymsStore.agendamentos[idx].notaFiscal = nf;
@@ -1499,7 +1515,7 @@
                 window.ymsStore.agendamentos[idx].nomeMotorista = nomeMotorista;
                 window.ymsStore.agendamentos[idx].celular = celular;
                 
-                window.salvarMotoristaNaMemoria(cpf, nomeMotorista, celular);
+                window.salvarMotoristaNaMemoria(cpf, nomeMotorista, celular); // Se já existir não mexe no status, se for novo salva como LIBERADO
                 
                 window.salvarAgendamentosNaMemoria();
                 window.fecharModalTransporte();
@@ -1555,6 +1571,14 @@
         window.buscarCargaTotem = function() {
             const cpfDigitado = window.normalizarTexto(document.getElementById('inpTotemCpf').value);
             if(!cpfDigitado || cpfDigitado.length < 11) return alert("Por favor, digite o CPF completo (11 números)!");
+
+            // BARREIRA 2: BLOQUEIO NO TOTEM (Mesmo que ele tenha burlado a etapa 1)
+            const motBlocked = window.ymsStore.motoristas.find(m => window.normalizarTexto(m.cpf) === cpfDigitado && m.status === 'BLOQUEADO');
+            if (motBlocked) {
+                 window.tecladoTotemRaw = "";
+                 document.getElementById('inpTotemCpf').value = "";
+                 return alert("⚠️ ACESSO NEGADO: Identificamos uma restrição para o seu CPF. Por favor, dirija-se à portaria para regularização.");
+            }
 
             const hoje = window.obterDataHojePtBR();
             
@@ -2018,8 +2042,18 @@
             }
 
             filtrados.forEach(m => {
+                const isBlocked = m.status === 'BLOQUEADO';
+                const borderClass = isBlocked ? 'border-red-500/50' : 'border-slate-700';
+                const bgStatus = isBlocked 
+                    ? '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">🚫 BLOQUEADO</span>' 
+                    : '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">✅ LIBERADO</span>';
+                
+                const toggleBtn = isBlocked 
+                    ? `<button type="button" onclick="window.alternarStatusMotorista('${m.cpf}', 'LIBERADO')" class="flex-1 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 font-bold py-2 rounded-lg text-xs transition border border-emerald-500/30 hover:border-emerald-500">✅ Liberar Acesso</button>`
+                    : `<button type="button" onclick="window.alternarStatusMotorista('${m.cpf}', 'BLOQUEADO')" class="flex-1 bg-red-950/80 hover:bg-red-900 text-red-400 font-bold py-2 rounded-lg text-xs transition border border-red-500/30 hover:border-red-500">🚫 Bloquear</button>`;
+
                 const card = `
-                    <div class="bg-slate-900 border border-slate-700 hover:border-indigo-500/50 p-4 rounded-xl flex flex-col justify-between shadow-md transition group">
+                    <div class="bg-slate-900 border ${borderClass} hover:shadow-lg p-4 rounded-xl flex flex-col justify-between transition group">
                         <div class="flex items-center gap-3 mb-3">
                             <div class="w-10 h-10 rounded-full bg-indigo-900/50 text-indigo-400 flex items-center justify-center font-black border border-indigo-500/30 text-lg">
                                 🪪
@@ -2028,14 +2062,18 @@
                                 <h4 class="text-sm font-black text-white truncate" title="${m.nome}">${m.nome}</h4>
                                 <p class="text-xs font-mono text-slate-400">${m.cpf}</p>
                             </div>
+                            <div>
+                                ${bgStatus}
+                            </div>
                         </div>
-                        <div class="bg-slate-950 rounded-lg p-2 border border-slate-800 flex justify-between items-center text-xs mb-3">
+                        <div class="bg-slate-950 rounded-lg p-2 border border-slate-800 flex justify-between items-center text-xs mb-3 shadow-inner">
                             <span class="text-slate-500 font-bold uppercase">Cel:</span>
-                            <span class="text-slate-300">${m.celular || '-'}</span>
+                            <span class="text-slate-300 font-bold">${m.celular || '-'}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button type="button" onclick="window.editarMotorista('${m.cpf}')" class="flex-1 bg-slate-800 hover:bg-indigo-600 text-white font-bold py-2 rounded-lg text-xs transition border border-slate-700 hover:border-indigo-500">✏️ Editar</button>
-                            <button type="button" onclick="window.excluirMotorista('${m.cpf}')" class="bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-3 py-2 rounded-lg text-xs transition border border-slate-700 hover:border-red-500">🗑️</button>
+                            ${toggleBtn}
+                            <button type="button" onclick="window.editarMotorista('${m.cpf}')" class="bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white font-bold px-3 py-2 rounded-lg text-xs transition border border-slate-700 hover:border-indigo-500" title="Editar">✏️</button>
+                            <button type="button" onclick="window.excluirMotorista('${m.cpf}')" class="bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-3 py-2 rounded-lg text-xs transition border border-slate-700 hover:border-red-500" title="Excluir">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -2047,6 +2085,7 @@
             let cpf = document.getElementById('inpCadMotoristaCpf').value.trim();
             const nome = document.getElementById('inpCadMotoristaNome').value.trim().toUpperCase();
             const celular = document.getElementById('inpCadMotoristaCelular').value.trim();
+            const status = document.getElementById('inpCadMotoristaStatus').value;
 
             if(!cpf || !nome) return alert("CPF e Nome são campos obrigatórios!");
             
@@ -2054,7 +2093,7 @@
             if(cpf.length !== 11) return alert("CPF inválido! Preencha os 11 números.");
             cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 
-            window.salvarMotoristaNaMemoria(cpf, nome, celular);
+            window.salvarMotoristaNaMemoria(cpf, nome, celular, status);
             window.exibirToast("Sucesso", "Motorista salvo na base de dados.", "✅");
             window.limparFormMotorista();
         };
@@ -2065,6 +2104,17 @@
                 document.getElementById('inpCadMotoristaCpf').value = mot.cpf;
                 document.getElementById('inpCadMotoristaNome').value = mot.nome;
                 document.getElementById('inpCadMotoristaCelular').value = mot.celular || '';
+                document.getElementById('inpCadMotoristaStatus').value = mot.status || 'LIBERADO';
+            }
+        };
+
+        window.alternarStatusMotorista = function(cpf, novoStatus) {
+            let lista = [...window.ymsStore.motoristas];
+            const idx = lista.findIndex(m => m.cpf === cpf);
+            if(idx > -1) {
+                lista[idx].status = novoStatus;
+                db.ref('yms_motoristas').set(lista);
+                window.exibirToast("Status Atualizado", `Motorista agora está ${novoStatus}.`, "🔄");
             }
         };
 
@@ -2080,6 +2130,7 @@
             document.getElementById('inpCadMotoristaCpf').value = '';
             document.getElementById('inpCadMotoristaNome').value = '';
             document.getElementById('inpCadMotoristaCelular').value = '';
+            document.getElementById('inpCadMotoristaStatus').value = 'LIBERADO';
         };
 
         window.onload = function() {
