@@ -557,7 +557,6 @@
         <!-- MÓDULO 6: CADASTRO DE MOTORISTAS (BLOCKLIST)                              -->
         <!-- ========================================================================= -->
         <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden grid grid-cols-12 gap-6">
-            <!-- FORMULARIO -->
             <div class="col-span-12 lg:col-span-4 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4 h-fit">
                 <div class="border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-black text-white flex items-center gap-2">🪪 Gestão de Motoristas</h2>
@@ -592,7 +591,6 @@
                 </div>
             </div>
 
-            <!-- LISTA DE MOTORISTAS -->
             <div class="col-span-12 lg:col-span-8 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-black text-white flex items-center gap-2">📋 Base de Motoristas</h2>
@@ -606,7 +604,6 @@
                 </div>
                 
                 <div id="listaMotoristasGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
-                    <!-- Cards -->
                 </div>
             </div>
         </section>
@@ -635,12 +632,11 @@
             </div>
 
             <div id="listaCheckout" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
-                <!-- Cards Injetados via JS -->
             </div>
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO 8: TORRE DE CONTROLE                                               -->
+        <!-- MÓDULO 8: TORRE DE CONTROLE (KPIs e Exportação)                           -->
         <!-- ========================================================================= -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
             <!-- HEADER DA TORRE -->
@@ -652,6 +648,11 @@
                 
                 <div class="flex items-center gap-4 flex-wrap">
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
+                        <select id="filtroTorreDoca" onchange="window.renderizarTorre()" class="bg-transparent text-xs text-white font-bold outline-none cursor-pointer px-2">
+                            <option value="TODAS">Todas as Docas</option>
+                            <!-- Injetado via JS -->
+                        </select>
+                        <div class="w-px h-6 bg-slate-700 mx-1"></div>
                         <select id="tipoFiltroTorre" onchange="window.mudarTipoFiltroTorre()" class="bg-transparent text-xs text-indigo-300 font-bold outline-none cursor-pointer">
                             <option value="dia">Visão por Dia</option>
                             <option value="mes">Visão por Mês</option>
@@ -695,6 +696,22 @@
                     <div class="flex items-end gap-3">
                         <span class="text-3xl font-black text-yellow-400" id="kpiTorreDuracaoReal">00:00</span>
                         <span class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Horas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS CHART.JS -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-3xl shadow-xl flex flex-col">
+                    <h3 class="text-sm font-black text-white uppercase tracking-wider mb-4 text-center">Volume de Cargas por Turno</h3>
+                    <div class="flex-1 relative min-h-[220px]">
+                        <canvas id="chartVolumeTurno"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-3xl shadow-xl flex flex-col">
+                    <h3 class="text-sm font-black text-white uppercase tracking-wider mb-4 text-center">Tempo Médio: Prog vs Real (em Horas)</h3>
+                    <div class="flex-1 relative min-h-[220px]">
+                        <canvas id="chartTempoTurno"></canvas>
                     </div>
                 </div>
             </div>
@@ -2121,6 +2138,127 @@
         };
 
         // ==========================================
+        // CADASTRO DE MOTORISTAS LOGIC
+        // ==========================================
+        window.renderizarMotoristas = function() {
+            const container = document.getElementById('listaMotoristasGrid');
+            const contador = document.getElementById('contadorMotoristasCadastrados');
+            const busca = window.normalizarTexto(document.getElementById('inpBuscaMotorista')?.value || "");
+
+            if (!container) return;
+            container.innerHTML = '';
+
+            let filtrados = window.ymsStore.motoristas || [];
+
+            if (busca) {
+                filtrados = filtrados.filter(m => 
+                    window.normalizarTexto(m.nome).includes(busca) || 
+                    window.normalizarTexto(m.cpf).includes(busca)
+                );
+            }
+
+            filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
+
+            if (contador) contador.textContent = filtrados.length;
+
+            if (filtrados.length === 0) {
+                container.innerHTML = `<div class="col-span-full bg-slate-800/50 border border-slate-700 p-8 rounded-2xl text-center shadow-inner text-slate-400 text-sm">Nenhum motorista encontrado.</div>`;
+                return;
+            }
+
+            filtrados.forEach(m => {
+                const isBlocked = m.status === 'BLOQUEADO';
+                const borderClass = isBlocked ? 'border-red-500/50' : 'border-slate-700';
+                const bgStatus = isBlocked 
+                    ? '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">🚫 BLOQUEADO</span>' 
+                    : '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">✅ LIBERADO</span>';
+                
+                const toggleBtn = isBlocked 
+                    ? `<button type="button" onclick="window.alternarStatusMotorista('${m.cpf}', 'LIBERADO')" class="flex-1 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 font-bold py-2 rounded-lg text-xs transition border border-emerald-500/30 hover:border-emerald-500">✅ Liberar Acesso</button>`
+                    : `<button type="button" onclick="window.alternarStatusMotorista('${m.cpf}', 'BLOQUEADO')" class="flex-1 bg-red-950/80 hover:bg-red-900 text-red-400 font-bold py-2 rounded-lg text-xs transition border border-red-500/30 hover:border-red-500">🚫 Bloquear</button>`;
+
+                const card = `
+                    <div class="bg-slate-900 border ${borderClass} hover:shadow-lg p-4 rounded-xl flex flex-col justify-between transition group">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-indigo-900/50 text-indigo-400 flex items-center justify-center font-black border border-indigo-500/30 text-lg">
+                                🪪
+                            </div>
+                            <div class="flex-1 overflow-hidden">
+                                <h4 class="text-sm font-black text-white truncate" title="${m.nome}">${m.nome}</h4>
+                                <p class="text-xs font-mono text-slate-400">${m.cpf}</p>
+                            </div>
+                            <div>
+                                ${bgStatus}
+                            </div>
+                        </div>
+                        <div class="bg-slate-950 rounded-lg p-2 border border-slate-800 flex justify-between items-center text-xs mb-3 shadow-inner">
+                            <span class="text-slate-500 font-bold uppercase">Cel:</span>
+                            <span class="text-slate-300 font-bold">${m.celular || '-'}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            ${toggleBtn}
+                            <button type="button" onclick="window.editarMotorista('${m.cpf}')" class="bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white font-bold px-3 py-2 rounded-lg text-xs transition border border-slate-700 hover:border-indigo-500" title="Editar">✏️</button>
+                            <button type="button" onclick="window.excluirMotorista('${m.cpf}')" class="bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-3 py-2 rounded-lg text-xs transition border border-slate-700 hover:border-red-500" title="Excluir">🗑️</button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        };
+
+        window.salvarCadastroMotorista = function() {
+            let cpf = document.getElementById('inpCadMotoristaCpf').value.trim();
+            const nome = document.getElementById('inpCadMotoristaNome').value.trim().toUpperCase();
+            const celular = document.getElementById('inpCadMotoristaCelular').value.trim();
+            const status = document.getElementById('inpCadMotoristaStatus').value;
+
+            if(!cpf || !nome) return alert("CPF e Nome são campos obrigatórios!");
+            
+            cpf = cpf.replace(/[^\d]/g, '');
+            if(cpf.length !== 11) return alert("CPF inválido! Preencha os 11 números.");
+            cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+
+            window.salvarMotoristaNaMemoria(cpf, nome, celular, status);
+            window.exibirToast("Sucesso", "Motorista salvo na base de dados.", "✅");
+            window.limparFormMotorista();
+        };
+
+        window.editarMotorista = function(cpf) {
+            const mot = window.ymsStore.motoristas.find(m => m.cpf === cpf);
+            if(mot) {
+                document.getElementById('inpCadMotoristaCpf').value = mot.cpf;
+                document.getElementById('inpCadMotoristaNome').value = mot.nome;
+                document.getElementById('inpCadMotoristaCelular').value = mot.celular || '';
+                document.getElementById('inpCadMotoristaStatus').value = mot.status || 'LIBERADO';
+            }
+        };
+
+        window.alternarStatusMotorista = function(cpf, novoStatus) {
+            let lista = [...window.ymsStore.motoristas];
+            const idx = lista.findIndex(m => m.cpf === cpf);
+            if(idx > -1) {
+                lista[idx].status = novoStatus;
+                db.ref('yms_motoristas').set(lista);
+                window.exibirToast("Status Atualizado", `Motorista agora está ${novoStatus}.`, "🔄");
+            }
+        };
+
+        window.excluirMotorista = function(cpf) {
+            if(!confirm("Tem certeza que deseja excluir este motorista da base de dados?")) return;
+            let lista = [...window.ymsStore.motoristas];
+            lista = lista.filter(m => m.cpf !== cpf);
+            db.ref('yms_motoristas').set(lista);
+            window.exibirToast("Excluído", "Motorista removido com sucesso.", "🗑️");
+        };
+
+        window.limparFormMotorista = function() {
+            document.getElementById('inpCadMotoristaCpf').value = '';
+            document.getElementById('inpCadMotoristaNome').value = '';
+            document.getElementById('inpCadMotoristaCelular').value = '';
+            document.getElementById('inpCadMotoristaStatus').value = 'LIBERADO';
+        };
+
+        // ==========================================
         // CHECK-OUT PORTARIA LOGIC
         // ==========================================
         window.renderizarCheckout = function() {
@@ -2254,6 +2392,7 @@
             const tipoFiltro = document.getElementById('tipoFiltroTorre').value;
             let filtroData = document.getElementById('filtroTorreData').value; 
             let filtroMes = document.getElementById('filtroTorreMes').value; 
+            const docaSelecionada = document.getElementById('filtroTorreDoca').value;
 
             const hojeIso = window.obterDataHojeISO();
             if (!filtroData) { document.getElementById('filtroTorreData').value = hojeIso; filtroData = hojeIso; }
@@ -2266,11 +2405,19 @@
                 if (parts.length !== 3) return false;
                 const dateIsoFormat = `${parts[2]}-${parts[1]}-${parts[0]}`; 
                 
-                if (tipoFiltro === 'dia') {
-                    return dateIsoFormat === filtroData;
-                } else {
-                    return dateIsoFormat.startsWith(filtroMes); 
+                // Filtro de Data
+                let passaData = false;
+                if (tipoFiltro === 'dia') passaData = (dateIsoFormat === filtroData);
+                else passaData = dateIsoFormat.startsWith(filtroMes);
+                
+                // Filtro de Doca
+                let passaDoca = true;
+                if (docaSelecionada !== 'TODAS') {
+                    // Verifica se a doca original era a selecionada OU se a rota passou por ela
+                    passaDoca = (a.doca === docaSelecionada) || (a.rotaFiscal && a.rotaFiscal.includes(docaSelecionada));
                 }
+
+                return passaData && passaDoca;
             });
 
             dadosFiltrados.sort((a, b) => a.horaIni.localeCompare(b.horaIni));
@@ -2284,6 +2431,13 @@
             let somaMinutosReal = 0;
             let qtdReal = 0;
 
+            const dadosTurno = {
+                'T04': { total: 0, concluidos: 0, minProg: 0, qtdProg: 0, minReal: 0, qtdReal: 0 },
+                'T05': { total: 0, concluidos: 0, minProg: 0, qtdProg: 0, minReal: 0, qtdReal: 0 },
+                'T06': { total: 0, concluidos: 0, minProg: 0, qtdProg: 0, minReal: 0, qtdReal: 0 },
+                '-': { total: 0, concluidos: 0, minProg: 0, qtdProg: 0, minReal: 0, qtdReal: 0 }
+            };
+
             dadosFiltrados.forEach(item => {
                 const isFinalizado = item.status === 'FINALIZADO';
                 if (isFinalizado) countConcluidos++;
@@ -2296,6 +2450,13 @@
 
                 const horaTurno = item.horaInicioOperacao || item.horaIni;
                 const turno = window.calcularTurno(horaTurno);
+                
+                if(dadosTurno[turno]) {
+                    dadosTurno[turno].total++;
+                    if(isFinalizado) dadosTurno[turno].concluidos++;
+                    if (duracaoProgMin > 0) { dadosTurno[turno].minProg += duracaoProgMin; dadosTurno[turno].qtdProg++; }
+                    if (duracaoRealMin > 0) { dadosTurno[turno].minReal += duracaoRealMin; dadosTurno[turno].qtdReal++; }
+                }
 
                 let statusBadge = '';
                 if(item.status === 'FINALIZADO') statusBadge = '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">CONCLUÍDO</span>';
@@ -2325,7 +2486,7 @@
             });
 
             if (dadosFiltrados.length === 0) {
-                containerTabela.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-slate-500">Nenhum dado encontrado para o período selecionado.</td></tr>`;
+                containerTabela.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-slate-500">Nenhum dado encontrado para o período e doca selecionados.</td></tr>`;
             }
 
             const mediaProg = qtdProg > 0 ? (somaMinutosProg / qtdProg) : 0;
@@ -2346,20 +2507,81 @@
             } else {
                 elReal.className = "text-3xl font-black text-yellow-400"; 
             }
+
+            // ==========================================
+            // CHART.JS CONFIGURAÇÃO
+            // ==========================================
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = 'Inter, sans-serif';
+
+            const labels = ['T04 (Manhã)', 'T05 (Tarde)', 'T06 (Noite)'];
+            const volTotal = [dadosTurno['T04'].total, dadosTurno['T05'].total, dadosTurno['T06'].total];
+            const volConc = [dadosTurno['T04'].concluidos, dadosTurno['T05'].concluidos, dadosTurno['T06'].concluidos];
+            
+            const tProg = [
+                dadosTurno['T04'].qtdProg > 0 ? (dadosTurno['T04'].minProg / dadosTurno['T04'].qtdProg / 60).toFixed(2) : 0,
+                dadosTurno['T05'].qtdProg > 0 ? (dadosTurno['T05'].minProg / dadosTurno['T05'].qtdProg / 60).toFixed(2) : 0,
+                dadosTurno['T06'].qtdProg > 0 ? (dadosTurno['T06'].minProg / dadosTurno['T06'].qtdProg / 60).toFixed(2) : 0
+            ];
+            const tReal = [
+                dadosTurno['T04'].qtdReal > 0 ? (dadosTurno['T04'].minReal / dadosTurno['T04'].qtdReal / 60).toFixed(2) : 0,
+                dadosTurno['T05'].qtdReal > 0 ? (dadosTurno['T05'].minReal / dadosTurno['T05'].qtdReal / 60).toFixed(2) : 0,
+                dadosTurno['T06'].qtdReal > 0 ? (dadosTurno['T06'].minReal / dadosTurno['T06'].qtdReal / 60).toFixed(2) : 0
+            ];
+
+            // Gráfico 1: Volume
+            if(window.chartVol) window.chartVol.destroy();
+            const ctxVol = document.getElementById('chartVolumeTurno').getContext('2d');
+            window.chartVol = new Chart(ctxVol, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Total Agendado', data: volTotal, backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'Concluídos', data: volConc, backgroundColor: '#10b981', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Gráfico 2: Tempo
+            if(window.chartTemp) window.chartTemp.destroy();
+            const ctxTemp = document.getElementById('chartTempoTurno').getContext('2d');
+            window.chartTemp = new Chart(ctxTemp, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Programado (h)', data: tProg, backgroundColor: '#60a5fa', borderRadius: 4 },
+                        { label: 'Realizado (h)', data: tReal, backgroundColor: '#fbbf24', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
         };
 
         window.exportarTorreExcel = function() {
             const tipoFiltro = document.getElementById('tipoFiltroTorre').value;
             const filtroData = document.getElementById('filtroTorreData').value;
             const filtroMes = document.getElementById('filtroTorreMes').value;
+            const docaSelecionada = document.getElementById('filtroTorreDoca').value;
 
             const base = (window.ymsStore.agendamentos || []).filter(a => !a.isRascunho);
             let dadosFiltrados = base.filter(a => {
                 const parts = a.data.split('/'); 
                 if (parts.length !== 3) return false;
                 const dateIsoFormat = `${parts[2]}-${parts[1]}-${parts[0]}`; 
-                if (tipoFiltro === 'dia') return dateIsoFormat === filtroData;
-                return dateIsoFormat.startsWith(filtroMes);
+                
+                let passaData = false;
+                if (tipoFiltro === 'dia') passaData = (dateIsoFormat === filtroData);
+                else passaData = dateIsoFormat.startsWith(filtroMes);
+                
+                let passaDoca = true;
+                if (docaSelecionada !== 'TODAS') {
+                    passaDoca = (a.doca === docaSelecionada) || (a.rotaFiscal && a.rotaFiscal.includes(docaSelecionada));
+                }
+
+                return passaData && passaDoca;
             });
 
             const dadosExport = dadosFiltrados.map(item => {
@@ -2415,15 +2637,20 @@
 
             const sel = document.getElementById('inpDoca');
             const selOp = document.getElementById('filtroDocaOperador');
+            const selTorre = document.getElementById('filtroTorreDoca');
             
             if(sel) sel.innerHTML = "";
             if(selOp) selOp.innerHTML = "";
+            if(selTorre) {
+                selTorre.innerHTML = '<option value="TODAS">Todas as Docas</option>';
+            }
 
             window.listaTodasDocas.forEach(d => {
                 const opt = document.createElement('option');
                 opt.value = d; opt.textContent = d;
                 if(sel) sel.appendChild(opt.cloneNode(true));
                 if(selOp) selOp.appendChild(opt.cloneNode(true));
+                if(selTorre) selTorre.appendChild(opt.cloneNode(true));
             });
 
             window.renderizarBotoesDocaFiscal();
