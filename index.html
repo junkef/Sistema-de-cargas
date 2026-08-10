@@ -553,19 +553,62 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
+        <!-- MÓDULO 6: CADASTRO DE MOTORISTAS                                          -->
         <!-- ========================================================================= -->
+        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden grid grid-cols-12 gap-6">
+            <!-- FORMULARIO -->
+            <div class="col-span-12 lg:col-span-4 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4 h-fit">
+                <div class="border-b border-slate-700 pb-3">
+                    <h2 class="text-lg font-black text-white flex items-center gap-2">🪪 Novo Motorista</h2>
+                    <p class="text-xs text-slate-400">Cadastre ou edite um motorista na base.</p>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">CPF *</label>
+                        <input type="text" id="inpCadMotoristaCpf" oninput="window.mascaraCpfPortal(this)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner" placeholder="000.000.000-00">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Nome Completo *</label>
+                        <input type="text" id="inpCadMotoristaNome" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner uppercase" placeholder="NOME DO MOTORISTA">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Celular *</label>
+                        <input type="text" id="inpCadMotoristaCelular" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition shadow-inner" placeholder="(00) 00000-0000">
+                    </div>
+                    <button type="button" onclick="window.salvarCadastroMotorista()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-4 rounded-xl uppercase shadow-lg transition border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
+                        💾 Salvar Motorista
+                    </button>
+                    <button type="button" onclick="window.limparFormMotorista()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold text-xs py-2 rounded-xl transition mt-2">
+                        Limpar Formulário
+                    </button>
+                </div>
+            </div>
 
-        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
-                <h2 class="text-2xl font-black text-white mb-2">🚪 Check-out Portaria</h2>
-                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+            <!-- LISTA -->
+            <div class="col-span-12 lg:col-span-8 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                    <h2 class="text-lg font-black text-white flex items-center gap-2">📋 Base de Motoristas</h2>
+                    <div class="flex items-center gap-3">
+                        <div class="bg-slate-900 border border-slate-700 p-2 rounded-xl flex items-center gap-2 shadow-inner">
+                            <span class="text-xs px-2">🔍</span>
+                            <input type="text" id="inpBuscaMotorista" placeholder="Buscar por Nome ou CPF..." oninput="window.renderizarMotoristas()" class="bg-transparent text-xs text-white font-bold outline-none w-48">
+                        </div>
+                        <span id="contadorMotoristasCadastrados" class="bg-indigo-600 text-white text-xs font-black px-3 py-1.5 rounded-full shadow">0</span>
+                    </div>
+                </div>
+                
+                <div id="listaMotoristasGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
+                    <!-- Cards -->
+                </div>
             </div>
         </section>
 
-        <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
+        <!-- ========================================================================= -->
+        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
+        <!-- ========================================================================= -->
+        <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
             <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
-                <h2 class="text-2xl font-black text-white mb-2">🪪 Cadastro de Motoristas</h2>
+                <h2 class="text-2xl font-black text-white mb-2">🚪 Check-out Portaria</h2>
                 <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
             </div>
         </section>
@@ -644,7 +687,7 @@
         window.ymsStore = {
             agendamentos: [], 
             rascunhoAgendamentos: JSON.parse(localStorage.getItem('yms_rascunho_temp') || '[]'),
-            motoristas: [], // Novo banco de dados de motoristas
+            motoristas: [],
             usuarioLogado: null,
             perfilSolicitadoTemp: null,
             cargaEmProcessoTotem: null,
@@ -829,10 +872,10 @@
                 if(!document.getElementById('perfil-doca').classList.contains('hidden')) window.renderizarOperadorDoca();
             });
 
-            // ESCUTADOR DE MOTORISTAS
             db.ref('yms_motoristas').on('value', (snapshot) => {
                 const data = snapshot.val();
                 window.ymsStore.motoristas = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                if(!document.getElementById('perfil-motoristas').classList.contains('hidden')) window.renderizarMotoristas();
             });
         };
 
@@ -910,7 +953,7 @@
 
         window.mudarPerfil = function(p) {
             const perfilUser = window.ymsStore.usuarioLogado?.perfil;
-            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal' && p !== 'doca') {
+            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal' && p !== 'doca' && p !== 'motoristas') {
                 window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
                 return;
             }
@@ -940,6 +983,7 @@
                 setTimeout(() => document.getElementById('inpBuscaFiscal').focus(), 100);
             }
             if(p === 'doca') window.renderizarOperadorDoca();
+            if(p === 'motoristas') window.renderizarMotoristas();
             if(p === 'totem') {
                 window.tecladoTotemRaw = "";
                 document.getElementById('inpTotemCpf').value = "";
@@ -1455,7 +1499,6 @@
                 window.ymsStore.agendamentos[idx].nomeMotorista = nomeMotorista;
                 window.ymsStore.agendamentos[idx].celular = celular;
                 
-                // Salva ou atualiza o motorista no banco de dados central de motoristas
                 window.salvarMotoristaNaMemoria(cpf, nomeMotorista, celular);
                 
                 window.salvarAgendamentosNaMemoria();
@@ -1943,6 +1986,100 @@
                 window.salvarAgendamentosNaMemoria();
                 window.renderizarOperadorDoca();
             }
+        };
+
+        // ==========================================
+        // CADASTRO DE MOTORISTAS LOGIC
+        // ==========================================
+        window.renderizarMotoristas = function() {
+            const container = document.getElementById('listaMotoristasGrid');
+            const contador = document.getElementById('contadorMotoristasCadastrados');
+            const busca = window.normalizarTexto(document.getElementById('inpBuscaMotorista')?.value || "");
+
+            if (!container) return;
+            container.innerHTML = '';
+
+            let filtrados = window.ymsStore.motoristas || [];
+
+            if (busca) {
+                filtrados = filtrados.filter(m => 
+                    window.normalizarTexto(m.nome).includes(busca) || 
+                    window.normalizarTexto(m.cpf).includes(busca)
+                );
+            }
+
+            filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
+
+            if (contador) contador.textContent = filtrados.length;
+
+            if (filtrados.length === 0) {
+                container.innerHTML = `<div class="col-span-full bg-slate-800/50 border border-slate-700 p-8 rounded-2xl text-center shadow-inner text-slate-400 text-sm">Nenhum motorista encontrado.</div>`;
+                return;
+            }
+
+            filtrados.forEach(m => {
+                const card = `
+                    <div class="bg-slate-900 border border-slate-700 hover:border-indigo-500/50 p-4 rounded-xl flex flex-col justify-between shadow-md transition group">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-indigo-900/50 text-indigo-400 flex items-center justify-center font-black border border-indigo-500/30 text-lg">
+                                🪪
+                            </div>
+                            <div class="flex-1 overflow-hidden">
+                                <h4 class="text-sm font-black text-white truncate" title="${m.nome}">${m.nome}</h4>
+                                <p class="text-xs font-mono text-slate-400">${m.cpf}</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-950 rounded-lg p-2 border border-slate-800 flex justify-between items-center text-xs mb-3">
+                            <span class="text-slate-500 font-bold uppercase">Cel:</span>
+                            <span class="text-slate-300">${m.celular || '-'}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="window.editarMotorista('${m.cpf}')" class="flex-1 bg-slate-800 hover:bg-indigo-600 text-white font-bold py-2 rounded-lg text-xs transition border border-slate-700 hover:border-indigo-500">✏️ Editar</button>
+                            <button type="button" onclick="window.excluirMotorista('${m.cpf}')" class="bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-3 py-2 rounded-lg text-xs transition border border-slate-700 hover:border-red-500">🗑️</button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        };
+
+        window.salvarCadastroMotorista = function() {
+            let cpf = document.getElementById('inpCadMotoristaCpf').value.trim();
+            const nome = document.getElementById('inpCadMotoristaNome').value.trim().toUpperCase();
+            const celular = document.getElementById('inpCadMotoristaCelular').value.trim();
+
+            if(!cpf || !nome) return alert("CPF e Nome são campos obrigatórios!");
+            
+            cpf = cpf.replace(/[^\d]/g, '');
+            if(cpf.length !== 11) return alert("CPF inválido! Preencha os 11 números.");
+            cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+
+            window.salvarMotoristaNaMemoria(cpf, nome, celular);
+            window.exibirToast("Sucesso", "Motorista salvo na base de dados.", "✅");
+            window.limparFormMotorista();
+        };
+
+        window.editarMotorista = function(cpf) {
+            const mot = window.ymsStore.motoristas.find(m => m.cpf === cpf);
+            if(mot) {
+                document.getElementById('inpCadMotoristaCpf').value = mot.cpf;
+                document.getElementById('inpCadMotoristaNome').value = mot.nome;
+                document.getElementById('inpCadMotoristaCelular').value = mot.celular || '';
+            }
+        };
+
+        window.excluirMotorista = function(cpf) {
+            if(!confirm("Tem certeza que deseja excluir este motorista da base de dados?")) return;
+            let lista = [...window.ymsStore.motoristas];
+            lista = lista.filter(m => m.cpf !== cpf);
+            db.ref('yms_motoristas').set(lista);
+            window.exibirToast("Excluído", "Motorista removido com sucesso.", "🗑️");
+        };
+
+        window.limparFormMotorista = function() {
+            document.getElementById('inpCadMotoristaCpf').value = '';
+            document.getElementById('inpCadMotoristaNome').value = '';
+            document.getElementById('inpCadMotoristaCelular').value = '';
         };
 
         window.onload = function() {
