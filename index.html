@@ -1179,16 +1179,22 @@
 
             if (t === 'cotidiano') {
                 document.getElementById('btnTipoCotidiano').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
-                badge.innerHTML = "🟢 Cotidiano";
+                if(badge) {
+                    badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                    badge.innerHTML = "🟢 Cotidiano";
+                }
             } else if (t === 'extra') {
                 document.getElementById('btnTipoExtra').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-600 border-amber-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
-                badge.innerHTML = "🟡 Extra";
+                if(badge) {
+                    badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                    badge.innerHTML = "🟡 Extra";
+                }
             } else if (t === 'critica') {
                 document.getElementById('btnTipoCritica').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
-                badge.innerHTML = "🔴 Crítica";
+                if(badge) {
+                    badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase";
+                    badge.innerHTML = "🔴 Crítica";
+                }
             }
         };
 
@@ -2359,6 +2365,7 @@
             }
 
             fila.forEach(item => {
+                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2569,7 +2576,7 @@
             }
 
             // ==========================================
-            // CHART.JS CONFIGURAÇÃO (Com Atualização Suave)
+            // CHART.JS CONFIGURAÇÃO
             // ==========================================
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = 'Inter, sans-serif';
@@ -2589,7 +2596,6 @@
                 dadosTurno['T06'].qtdReal > 0 ? (dadosTurno['T06'].minReal / dadosTurno['T06'].qtdReal / 60).toFixed(2) : 0
             ];
 
-            // Gráfico 1: Volume
             const ctxVol = document.getElementById('chartVolumeTurno').getContext('2d');
             if(window.chartVol) {
                 window.chartVol.data.datasets[0].data = volTotal;
@@ -2609,7 +2615,6 @@
                 });
             }
 
-            // Gráfico 2: Tempo
             const ctxTemp = document.getElementById('chartTempoTurno').getContext('2d');
             if(window.chartTemp) {
                 window.chartTemp.data.datasets[0].data = tProg;
@@ -2727,6 +2732,10 @@
             window.popularSelectFornecedores(window.obterListaNomesFornecedores());
             window.inicializarEscutadoresFirebase();
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
+            
+            // Garantir que a variavel de controle inicialize corretamente
+            window.ymsStore.tipoCargaSelecionado = 'cotidiano';
+            
             window.atualizarHorariosDisponiveis();
         };
     </script>
