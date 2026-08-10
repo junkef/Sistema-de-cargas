@@ -440,9 +440,7 @@
         <!-- ========================================================================= -->
         <!-- MÓDULO 4: RECEBIMENTO FISCAL (TRIAGEM E ROTEIRIZADOR)                     -->
         <!-- ========================================================================= -->
-        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
-            
-            <!-- PAINEL ESQUERDO: FILA DO PÁTIO -->
+        <section id="perfil-fiscal" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden grid grid-cols-12 gap-6">
             <div class="col-span-12 lg:col-span-4 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                     <h2 class="text-base font-black text-white flex items-center gap-2">⏳ Fila do Pátio (Check-in)</h2>
@@ -454,20 +452,16 @@
                     <input type="text" id="inpBuscaFiscal" placeholder="Bipar Ticket ou Placa..." oninput="window.renderizarFiscal()" class="bg-transparent text-xs text-white font-bold outline-none w-full">
                 </div>
 
-                <div id="listaFiscal" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1">
-                    <!-- Cards Injetados via JS -->
-                </div>
+                <div id="listaFiscal" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1"></div>
             </div>
 
-            <!-- PAINEL DIREITO: ROTEIRIZADOR DE DOCAS -->
             <div class="col-span-12 lg:col-span-8 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
                         <h2 class="text-xl font-black text-white">Triagem Fiscal & Roteirizador de Docas</h2>
-                        <span id="lblRotaAlerta" class="hidden bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Selecione um Ticket</span>
+                        <span id="lblRotaAlerta" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Selecione um Ticket</span>
                     </div>
 
-                    <!-- BOX DE INFORMAÇÕES DO MOTORISTA -->
                     <div class="bg-slate-900/50 border border-slate-700 rounded-2xl p-5 grid grid-cols-3 gap-4 mb-6 shadow-inner">
                         <div>
                             <span class="block text-[10px] font-bold text-slate-500 uppercase mb-1">MOTORISTA</span>
@@ -487,26 +481,21 @@
                         </div>
                     </div>
 
-                    <!-- SELEÇÃO DE ROTAS (BOTOES DAS DOCAS) -->
                     <div class="space-y-3">
                         <div class="flex justify-between items-end mb-2">
                             <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-widest">CLIQUE NAS DOCAS NA SEQUÊNCIA DESEJADA:</label>
                             <button type="button" onclick="window.limparRotaFiscal()" class="text-[10px] font-bold text-yellow-500 hover:text-yellow-400 underline decoration-dashed underline-offset-4 cursor-pointer transition">🔄 Limpar Rota</button>
                         </div>
-                        <div id="gridBotoesDocasFiscal" class="grid grid-cols-2 gap-3 opacity-50 pointer-events-none transition-opacity">
-                            <!-- Botões Injetados via JS baseado na window.listaTodasDocas -->
-                        </div>
+                        <div id="gridBotoesDocasFiscal" class="grid grid-cols-2 gap-3 opacity-50 pointer-events-none transition-opacity"></div>
                     </div>
                 </div>
 
                 <div class="mt-6 space-y-4">
-                    <!-- DISPLAY DA ROTA SELECIONADA -->
                     <div class="bg-slate-950 p-4 rounded-xl border border-indigo-500/30 text-center shadow-inner">
                         <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-1">ROTA SEQUENCIAL:</span>
                         <span id="fiscalRotaDisplay" class="text-sm font-black text-white">Nenhuma doca selecionada</span>
                     </div>
 
-                    <!-- BOTÕES DE AÇÃO -->
                     <div class="grid grid-cols-12 gap-3">
                         <button type="button" id="btnFiscalReprovar" disabled onclick="window.reprovarFiscal()" class="col-span-4 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-not-allowed opacity-50 flex items-center justify-center gap-1.5">
                             ❌ Problema NF
@@ -520,15 +509,38 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
+        <!-- MÓDULO 5: OPERADOR DE DOCA                                                -->
         <!-- ========================================================================= -->
+        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
+            <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2">🚛 Operador de Doca</h2>
+                    <p class="text-sm text-slate-400 mt-1">Gerencie a fila de veículos e a operação na sua doca.</p>
+                </div>
+                
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
+                        <span class="text-xs px-2">📍</span>
+                        <select id="filtroDocaOperador" onchange="window.renderizarOperadorDoca()" class="bg-transparent text-sm text-white font-bold outline-none w-64 cursor-pointer custom-scrollbar">
+                            <!-- Options Injetadas via JS -->
+                        </select>
+                    </div>
 
-        <section id="perfil-doca" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
-                <h2 class="text-2xl font-black text-white mb-2">🚛 Operador de Doca</h2>
-                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+                    <div class="bg-indigo-600/20 border border-indigo-500/30 px-5 py-3 rounded-2xl text-center shadow-inner min-w-[120px]">
+                        <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Na Fila</span>
+                        <span class="text-3xl font-black text-white" id="contadorDoca">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="listaDoca" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
+                <!-- Cards Injetados via JS -->
             </div>
         </section>
+
+        <!-- ========================================================================= -->
+        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
+        <!-- ========================================================================= -->
 
         <section id="perfil-checkout" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
             <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
@@ -620,8 +632,8 @@
             usuarioLogado: null,
             perfilSolicitadoTemp: null,
             cargaEmProcessoTotem: null,
-            fiscalCargaSelecionada: null, // Nova variável: Armazena a carga selecionada na triagem
-            fiscalRotaSelecionada: []     // Nova variável: Armazena a sequência de docas montada
+            fiscalCargaSelecionada: null,
+            fiscalRotaSelecionada: []
         };
 
         window.listaTodasDocas = ['Doca - (04N/06N)', 'Doca - 1 F2 (7S)', 'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis', 'Doca - Devolução'];
@@ -787,6 +799,7 @@
                 if(!document.getElementById('perfil-pcp').classList.contains('hidden')) window.renderizarGradePCP();
                 if(!document.getElementById('perfil-fornecedor').classList.contains('hidden')) window.renderizarPortalFornecedor();
                 if(!document.getElementById('perfil-fiscal').classList.contains('hidden')) window.renderizarFiscal();
+                if(!document.getElementById('perfil-doca').classList.contains('hidden')) window.renderizarOperadorDoca();
             });
         };
 
@@ -853,7 +866,7 @@
 
         window.mudarPerfil = function(p) {
             const perfilUser = window.ymsStore.usuarioLogado?.perfil;
-            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal') {
+            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal' && p !== 'doca') {
                 window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
                 return;
             }
@@ -880,9 +893,9 @@
                 window.ymsStore.fiscalCargaSelecionada = null;
                 window.limparRotaFiscal();
                 window.renderizarFiscal();
-                // Foca no campo de busca para o leitor de código de barras
                 setTimeout(() => document.getElementById('inpBuscaFiscal').focus(), 100);
             }
+            if(p === 'doca') window.renderizarOperadorDoca();
             if(p === 'totem') {
                 window.tecladoTotemRaw = "";
                 document.getElementById('inpTotemCpf').value = "";
@@ -955,6 +968,9 @@
             window.atualizarHorariosDisponiveis();
         };
 
+        // ==========================================
+        // LEITURA INTELIGENTE DE PLANILHA
+        // ==========================================
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1500,7 +1516,6 @@
             if (!container) return;
             container.innerHTML = '';
 
-            // Renderiza apenas os que bateram ticket no totem
             let aguardando = (window.ymsStore.agendamentos || []).filter(a => a.status === 'AGUARDANDO FISCAL');
 
             if (busca) {
@@ -1511,7 +1526,6 @@
                 );
             }
 
-            // Ordenação FIFO pelo horário de chegada
             aguardando.sort((a, b) => {
                 const hA = window.horaParaMinutos(a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaChegadaTotem || '23:59');
@@ -1535,7 +1549,6 @@
                 else if(item.statusSlaChegada === 'FORNECEDOR ATRASADO') badgeSla = '<span class="bg-red-900/50 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">ATRASADO</span>';
                 else badgeSla = '<span class="bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">NO HORÁRIO</span>';
 
-                // Verifica se este é o card que está selecionado no momento
                 const isSelected = window.ymsStore.fiscalCargaSelecionada && window.ymsStore.fiscalCargaSelecionada.ordem === item.ordem;
                 const borderClass = isSelected ? 'border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'border-amber-500/50 hover:border-indigo-500/50';
 
@@ -1573,13 +1586,11 @@
 
             window.ymsStore.fiscalCargaSelecionada = carga;
             
-            // Popula os dados na tela da direita
             document.getElementById('fiscalInfoMotorista').textContent = carga.cpf || 'Não inf.';
             document.getElementById('fiscalInfoPlaca').textContent = carga.placa || 'Não inf.';
             document.getElementById('fiscalInfoNF').textContent = carga.notaFiscal || 'Não inf.';
             document.getElementById('fiscalInfoAgendada').textContent = carga.doca || 'Não inf.';
 
-            // Tira a trava dos botões
             document.getElementById('lblRotaAlerta').classList.add('hidden');
             document.getElementById('gridBotoesDocasFiscal').classList.remove('opacity-50', 'pointer-events-none');
             
@@ -1588,8 +1599,8 @@
             btnReprovar.disabled = false; btnReprovar.classList.remove('opacity-50', 'cursor-not-allowed');
             btnAprovar.disabled = false; btnAprovar.classList.remove('opacity-50', 'cursor-not-allowed');
 
-            window.limparRotaFiscal(); // Limpa a rota para a nova carga
-            window.renderizarFiscal(); // Re-renderiza para mudar a cor da borda do card selecionado
+            window.limparRotaFiscal(); 
+            window.renderizarFiscal(); 
         };
 
         window.renderizarBotoesDocaFiscal = function() {
@@ -1625,7 +1636,6 @@
             if(idx > -1) {
                 const agora = new Date();
                 
-                // Se a pessoa não clicou em nenhuma doca, ele assume a doca original
                 let rotaFinal = window.ymsStore.fiscalRotaSelecionada.join(' ➔ ');
                 if(!rotaFinal) rotaFinal = carga.doca;
 
@@ -1636,7 +1646,6 @@
                 window.salvarAgendamentosNaMemoria();
                 window.exibirToast("Fiscal Liberado!", "Rota confirmada. Caminhão enviado para o pátio.", "✅");
                 
-                // Reseta a tela
                 window.ymsStore.fiscalCargaSelecionada = null;
                 document.getElementById('fiscalInfoMotorista').textContent = '-';
                 document.getElementById('fiscalInfoPlaca').textContent = '-';
@@ -1666,7 +1675,6 @@
                 window.salvarAgendamentosNaMemoria();
                 window.exibirToast("Veículo Bloqueado", "Aguardando resolução de pendência.", "❌");
                 
-                // Reseta a tela
                 window.ymsStore.fiscalCargaSelecionada = null;
                 document.getElementById('fiscalInfoMotorista').textContent = '-';
                 document.getElementById('fiscalInfoPlaca').textContent = '-';
@@ -1684,29 +1692,130 @@
             }
         };
 
+        // ==========================================
+        // OPERADOR DE DOCA LOGIC
+        // ==========================================
+        window.renderizarOperadorDoca = function() {
+            const container = document.getElementById('listaDoca');
+            const contador = document.getElementById('contadorDoca');
+            const docaSelecionada = document.getElementById('filtroDocaOperador')?.value;
+
+            if (!container || !docaSelecionada) return;
+            container.innerHTML = '';
+
+            let fila = (window.ymsStore.agendamentos || []).filter(a => {
+                const statusValido = a.status === 'AGUARDANDO DOCA' || a.status === 'EM OPERACAO';
+                // Mostra a carga se a doca selecionada estiver na rota gerada pelo fiscal, ou se for a doca principal original
+                const docaValida = (a.rotaFiscal && a.rotaFiscal.includes(docaSelecionada)) || (a.doca === docaSelecionada);
+                return statusValido && docaValida;
+            });
+
+            // FIFO: Organiza quem foi liberado primeiro pelo fiscal
+            fila.sort((a, b) => {
+                const hA = window.horaParaMinutos(a.horaLiberacaoFiscal || a.horaChegadaTotem || '23:59');
+                const hB = window.horaParaMinutos(b.horaLiberacaoFiscal || b.horaChegadaTotem || '23:59');
+                return hA - hB;
+            });
+
+            if (contador) contador.textContent = fila.length;
+
+            if (fila.length === 0) {
+                container.innerHTML = `<div class="col-span-full bg-slate-800/50 border border-slate-700 p-10 rounded-3xl text-center shadow-inner">
+                    <span class="text-4xl block mb-3 opacity-50">🏖️</span>
+                    <h3 class="text-lg font-bold text-slate-300">Doca Livre!</h3>
+                    <p class="text-xs text-slate-500 mt-1">Nenhum veículo aguardando operação para esta doca no momento.</p>
+                </div>`;
+                return;
+            }
+
+            fila.forEach(item => {
+                const isEmOperacao = item.status === 'EM OPERACAO';
+                const borderClass = isEmOperacao ? 'border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]' : 'border-indigo-500/50 hover:border-indigo-400';
+                const bgClass = isEmOperacao ? 'bg-purple-900/20' : 'bg-slate-800/80';
+                const ribbonClass = isEmOperacao ? 'bg-purple-500' : 'bg-indigo-500';
+
+                const badgeStatus = isEmOperacao 
+                    ? '<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">⚙️ EM OPERAÇÃO</span>'
+                    : '<span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold">⏳ AGUARDANDO</span>';
+
+                const botaoAcao = isEmOperacao
+                    ? `<button type="button" onclick="window.finalizarOperacaoDoca('${item.ordem}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1">✅ Finalizar Operação</button>`
+                    : `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Iniciar Operação</button>`;
+
+                const card = `
+                    <div class="${bgClass} border ${borderClass} p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all group">
+                        <div class="absolute top-0 left-0 w-1.5 h-full ${ribbonClass}"></div>
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[11px] font-black text-indigo-300 uppercase truncate pr-2 tracking-wider">🏢 ${item.fornecedor}</span>
+                                ${badgeStatus}
+                            </div>
+                            <div class="bg-slate-950/50 rounded-xl p-3 border border-slate-700/50 text-[11px] space-y-1.5 shadow-inner mb-3">
+                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Placa:</span> <span class="text-yellow-400 font-mono font-bold text-sm">${item.placa}</span></p>
+                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Ticket:</span> <span class="text-white font-mono">${item.ordem}</span></p>
+                                <p class="flex justify-between border-t border-slate-800 pt-1 mt-1"><span class="text-slate-500 font-bold uppercase">Liberação Fiscal:</span> <span class="text-emerald-400 font-bold">${item.horaLiberacaoFiscal || '--:--'}</span></p>
+                            </div>
+                            <div class="text-[10px] text-slate-400 bg-slate-900 p-2 rounded-lg border border-slate-800">
+                                <strong class="block mb-1 text-slate-500">ROTA SEQUENCIAL:</strong>
+                                <span class="text-indigo-200 font-mono">${item.rotaFiscal || item.doca}</span>
+                            </div>
+                        </div>
+                        ${botaoAcao}
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        };
+
+        window.iniciarOperacaoDoca = function(ordem) {
+            if(!confirm("Iniciar operação neste veículo?")) return;
+            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
+            if(idx > -1) {
+                const agora = new Date();
+                window.ymsStore.agendamentos[idx].status = 'EM OPERACAO';
+                window.ymsStore.agendamentos[idx].horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                window.salvarAgendamentosNaMemoria();
+                window.exibirToast("Operação Iniciada!", "Horário de início registrado.", "⚙️");
+                window.renderizarOperadorDoca();
+            }
+        };
+
+        window.finalizarOperacaoDoca = function(ordem) {
+            if(!confirm("Finalizar operação e liberar veículo para Check-out?")) return;
+            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
+            if(idx > -1) {
+                const agora = new Date();
+                window.ymsStore.agendamentos[idx].status = 'AGUARDANDO CHECKOUT';
+                window.ymsStore.agendamentos[idx].horaFimOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                window.salvarAgendamentosNaMemoria();
+                window.exibirToast("Operação Finalizada!", "Veículo enviado para Check-out.", "✅");
+                window.renderizarOperadorDoca();
+            }
+        };
+
+        // INICIALIZAÇÃO
         window.onload = function() {
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
             
             const dt = document.getElementById('inpData');
-            if(dt) {
-                dt.value = window.obterDataHojeISO();
-            }
+            if(dt) dt.value = window.obterDataHojeISO();
 
             const dtFiltro = document.getElementById('filtroDataFornecedor');
-            if(dtFiltro) {
-                dtFiltro.value = ''; 
-            }
+            if(dtFiltro) dtFiltro.value = ''; 
 
             const sel = document.getElementById('inpDoca');
-            if(sel) {
-                sel.innerHTML = "";
-                window.listaTodasDocas.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d; opt.textContent = d;
-                    sel.appendChild(opt);
-                });
-            }
+            const selOp = document.getElementById('filtroDocaOperador');
+            
+            if(sel) sel.innerHTML = "";
+            if(selOp) selOp.innerHTML = "";
+
+            window.listaTodasDocas.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d;
+                if(sel) sel.appendChild(opt.cloneNode(true));
+                if(selOp) selOp.appendChild(opt.cloneNode(true));
+            });
 
             window.renderizarBotoesDocaFiscal();
             window.popularSelectFornecedores(window.obterListaNomesFornecedores());
