@@ -23,6 +23,12 @@
         .hidden { display: none !important; }
         input[type="date"] { color-scheme: dark; }
         
+        /* FORÇA TODOS OS MENUS DROPDOWN (SELECTS) A FICAREM NO MODO ESCURO */
+        option {
+            background-color: #0f172a !important; /* bg-slate-900 */
+            color: #f1f5f9 !important; /* text-slate-100 */
+        }
+        
         .btn-perfil-card, 
         .btn-perfil-card span,
         #modalLoginGlobal button span {
@@ -968,9 +974,6 @@
             window.atualizarHorariosDisponiveis();
         };
 
-        // ==========================================
-        // LEITURA INTELIGENTE DE PLANILHA
-        // ==========================================
         window.lerPlanilhaExcel = function(e) {
             const file = e.target.files[0];
             if (!file) return;
