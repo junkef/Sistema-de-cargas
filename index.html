@@ -21,7 +21,7 @@
 
     <style>
         .hidden { display: none !important; }
-        input[type="date"] { color-scheme: dark; }
+        input[type="date"], input[type="month"] { color-scheme: dark; }
         
         /* FORÇA TODOS OS MENUS DROPDOWN (SELECTS) A FICAREM NO MODO ESCURO */
         option {
@@ -42,6 +42,7 @@
 
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #0f172a;
@@ -119,9 +120,9 @@
                     <span class="text-xl group-hover:scale-110 transition-transform">🪪</span>
                     <span class="text-xs">Cad. Motoristas</span>
                 </button>
-                <button type="button" onclick="window.solicitarAcessoPerfil('admin')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
+                <button type="button" onclick="window.solicitarAcessoPerfil('torre')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">📡</span>
-                    <span class="text-xs txt-purple">Torre / Admin</span>
+                    <span class="text-xs txt-purple">Torre de Controle</span>
                 </button>
             </div>
 
@@ -636,13 +637,95 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
+        <!-- MÓDULO 8: TORRE DE CONTROLE (NOVO)                                        -->
         <!-- ========================================================================= -->
+        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
+            
+            <!-- HEADER DA TORRE -->
+            <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2">📡 Torre de Controle (KPIs)</h2>
+                    <p class="text-sm text-slate-400 mt-1">Visão analítica da operação e exportação de dados.</p>
+                </div>
+                
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
+                        <select id="tipoFiltroTorre" onchange="window.mudarTipoFiltroTorre()" class="bg-transparent text-xs text-indigo-300 font-bold outline-none cursor-pointer">
+                            <option value="dia">Visão por Dia</option>
+                            <option value="mes">Visão por Mês</option>
+                        </select>
+                        <div class="w-px h-6 bg-slate-700 mx-1"></div>
+                        <input type="date" id="filtroTorreData" onchange="window.renderizarTorre()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer">
+                        <input type="month" id="filtroTorreMes" onchange="window.renderizarTorre()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer hidden">
+                    </div>
 
-        <section id="perfil-torre" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
-                <h2 class="text-2xl font-black text-white mb-2">📡 Torre de Controle</h2>
-                <p class="text-slate-400">Módulo em construção. Retorne ao PCP.</p>
+                    <button type="button" onclick="window.exportarTorreExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm px-5 py-3 rounded-2xl shadow-lg transition border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 flex items-center gap-2">
+                        <span>📊</span> Baixar Relatório (Excel)
+                    </button>
+                </div>
+            </div>
+
+            <!-- CARDS DE KPIS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col justify-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total de Agendamentos</span>
+                    <div class="flex items-end gap-3">
+                        <span class="text-4xl font-black text-white" id="kpiTorreTotal">0</span>
+                        <span class="text-xs text-indigo-400 font-bold mb-1">Veículos</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col justify-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Concluídos (Check-out)</span>
+                    <div class="flex items-end gap-3">
+                        <span class="text-4xl font-black text-emerald-400" id="kpiTorreConcluidos">0</span>
+                        <span class="text-xs text-emerald-600 font-bold mb-1 border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 rounded" id="kpiTorreConcluidosPct">0%</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col justify-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Média Duração (Programada)</span>
+                    <div class="flex items-end gap-3">
+                        <span class="text-3xl font-black text-blue-400" id="kpiTorreDuracaoProg">00:00</span>
+                        <span class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Horas</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col justify-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Média Duração (Realizada)</span>
+                    <div class="flex items-end gap-3">
+                        <span class="text-3xl font-black text-yellow-400" id="kpiTorreDuracaoReal">00:00</span>
+                        <span class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Horas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA DE DADOS -->
+            <div class="bg-slate-800/80 border border-slate-700 rounded-3xl shadow-xl overflow-hidden flex flex-col flex-1 min-h-[400px]">
+                <div class="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800">
+                    <h3 class="text-sm font-black text-white uppercase tracking-wider">Detalhamento Operacional</h3>
+                    <span class="text-[10px] font-bold text-slate-500">Lógica de Turnos: T04 (05:01-13:30) | T05 (13:31-21:59) | T06 (22:00-05:00)</span>
+                </div>
+                <div class="overflow-x-auto flex-1 custom-scrollbar p-2">
+                    <table class="w-full text-left text-xs whitespace-nowrap">
+                        <thead class="text-[10px] uppercase text-slate-400 bg-slate-900/50">
+                            <tr>
+                                <th class="p-3 font-black rounded-tl-xl">Status</th>
+                                <th class="p-3 font-black">Ordem</th>
+                                <th class="p-3 font-black">Placa</th>
+                                <th class="p-3 font-black">Fornecedor</th>
+                                <th class="p-3 font-black text-indigo-300">Turno</th>
+                                <th class="p-3 font-black">Local / Doca</th>
+                                <th class="p-3 font-black text-blue-400 text-center border-l border-slate-700">Prog. Início</th>
+                                <th class="p-3 font-black text-blue-400 text-center">Prog. Fim</th>
+                                <th class="p-3 font-black text-blue-400 text-center font-mono">Duração (Prog)</th>
+                                <th class="p-3 font-black text-yellow-400 text-center border-l border-slate-700">Real Início</th>
+                                <th class="p-3 font-black text-yellow-400 text-center">Real Fim</th>
+                                <th class="p-3 font-black text-yellow-400 text-center font-mono rounded-tr-xl">Duração (Real)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaTorreBody" class="divide-y divide-slate-700/50">
+                            <!-- Linhas injetadas via JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -849,7 +932,7 @@
         window.normalizarTexto = function(txt) { return String(txt || '').toLowerCase().replace(/[\s\.\-\/]/g, '').trim(); };
         
         window.horaParaMinutos = function(horaStr) {
-            if (!horaStr || horaStr === '---') return 0;
+            if (!horaStr || horaStr === '---' || !horaStr.includes(':')) return 0;
             const partes = String(horaStr).trim().split(':');
             return parseInt(partes[0], 10) * 60 + parseInt(partes[1] || 0, 10);
         };
@@ -897,6 +980,7 @@
                 if(!document.getElementById('perfil-fiscal').classList.contains('hidden')) window.renderizarFiscal();
                 if(!document.getElementById('perfil-doca').classList.contains('hidden')) window.renderizarOperadorDoca();
                 if(!document.getElementById('perfil-checkout').classList.contains('hidden')) window.renderizarCheckout();
+                if(!document.getElementById('perfil-torre').classList.contains('hidden')) window.renderizarTorre();
             });
 
             db.ref('yms_motoristas').on('value', (snapshot) => {
@@ -982,7 +1066,7 @@
 
         window.mudarPerfil = function(p) {
             const perfilUser = window.ymsStore.usuarioLogado?.perfil;
-            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal' && p !== 'doca' && p !== 'motoristas' && p !== 'checkout') {
+            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal' && p !== 'doca' && p !== 'motoristas' && p !== 'checkout' && p !== 'torre') {
                 window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
                 return;
             }
@@ -1006,6 +1090,7 @@
             if(p === 'pcp') window.renderizarGradePCP();
             if(p === 'fornecedor') window.renderizarPortalFornecedor();
             if(p === 'checkout') window.renderizarCheckout();
+            if(p === 'torre') window.renderizarTorre();
             if(p === 'fiscal') {
                 window.ymsStore.fiscalCargaSelecionada = null;
                 window.limparRotaFiscal();
@@ -2234,6 +2319,209 @@
                 window.exibirToast("Check-out Realizado!", "Veículo liberado da portaria com sucesso.", "👋");
                 window.renderizarCheckout();
             }
+        };
+
+        // ==========================================
+        // TORRE DE CONTROLE (KPIs e Exportação)
+        // ==========================================
+        window.calcularTurno = function(horaStr) {
+            if (!horaStr || horaStr === '--:--' || horaStr === '') return "-";
+            const min = window.horaParaMinutos(horaStr);
+            // T04: 05:01 a 13:30 (301 a 810 minutos)
+            if (min >= 301 && min <= 810) return "T04";
+            // T05: 13:31 a 21:59 (811 a 1319 minutos)
+            if (min >= 811 && min <= 1319) return "T05";
+            // T06: 22:00 a 05:00 (Maior/igual a 1320 OU menor/igual a 300)
+            return "T06";
+        };
+
+        window.calcularDiferencaMinutos = function(hIni, hFim) {
+            if (!hIni || !hFim || hIni === '--:--' || hFim === '--:--') return 0;
+            const mIni = window.horaParaMinutos(hIni);
+            const mFim = window.horaParaMinutos(hFim);
+            let diff = mFim - mIni;
+            if (diff < 0) diff += 24 * 60; // Virou a noite
+            return diff;
+        };
+
+        window.formatarMinutosHora = function(minutosTotais) {
+            if (minutosTotais <= 0 || isNaN(minutosTotais)) return "--:--";
+            const h = Math.floor(minutosTotais / 60);
+            const m = Math.floor(minutosTotais % 60);
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        };
+
+        window.mudarTipoFiltroTorre = function() {
+            const tipo = document.getElementById('tipoFiltroTorre').value;
+            if (tipo === 'dia') {
+                document.getElementById('filtroTorreData').classList.remove('hidden');
+                document.getElementById('filtroTorreMes').classList.add('hidden');
+            } else {
+                document.getElementById('filtroTorreData').classList.add('hidden');
+                document.getElementById('filtroTorreMes').classList.remove('hidden');
+            }
+            window.renderizarTorre();
+        };
+
+        window.renderizarTorre = function() {
+            const containerTabela = document.getElementById('tabelaTorreBody');
+            if(!containerTabela) return;
+
+            const tipoFiltro = document.getElementById('tipoFiltroTorre').value;
+            let filtroData = document.getElementById('filtroTorreData').value; 
+            let filtroMes = document.getElementById('filtroTorreMes').value; 
+
+            // Define filtros padrão caso estejam vazios
+            const hojeIso = window.obterDataHojeISO();
+            if (!filtroData) { document.getElementById('filtroTorreData').value = hojeIso; filtroData = hojeIso; }
+            if (!filtroMes) { const m = hojeIso.substring(0,7); document.getElementById('filtroTorreMes').value = m; filtroMes = m; }
+
+            // Todos os agendamentos reais (sem rascunho)
+            const base = (window.ymsStore.agendamentos || []).filter(a => !a.isRascunho);
+
+            // Filtragem por Data ou Mês
+            let dadosFiltrados = base.filter(a => {
+                const parts = a.data.split('/'); // DD/MM/YYYY
+                if (parts.length !== 3) return false;
+                const dateIsoFormat = `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
+                
+                if (tipoFiltro === 'dia') {
+                    return dateIsoFormat === filtroData;
+                } else {
+                    return dateIsoFormat.startsWith(filtroMes); // Ex: 2026-08
+                }
+            });
+
+            // Ordenar por hora de início
+            dadosFiltrados.sort((a, b) => a.horaIni.localeCompare(b.horaIni));
+
+            containerTabela.innerHTML = '';
+
+            let countTotal = dadosFiltrados.length;
+            let countConcluidos = 0;
+            let somaMinutosProg = 0;
+            let qtdProg = 0;
+            let somaMinutosReal = 0;
+            let qtdReal = 0;
+
+            dadosFiltrados.forEach(item => {
+                const isFinalizado = item.status === 'FINALIZADO';
+                if (isFinalizado) countConcluidos++;
+
+                // Calcula durações
+                const duracaoProgMin = window.calcularDiferencaMinutos(item.horaIni, item.horaFim);
+                const duracaoRealMin = window.calcularDiferencaMinutos(item.horaInicioOperacao, item.horaFimOperacao);
+
+                if (duracaoProgMin > 0) { somaMinutosProg += duracaoProgMin; qtdProg++; }
+                if (duracaoRealMin > 0) { somaMinutosReal += duracaoRealMin; qtdReal++; }
+
+                // Identifica Turno pela hora de Início Real (ou programado caso não tenha começado)
+                const horaTurno = item.horaInicioOperacao || item.horaIni;
+                const turno = window.calcularTurno(horaTurno);
+
+                let statusBadge = '';
+                if(item.status === 'FINALIZADO') statusBadge = '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">CONCLUÍDO</span>';
+                else if(item.status === 'EM OPERACAO') statusBadge = '<span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">EM DOCA</span>';
+                else if(item.status === 'COM PROBLEMA' || item.status === 'BLOQUEADO FISCAL') statusBadge = '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">BLOQUEADO</span>';
+                else statusBadge = `<span class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">${item.status}</span>`;
+
+                const tr = `
+                    <tr class="hover:bg-slate-700/30 transition border-b border-slate-700/50 last:border-0">
+                        <td class="p-3">${statusBadge}</td>
+                        <td class="p-3 font-mono text-slate-300 font-bold">${item.ordem}</td>
+                        <td class="p-3 font-mono text-yellow-400 font-bold">${item.placa || '-'}</td>
+                        <td class="p-3 truncate max-w-[150px]" title="${item.fornecedor}">${item.fornecedor}</td>
+                        <td class="p-3 font-bold text-indigo-300">${turno}</td>
+                        <td class="p-3 text-slate-300 text-[10px]">${item.docaAtual || item.doca}</td>
+                        
+                        <td class="p-3 text-center border-l border-slate-700/50 text-blue-300 font-mono">${item.horaIni || '-'}</td>
+                        <td class="p-3 text-center text-blue-300 font-mono">${item.horaFim || '-'}</td>
+                        <td class="p-3 text-center font-black text-white font-mono bg-slate-900/50">${window.formatarMinutosHora(duracaoProgMin)}</td>
+                        
+                        <td class="p-3 text-center border-l border-slate-700/50 text-yellow-200 font-mono">${item.horaInicioOperacao || '--:--'}</td>
+                        <td class="p-3 text-center text-yellow-200 font-mono">${item.horaFimOperacao || '--:--'}</td>
+                        <td class="p-3 text-center font-black text-white font-mono bg-slate-900/50">${window.formatarMinutosHora(duracaoRealMin)}</td>
+                    </tr>
+                `;
+                containerTabela.insertAdjacentHTML('beforeend', tr);
+            });
+
+            if (dadosFiltrados.length === 0) {
+                containerTabela.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-slate-500">Nenhum dado encontrado para o período selecionado.</td></tr>`;
+            }
+
+            // Atualiza KPIs
+            const mediaProg = qtdProg > 0 ? (somaMinutosProg / qtdProg) : 0;
+            const mediaReal = qtdReal > 0 ? (somaMinutosReal / qtdReal) : 0;
+            const pct = countTotal > 0 ? Math.round((countConcluidos / countTotal) * 100) : 0;
+
+            document.getElementById('kpiTorreTotal').textContent = countTotal;
+            document.getElementById('kpiTorreConcluidos').textContent = countConcluidos;
+            document.getElementById('kpiTorreConcluidosPct').textContent = `${pct}%`;
+            document.getElementById('kpiTorreDuracaoProg').textContent = window.formatarMinutosHora(mediaProg);
+            document.getElementById('kpiTorreDuracaoReal').textContent = window.formatarMinutosHora(mediaReal);
+            
+            // Coloração do KPI de tempo real vs prog
+            const elReal = document.getElementById('kpiTorreDuracaoReal');
+            if(mediaReal > mediaProg && mediaProg > 0) {
+                elReal.className = "text-3xl font-black text-red-400"; // Atrasando a fila
+            } else if(mediaReal > 0) {
+                elReal.className = "text-3xl font-black text-emerald-400"; // Operação rápida
+            } else {
+                elReal.className = "text-3xl font-black text-yellow-400"; // Neutro
+            }
+        };
+
+        window.exportarTorreExcel = function() {
+            const tipoFiltro = document.getElementById('tipoFiltroTorre').value;
+            const filtroData = document.getElementById('filtroTorreData').value;
+            const filtroMes = document.getElementById('filtroTorreMes').value;
+
+            const base = (window.ymsStore.agendamentos || []).filter(a => !a.isRascunho);
+            let dadosFiltrados = base.filter(a => {
+                const parts = a.data.split('/'); 
+                if (parts.length !== 3) return false;
+                const dateIsoFormat = `${parts[2]}-${parts[1]}-${parts[0]}`; 
+                if (tipoFiltro === 'dia') return dateIsoFormat === filtroData;
+                return dateIsoFormat.startsWith(filtroMes);
+            });
+
+            // Só exporta o que o usuário quer ver (padrão de relatório)
+            const dadosExport = dadosFiltrados.map(item => {
+                const horaTurno = item.horaInicioOperacao || item.horaIni;
+                const duracaoProg = window.calcularDiferencaMinutos(item.horaIni, item.horaFim);
+                const duracaoReal = window.calcularDiferencaMinutos(item.horaInicioOperacao, item.horaFimOperacao);
+
+                return {
+                    "Data": item.data,
+                    "Ordem": item.ordem,
+                    "Fornecedor": item.fornecedor,
+                    "Motorista": item.nomeMotorista || '-',
+                    "Placa": item.placa || '-',
+                    "Doca Original": item.doca,
+                    "Rota Executada": item.rotaFiscal || '-',
+                    "Turno": window.calcularTurno(horaTurno),
+                    "Chegada Portaria": item.horaChegadaTotem || '-',
+                    "Liberação Fiscal": item.horaLiberacaoFiscal || '-',
+                    "Início Programado": item.horaIni,
+                    "Fim Programado": item.horaFim,
+                    "Duração Prevista (h)": window.formatarMinutosHora(duracaoProg),
+                    "Início Real (Doca)": item.horaInicioOperacao || '-',
+                    "Fim Real (Doca)": item.horaFimOperacao || '-',
+                    "Duração Real (h)": window.formatarMinutosHora(duracaoReal),
+                    "Saída Portaria (Checkout)": item.horaCheckout || '-',
+                    "Status Atual": item.status
+                };
+            });
+
+            if(dadosExport.length === 0) return alert("Não há dados para exportar neste período.");
+
+            const ws = XLSX.utils.json_to_sheet(dadosExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Relatório_YMS");
+
+            const periodo = tipoFiltro === 'dia' ? filtroData : filtroMes;
+            XLSX.writeFile(wb, `YMS_Relatorio_${periodo}.xlsx`);
         };
 
         window.onload = function() {
