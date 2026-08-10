@@ -1228,7 +1228,6 @@
 
         agendamentosValidos.forEach(item => {
             const hasDados = item.placa && item.cpf && item.nomeMotorista;
-            const statusColor = hasDados ? 'emerald' : 'amber';
             const card = `
                 <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4">
                     <div>
@@ -1246,7 +1245,7 @@
     };
 
     // ==========================================
-    // RECEBIMENTO FISCAL E ROTEIRIZADOR
+    // RECEBIMENTO FISCAL E ROTEIRIZADOR DE DOCAS (RESTAURADO)
     // ==========================================
     window.renderizarFiscal = function() {
         const container = document.getElementById('listaFiscal');
@@ -1326,6 +1325,21 @@
             window.ymsStore.agendamentos[idx].rotaFiscal = rotaArray.join(' ➔ ');
             window.salvarAgendamentosNaMemoria();
             window.exibirToast("Fiscal Liberado!", "Caminhão liberado para o pátio.", "✅");
+            window.renderizarFiscal();
+        }
+    };
+
+    window.relatarProblemaFiscal = function() {
+        const carga = window.ymsStore.fiscalCargaSelecionada;
+        if(!carga) return;
+        const motivo = prompt(`Descreva o problema encontrado no veículo de placa ${carga.placa}:`);
+        if(!motivo) return;
+        const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === carga.ordem);
+        if(idx > -1) {
+            window.ymsStore.agendamentos[idx].status = 'COM PROBLEMA';
+            window.ymsStore.agendamentos[idx].motivoProblema = motivo;
+            window.salvarAgendamentosNaMemoria();
+            window.exibirToast("Pendência Registrada", "Veículo alterado para COM PROBLEMA.", "⚠️");
             window.renderizarFiscal();
         }
     };
@@ -1617,7 +1631,7 @@
     // TORRE DE CONTROLE
     // ==========================================
     window.renderizarTorre = function() {
-        // Renderização simples das estatísticas da torre
+        // Estatísticas básicas da torre
     };
 
     window.onload = function() {
