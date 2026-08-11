@@ -881,7 +881,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL UNIFICADO -->
+  <!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
         // Configurações Firebase
         const firebaseConfig = {
@@ -955,7 +955,7 @@
             { empresa: "SCHOTT", senha: "schott@2026" }, { empresa: "SG/LEAS", senha: "sgleas@2026" },
             { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" }, { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
             { empresa: "TESA", senha: "tesa@2026" }, { empresa: "UNIPLAST", senha: "uniplast@2026" },
-            { empresa: "UNITAAL", unitaal: "unitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
+            { empresa: "UNITAAL", senha: "unitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
             { empresa: "VEXILIOM", senha: "vexiliom@2026" }, { empresa: "VIPRADO", senha: "viprado@2026" },
             { empresa: "VITROCOLOR", senha: "vitrocolor@2026" }, { empresa: "WEG MOTORES", senha: "weg@2026" },
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
@@ -1070,7 +1070,9 @@
             db.ref('yms_agendamentos_oficiais').on('value', (snapshot) => {
                 const data = snapshot.val();
                 let listaBruta = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                window.ymsStore.agendamentos = listaBruta.filter(a => !window.isDataPassada(a.data));
+                
+                // MUDANÇA: Não apaga os dados do passado da memória geral! Guarda histórico.
+                window.ymsStore.agendamentos = listaBruta;
                 
                 if(!document.getElementById('perfil-pcp').classList.contains('hidden')) window.renderizarGradePCP();
                 if(!document.getElementById('perfil-fornecedor').classList.contains('hidden')) window.renderizarPortalFornecedor();
@@ -1362,7 +1364,7 @@
             db.ref('yms_agendamentos_oficiais').get().then(snap => {
                 const atual = snap.val();
                 let lista = atual ? (Array.isArray(atual) ? atual : Object.values(atual)) : [];
-                lista = lista.filter(a => !window.isDataPassada(a.data));
+                // MUDANÇA: Mantendo histórico para a Torre de Controle ao subir novos agendamentos!
                 const novos = window.ymsStore.rascunhoAgendamentos.map(r => ({ ...r, isRascunho: false }));
                 
                 db.ref('yms_agendamentos_oficiais').set([...lista, ...novos]).then(() => {
@@ -1379,7 +1381,10 @@
             if (!container) return;
             container.innerHTML = "";
 
-            const todasJanelasExibicao = [...(window.ymsStore.rascunhoAgendamentos || []), ...(window.ymsStore.agendamentos || [])];
+            // MUDANÇA: O PCP só visualiza os agendamentos de Hoje para o futuro para não poluir a tela
+            let historicoOcultoAgendamentos = (window.ymsStore.agendamentos || []).filter(a => !window.isDataPassada(a.data));
+            const todasJanelasExibicao = [...(window.ymsStore.rascunhoAgendamentos || []), ...historicoOcultoAgendamentos];
+            
             const contadorEl = document.getElementById('contadorJanelas');
             if (contadorEl) contadorEl.textContent = todasJanelasExibicao.length;
 
@@ -1446,7 +1451,7 @@
         };
 
         window.limparJanelasSubidas = function() {
-            if(!confirm("Tem certeza que deseja ZERAR toda a base do Firebase?")) return;
+            if(!confirm("Tem certeza que deseja ZERAR toda a base do Firebase? ISSO APAGA O HISTÓRICO DA TORRE DE CONTROLE!")) return;
             firebase.database().ref('yms_agendamentos_oficiais').remove().then(() => {
                 window.ymsStore.agendamentos = [];
                 window.renderizarGradePCP();
@@ -1556,7 +1561,8 @@
                 lblBemVindo.innerHTML = `Bem-vindo(a), <span class="text-indigo-400 font-bold uppercase">${user.nome}</span>. Adicione os dados de transporte nas suas cargas.`;
             }
 
-            let agendamentosValidos = (window.ymsStore.agendamentos || []).filter(a => !a.isRascunho);
+            // MUDANÇA: O Fornecedor só vê agendamentos de hoje para frente
+            let agendamentosValidos = (window.ymsStore.agendamentos || []).filter(a => !a.isRascunho && !window.isDataPassada(a.data));
 
             if (!isAdmin) {
                 const nomeDigitado = window.normalizarTexto(user.nome);
