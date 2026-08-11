@@ -7,7 +7,7 @@
     <link rel="icon" href="data:,">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (CORRIGIDO PARA CDNJS ESTÁVEL PARA EVITAR O ERRO QUIC) -->
+    <!-- SheetJS (CDNJS Estável para evitar bloqueio QUIC) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Chart.js (Gráficos Torre de Controle) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -131,7 +131,6 @@
                     <span class="text-xl group-hover:scale-110 transition-transform">🪪</span>
                     <span class="text-xs">Cad. Motoristas</span>
                 </button>
-                <!-- NOVO BOTÃO 2D NO MODAL -->
                 <button type="button" onclick="window.solicitarAcessoPerfil('docas2d')" class="btn-perfil-card bg-slate-800 hover:bg-amber-600/30 border border-slate-700 hover:border-amber-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
                     <span class="text-xl group-hover:scale-110 transition-transform">🕹️</span>
                     <span class="text-xs text-amber-400">Gestão 2D Docas</span>
@@ -183,7 +182,6 @@
             <button type="button" onclick="window.mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
             <button type="button" onclick="window.mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
             <button type="button" onclick="window.mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
-            <!-- NOVO BOTÃO 2D NA BARRA -->
             <button type="button" onclick="window.mudarPerfil('docas2d')" id="btn-docas2d" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🕹️ Gestão 2D Docas</button>
             <button type="button" onclick="window.mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
         </nav>
@@ -883,7 +881,7 @@
         </div>
     </div>
 
- <!-- SCRIPT CENTRAL UNIFICADO -->
+    <!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
         // Configurações Firebase
         const firebaseConfig = {
@@ -957,7 +955,7 @@
             { empresa: "SCHOTT", senha: "schott@2026" }, { empresa: "SG/LEAS", senha: "sgleas@2026" },
             { empresa: "SINERGIA /CONBRAS", senha: "sinergia@2026" }, { empresa: "TERMOTECNICA", senha: "termotecnica@2026" },
             { empresa: "TESA", senha: "tesa@2026" }, { empresa: "UNIPLAST", senha: "uniplast@2026" },
-            { empresa: "UNITAAL", senha: "unitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
+            { empresa: "UNITAAL", unitaal: "unitaal@2026" }, { empresa: "USIMINAS", senha: "usiminas@2026" },
             { empresa: "VEXILIOM", senha: "vexiliom@2026" }, { empresa: "VIPRADO", senha: "viprado@2026" },
             { empresa: "VITROCOLOR", senha: "vitrocolor@2026" }, { empresa: "WEG MOTORES", senha: "weg@2026" },
             { empresa: "WEG TINTAS", senha: "wegtintas@2026" }, { empresa: "WEST ROCK", senha: "westrock@2026" }
@@ -2234,7 +2232,7 @@
         };
 
         // ==========================================
-        // CADASTRO DE MOTORISTAS LOGIC (COM BOTOES COMPLETOS)
+        // CADASTRO DE MOTORISTAS LOGIC
         // ==========================================
         window.renderizarMotoristas = function() {
             const container = document.getElementById('listaMotoristasGrid');
@@ -2589,7 +2587,7 @@
         };
 
         // ==========================================
-        // TORRE DE CONTROLE (KPIs e Exportação REVISADA)
+        // TORRE DE CONTROLE (KPIs e Exportação)
         // ==========================================
         window.calcularTurno = function(horaStr) {
             if (!horaStr || horaStr === '--:--' || horaStr === '') return "-";
@@ -2918,4 +2916,3 @@
             window.atualizarHorariosDisponiveis();
         };
     </script>
-  
