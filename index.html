@@ -594,7 +594,7 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO 8: GESTÃO 2D DE DOCAS (NOVA TELA INTEGRADA)                       -->
+        <!-- MÓDULO 8: GESTÃO 2D DE DOCAS                                             -->
         <!-- ========================================================================= -->
         <section id="perfil-docas2d" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
             <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-5 rounded-3xl border border-slate-700/60 shadow-xl gap-4 border-l-4 border-l-amber-500">
@@ -1163,7 +1163,6 @@
                 statusBadge.textContent = "EM ANÁLISE FISCAL";
             }
             else if (carga.status === 'AGUARDANDO DOCA') {
-                // CHAMA O MOTORISTA! TELA VERDE PISCANDO!
                 box.className = "bg-emerald-900 border-4 border-emerald-400 rounded-[3rem] max-w-sm w-full p-8 shadow-[0_0_50px_rgba(16,185,129,0.6)] text-center space-y-6 tela-chamando scale-105";
                 icon.textContent = "🟢";
                 titulo.textContent = "VÁ PARA A DOCA!";
@@ -1188,7 +1187,6 @@
                 statusBadge.textContent = "PRONTO PARA SAÍDA";
             }
         };
-
 
         // ==========================================
         // PCP PROGRAMADOR
@@ -1361,7 +1359,6 @@
             db.ref('yms_agendamentos_oficiais').get().then(snap => {
                 const atual = snap.val();
                 let lista = atual ? (Array.isArray(atual) ? atual : Object.values(atual)) : [];
-                lista = lista.filter(a => !window.isDataPassada(a.data));
                 const novos = window.ymsStore.rascunhoAgendamentos.map(r => ({ ...r, isRascunho: false }));
                 
                 db.ref('yms_agendamentos_oficiais').set([...lista, ...novos]).then(() => {
@@ -2129,7 +2126,7 @@
                     botaoAcao = `<button type="button" onclick="window.iniciarRecebimentoFisico('${item.ordem}')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-amber-800 active:border-b-0 active:translate-y-1">📦 Iniciar Recebimento / Triagem</button>`;
                 } else {
                     badgeStatus = '<span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold">⏳ AGUARDANDO DOCA</span>';
-                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar</button>`;
+                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar (Notifica Pager)</button>`;
                 }
 
                 const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
