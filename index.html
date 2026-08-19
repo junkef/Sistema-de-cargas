@@ -2,9 +2,18 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
-    <link rel="icon" href="data:,">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YMS Ecosystem - Pátio & PCP</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2760/2760147.png">
+    
+    <!-- TAGS PARA PWA (APP NATIVO) -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="YMS Motorista">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2760/2760147.png">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -71,7 +80,7 @@
                 <button type="button" onclick="window.solicitarAcessoPerfil('pager')" class="col-span-2 md:col-span-4 bg-emerald-900/50 hover:bg-emerald-600/50 border-2 border-emerald-500 p-4 rounded-2xl text-center transition cursor-pointer flex justify-center items-center gap-3 group">
                     <span class="text-3xl group-hover:scale-110 transition-transform">📱</span>
                     <div class="text-left">
-                        <span class="text-base block text-emerald-400 font-black">Guideline do Motorista</span>
+                        <span class="text-base block text-emerald-400 font-black">App do Motorista (Guideline)</span>
                         <span class="text-[10px] text-emerald-200 font-normal">Acompanhe a jornada e a chamada da doca pelo celular</span>
                     </div>
                 </button>
@@ -165,11 +174,17 @@
     <div class="flex-1 flex flex-col relative overflow-hidden">
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO PAGER (GUIDELINE DO MOTORISTA) - TELA EXCLUSIVA                    -->
+        <!-- MÓDULO PAGER (APP DO MOTORISTA COM GUIDELINE & PWA)                       -->
         <!-- ========================================================================= -->
         <section id="perfil-pager" class="perfil-modulo flex-1 flex flex-col items-center p-4 sm:p-8 hidden absolute inset-0 bg-slate-900 z-50 overflow-y-auto">
             
             <div id="pagerContainerBase" class="max-w-md w-full transition-all duration-500">
+                
+                <!-- BOTÃO DE INSTALAÇÃO DO APP (PWA) -->
+                <button id="btnInstallPWA" type="button" onclick="window.instalarApp()" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-3 rounded-2xl text-sm flex items-center justify-center gap-2 shadow-xl mb-4 w-full border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 transition-all">
+                    ⬇️ Instalar Aplicativo no Celular
+                </button>
+
                 <!-- Cabeçalho do Guideline -->
                 <div class="bg-slate-800 border border-slate-700 rounded-3xl p-5 shadow-2xl mb-6 flex flex-col gap-3">
                     <div class="flex justify-between items-start">
@@ -206,8 +221,9 @@
                     </div>
                 </div>
 
-                <div class="text-center mt-6">
+                <div class="text-center mt-6 flex flex-col gap-2">
                     <button type="button" onclick="window.tocarAlertaMotorista()" class="text-[10px] text-slate-500 hover:text-slate-300 transition underline">Testar Som do Alerta</button>
+                    <button type="button" onclick="window.fazerLogoutGlobal()" class="text-[10px] text-red-500 hover:text-red-400 transition underline">Sair do App</button>
                 </div>
             </div>
 
@@ -505,7 +521,7 @@
                             ⚠️ Relatar Problema
                         </button>
                         <button type="button" id="btnFiscalAprovar" disabled onclick="window.aprovarFiscal()" class="col-span-8 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 cursor-not-allowed opacity-50 flex items-center justify-center gap-2">
-                            ✅ Liberar Rota e Doca (Notifica Pager)
+                            ✅ Liberar Rota e Doca (Avisa App)
                         </button>
                     </div>
                 </div>
@@ -768,6 +784,59 @@
 
     <!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
+        // INIT PWA (GERA O MANIFEST E O SERVICE WORKER DINAMICAMENTE NO HTML)
+        window.initPWA = function() {
+            try {
+                // 1. Cria e injeta o Manifest.json
+                const manifestJSON = {
+                    "name": "YMS Motorista",
+                    "short_name": "YMS",
+                    "start_url": window.location.href,
+                    "display": "standalone",
+                    "background_color": "#0f172a",
+                    "theme_color": "#0f172a",
+                    "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/2760/2760147.png","sizes": "512x512","type": "image/png"}]
+                };
+                const manifestURL = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestJSON));
+                const linkManifest = document.createElement('link');
+                linkManifest.rel = 'manifest';
+                linkManifest.href = manifestURL;
+                document.head.appendChild(linkManifest);
+
+                // 2. Cria e registra um Service Worker Vazio (Obrigatório para PWA)
+                const swCode = "self.addEventListener('fetch', function(e) {});";
+                const swBlob = new Blob([swCode], {type: 'application/javascript'});
+                const swUrl = URL.createObjectURL(swBlob);
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register(swUrl).catch(() => console.log("SW bypass info"));
+                }
+
+                // 3. Prepara o botão de Instalação se o celular permitir
+                window.deferredPrompt = null;
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    window.deferredPrompt = e;
+                    const btn = document.getElementById('btnInstallPWA');
+                    if(btn) btn.classList.remove('hidden');
+                });
+            } catch(err) { console.log("PWA setup ignorado neste ambiente."); }
+        };
+
+        window.instalarApp = async function() {
+            if(window.deferredPrompt !== null) {
+                window.deferredPrompt.prompt();
+                const { outcome } = await window.deferredPrompt.userChoice;
+                if(outcome === 'accepted') {
+                    const btn = document.getElementById('btnInstallPWA');
+                    if(btn) btn.classList.add('hidden');
+                }
+                window.deferredPrompt = null;
+            } else {
+                alert("Para instalar no iPhone (Safari): Toque no botão 'Compartilhar' (quadrado com seta para cima) na barra de baixo e depois em 'Adicionar à Tela de Início'.");
+            }
+        };
+
+        // Configurações Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCljoMUprqBfj9k8y0w7dE3MW7bWdjZlgA",
             authDomain: "yms-patio-6ba8c.firebaseapp.com",
@@ -1956,6 +2025,7 @@
                 const badgeProblema = isComProblema ? `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">⚠️ PENDÊNCIA NF</span>` : '';
                 const boxProblema = isComProblema ? `<div class="mt-2 bg-red-950/50 border border-red-500/30 p-2 rounded-lg text-[10px] text-red-300 break-words"><strong>MOTIVO:</strong> ${item.motivoProblema}</div>` : '';
 
+                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2146,9 +2216,12 @@
             });
 
             fila.sort((a, b) => {
+                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA;
+                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
+
+                // DESEMPATE POR FIFO
                 const hA = window.horaParaMinutos(a.horaLiberacaoFiscal || a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaLiberacaoFiscal || b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -2182,11 +2255,12 @@
                     botaoAcao = `<button type="button" onclick="window.iniciarRecebimentoFisico('${item.ordem}')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-amber-800 active:border-b-0 active:translate-y-1">📦 Iniciar Recebimento / Triagem</button>`;
                 } else {
                     badgeStatus = '<span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold">⏳ AGUARDANDO DOCA</span>';
-                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar (Avisa Pager)</button>`;
+                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar (Avisa PWA)</button>`;
                 }
 
                 const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
 
+                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2230,21 +2304,18 @@
         };
 
         window.iniciarOperacaoDoca = function(ordem) {
-            if(!confirm("Chamar veículo e iniciar DESCARGA na plataforma? (Isso atualizará o Guideline do motorista)")) return;
+            if(!confirm("Chamar veículo e iniciar DESCARGA na plataforma? (Isso atualizará o App PWA do motorista)")) return;
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
                 const agora = new Date();
-                const carga = window.ymsStore.agendamentos[idx];
+                window.ymsStore.agendamentos[idx].status = 'EM OPERACAO';
                 
-                carga.status = 'EM OPERACAO';
-                if(!carga.horaInicioOperacao || carga.etapaRotaAtual === 0) {
-                    carga.horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                if(!window.ymsStore.agendamentos[idx].horaInicioOperacao || window.ymsStore.agendamentos[idx].etapaRotaAtual === 0) {
+                    window.ymsStore.agendamentos[idx].horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
                 }
                 
-                // OPCIONAL: SMS NATIVO PODE SER DESCOMENTADO AQUI SE DESEJAR. COMO O PAGER AGORA É UM GUIDELINE, ELE JÁ É SUFICIENTE.
-                
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Veículo Chamado!", "O Guideline do motorista foi atualizado.", "⚙️");
+                window.exibirToast("Veículo Chamado!", "O Pager PWA foi notificado.", "⚙️");
                 window.renderizarOperadorDoca();
             }
         };
@@ -2430,9 +2501,12 @@
             }
 
             fila.sort((a, b) => {
+                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; 
+                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
+
+                // DESEMPATE POR FIFO
                 const hA = window.horaParaMinutos(a.horaFimOperacao || '23:59');
                 const hB = window.horaParaMinutos(b.horaFimOperacao || '23:59');
                 return hA - hB;
@@ -2450,6 +2524,7 @@
             }
 
             fila.forEach(item => {
+                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2501,7 +2576,7 @@
         };
 
         // ==========================================
-        // GESTÃO 2D DE DOCAS
+        // GESTÃO 2D DE DOCAS (RECEBIMENTO E STATUS EM TEMPO REAL)
         // ==========================================
         window.filtroDoca2DSelecionada = 'todas';
 
@@ -2639,7 +2714,7 @@
         };
 
         // ==========================================
-        // TORRE DE CONTROLE
+        // TORRE DE CONTROLE (KPIs e Exportação)
         // ==========================================
         window.calcularTurno = function(horaStr) {
             if (!horaStr || horaStr === '--:--' || horaStr === '') return "-";
@@ -2916,6 +2991,8 @@
         };
 
         window.onload = function() {
+            window.initPWA();
+            
             window.atualizarRelogioDigital();
             setInterval(window.atualizarRelogioDigital, 1000);
             
