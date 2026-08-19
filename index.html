@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>YMS Ecosystem - Pátio & PCP</title>
     
-    <!-- NOVO LOGO DA WHIRLPOOL APLICADO AQUI -->
     <link rel="icon" href="logo.png">
     
     <!-- TAGS PARA PWA (APP NATIVO) -->
@@ -13,7 +12,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="YMS Motorista">
-    <!-- NOVO LOGO PARA O ÍCONE DO IPHONE AQUI -->
     <link rel="apple-touch-icon" href="logo.png">
 
     <!-- Tailwind CSS -->
@@ -177,7 +175,7 @@
     <div class="flex-1 flex flex-col relative overflow-hidden">
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO PAGER (APP DO MOTORISTA COM GUIDELINE & PWA)                       -->
+        <!-- MÓDULO PAGER (APP DO MOTORISTA COM GUIDELINE & PUSH NOTIFICATIONS)        -->
         <!-- ========================================================================= -->
         <section id="perfil-pager" class="perfil-modulo flex-1 flex flex-col items-center p-4 sm:p-8 hidden absolute inset-0 bg-slate-900 z-50 overflow-y-auto">
             
@@ -186,6 +184,11 @@
                 <!-- BOTÃO DE INSTALAÇÃO DO APP (PWA) -->
                 <button id="btnInstallPWA" type="button" onclick="window.instalarApp()" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-3 rounded-2xl text-sm flex items-center justify-center gap-2 shadow-xl mb-4 w-full border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 transition-all">
                     ⬇️ Instalar Aplicativo no Celular
+                </button>
+
+                <!-- BOTÃO PARA ATIVAR NOTIFICAÇÕES (NOVO) -->
+                <button id="btnEnableNotifications" type="button" onclick="window.solicitarPermissaoNotificacao()" class="hidden bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-3 rounded-2xl text-sm flex items-center justify-center gap-2 shadow-xl mb-4 w-full border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all animate-pulse">
+                    🔔 Ativar Notificações de Chamada
                 </button>
 
                 <!-- Cabeçalho do Guideline -->
@@ -761,7 +764,6 @@
     <!-- TICKET INVISÍVEL NA TELA, VISÍVEL SÓ NA IMPRESSORA -->
     <div id="ticketImpressao">
         <div style="text-align: center; border-bottom: 2px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
-            <!-- NOVO LOGO NO TICKET DE IMPRESSÃO AQUI -->
             <img src="logo.png" alt="Logo Whirlpool" style="width: 100px; height: auto; margin: 0 auto 5px auto; filter: grayscale(100%); object-fit: contain;">
             <h2 style="margin: 0; font-size: 18px; text-transform: uppercase;">YMS Ecosystem</h2>
             <p style="margin: 5px 0 0 0; font-size: 11px;">Controle de Pátio e Docas</p>
@@ -788,10 +790,9 @@
 
     <!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
-        // INIT PWA (GERA O MANIFEST E O SERVICE WORKER DINAMICAMENTE NO HTML)
+        // INIT PWA E SERVICE WORKER COM SUPORTE A NOTIFICAÇÕES
         window.initPWA = function() {
             try {
-                // 1. Cria e injeta o Manifest.json (ATUALIZADO PARA USAR LOGO DA WHIRLPOOL)
                 const manifestJSON = {
                     "name": "YMS Motorista",
                     "short_name": "YMS",
@@ -807,15 +808,23 @@
                 linkManifest.href = manifestURL;
                 document.head.appendChild(linkManifest);
 
-                // 2. Cria e registra um Service Worker Vazio (Obrigatório para PWA)
-                const swCode = "self.addEventListener('fetch', function(e) {});";
+                // Service worker modificado para tratar o clique na notificação
+                const swCode = `
+                    self.addEventListener('fetch', function(e) {});
+                    self.addEventListener('notificationclick', function(e) {
+                        e.notification.close();
+                        e.waitUntil(clients.matchAll({ type: 'window' }).then(clientsArr => {
+                            if (clientsArr.length) { return clientsArr[0].focus(); }
+                            else { return clients.openWindow('/'); }
+                        }));
+                    });
+                `;
                 const swBlob = new Blob([swCode], {type: 'application/javascript'});
                 const swUrl = URL.createObjectURL(swBlob);
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register(swUrl).catch(() => console.log("SW bypass info"));
                 }
 
-                // 3. Prepara o botão de Instalação se o celular permitir
                 window.deferredPrompt = null;
                 window.addEventListener('beforeinstallprompt', (e) => {
                     e.preventDefault();
@@ -837,6 +846,41 @@
                 window.deferredPrompt = null;
             } else {
                 alert("Para instalar no iPhone (Safari): Toque no botão 'Compartilhar' (quadrado com seta para cima) na barra de baixo e depois em 'Adicionar à Tela de Início'.");
+            }
+        };
+
+        // ==========================================
+        // SISTEMA DE NOTIFICAÇÕES (GATILHO LOCAL)
+        // ==========================================
+        window.solicitarPermissaoNotificacao = function() {
+            if (!("Notification" in window)) {
+                alert("Este navegador não suporta notificações de área de trabalho.");
+                return;
+            }
+            Notification.requestPermission().then(function (permission) {
+                if (permission === "granted") {
+                    document.getElementById('btnEnableNotifications').classList.add('hidden');
+                    window.exibirToast("Notificações Ativadas!", "Você será avisado quando a doca chamar.", "🔔");
+                } else {
+                    alert("Você negou a permissão. O celular não vai apitar se a tela estiver apagada!");
+                }
+            });
+        };
+
+        window.mostrarNotificacaoCelular = function(titulo, corpo) {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(function(registration) {
+                    registration.showNotification(titulo, {
+                        body: corpo,
+                        icon: 'logo.png',
+                        vibrate: [200, 100, 200, 100, 200, 100, 200], // Vibração agressiva
+                        requireInteraction: true // A notificação fica na tela até o usuário clicar
+                    });
+                });
+            } else {
+                new Notification(titulo, { body: corpo, icon: 'logo.png' });
             }
         };
 
@@ -1176,8 +1220,14 @@
                 setTimeout(() => document.getElementById('inpTotemCpf').focus(), 100);
             }
             if(p === 'pager') {
-                window.tocarAlertaMotorista(); 
                 window.renderizarPagerMotorista();
+                
+                // Exibe o botão de notificação se a permissão não foi dada
+                if ("Notification" in window && Notification.permission !== "granted") {
+                    document.getElementById('btnEnableNotifications').classList.remove('hidden');
+                } else {
+                    document.getElementById('btnEnableNotifications').classList.add('hidden');
+                }
             }
         };
 
@@ -1241,7 +1291,14 @@
             placaEl.textContent = carga.placa || "NÃO INF.";
 
             if (window.ymsStore.statusAnteriorPager !== carga.status) {
-                if (carga.status === 'EM OPERACAO') window.tocarAlertaMotorista();
+                if (carga.status === 'EM OPERACAO') {
+                    window.tocarAlertaMotorista();
+                    // GATILHO DA NOTIFICAÇÃO NATIVA (PUSH)
+                    window.mostrarNotificacaoCelular(
+                        "🟢 VÁ PARA A DOCA!", 
+                        `Sua plataforma foi liberada! Dirija-se imediatamente para: ${carga.docaAtual || carga.doca}`
+                    );
+                }
                 window.ymsStore.statusAnteriorPager = carga.status;
             }
 
@@ -2002,12 +2059,9 @@
             }
 
             aguardando.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
-
-                // DESEMPATE POR FIFO (Hora de Chegada)
+                if (pA !== pB) return pB - pA; 
                 const hA = window.horaParaMinutos(a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -2042,7 +2096,6 @@
                 const badgeProblema = isComProblema ? `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">⚠️ PENDÊNCIA NF</span>` : '';
                 const boxProblema = isComProblema ? `<div class="mt-2 bg-red-950/50 border border-red-500/30 p-2 rounded-lg text-[10px] text-red-300 break-words"><strong>MOTIVO:</strong> ${item.motivoProblema}</div>` : '';
 
-                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2233,12 +2286,9 @@
             });
 
             fila.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
-
-                // DESEMPATE POR FIFO
+                if (pA !== pB) return pB - pA;
                 const hA = window.horaParaMinutos(a.horaLiberacaoFiscal || a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaLiberacaoFiscal || b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -2272,12 +2322,11 @@
                     botaoAcao = `<button type="button" onclick="window.iniciarRecebimentoFisico('${item.ordem}')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-amber-800 active:border-b-0 active:translate-y-1">📦 Iniciar Recebimento / Triagem</button>`;
                 } else {
                     badgeStatus = '<span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold">⏳ AGUARDANDO DOCA</span>';
-                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar (Avisa PWA)</button>`;
+                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar (Avisa Celular)</button>`;
                 }
 
                 const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
 
-                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2321,47 +2370,18 @@
         };
 
         window.iniciarOperacaoDoca = function(ordem) {
-            if(!confirm("Chamar veículo para a doca? Isso fará o Pager apitar e abrirá seu app de SMS para enviar a mensagem.")) return;
+            if(!confirm("Chamar veículo e iniciar DESCARGA na plataforma? (Isso atualizará o App do motorista)")) return;
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
                 const agora = new Date();
-                const carga = window.ymsStore.agendamentos[idx];
+                window.ymsStore.agendamentos[idx].status = 'EM OPERACAO';
                 
-                carga.status = 'EM OPERACAO';
-                if(!carga.horaInicioOperacao || carga.etapaRotaAtual === 0) {
-                    carga.horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                if(!window.ymsStore.agendamentos[idx].horaInicioOperacao || window.ymsStore.agendamentos[idx].etapaRotaAtual === 0) {
+                    window.ymsStore.agendamentos[idx].horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
                 }
                 
-                // LÓGICA DO SMS GRATUITO (OPÇÃO 1)
-                if (carga.celular) {
-                    let celularLimpo = carga.celular.replace(/\D/g, '');
-                    // Algumas operadoras/celulares precisam do +55, outras só o DDD. Colocando +55 por padrão no BR.
-                    if (celularLimpo.length === 10 || celularLimpo.length === 11) celularLimpo = '+55' + celularLimpo;
-                    
-                    const docaDestino = carga.docaAtual || carga.doca;
-                    // Formatando a mensagem (sem acentos difíceis para evitar quebra no SMS antigo)
-                    const mensagem = encodeURIComponent(`YMS ALERTA: ${carga.nomeMotorista || 'Motorista'}, doca liberada! Dirija-se para: ${docaDestino}`);
-                    
-                    // Detectar se é iOS (iPhone) para usar '&body' no lugar de '?body' (macete clássico de frontend)
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                    const separador = isIOS ? '&' : '?';
-                    
-                    const linkSms = `sms:${celularLimpo}${separador}body=${mensagem}`;
-                    
-                    // FORÇA O CLIQUE PARA EVITAR BLOQUEIO DO CHROME
-                    const a = document.createElement('a');
-                    a.href = linkSms;
-                    a.target = '_blank';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    
-                } else {
-                    alert("Atenção: Este motorista não tem celular cadastrado. O Pager digital vai apitar, mas a tela de envio SMS não será aberta.");
-                }
-
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Veículo Chamado!", "O Pager foi notificado.", "⚙️");
+                window.exibirToast("Veículo Chamado!", "O Pager Push foi notificado.", "⚙️");
                 window.renderizarOperadorDoca();
             }
         };
@@ -2547,12 +2567,9 @@
             }
 
             fila.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
-
-                // DESEMPATE POR FIFO
+                if (pA !== pB) return pB - pA; 
                 const hA = window.horaParaMinutos(a.horaFimOperacao || '23:59');
                 const hB = window.horaParaMinutos(b.horaFimOperacao || '23:59');
                 return hA - hB;
@@ -2570,7 +2587,6 @@
             }
 
             fila.forEach(item => {
-                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2622,7 +2638,7 @@
         };
 
         // ==========================================
-        // GESTÃO 2D DE DOCAS (RECEBIMENTO E STATUS EM TEMPO REAL)
+        // GESTÃO 2D DE DOCAS
         // ==========================================
         window.filtroDoca2DSelecionada = 'todas';
 
@@ -2760,7 +2776,7 @@
         };
 
         // ==========================================
-        // TORRE DE CONTROLE (KPIs e Exportação)
+        // TORRE DE CONTROLE
         // ==========================================
         window.calcularTurno = function(horaStr) {
             if (!horaStr || horaStr === '--:--' || horaStr === '') return "-";
