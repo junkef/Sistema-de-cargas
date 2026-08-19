@@ -5,68 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YMS Ecosystem - Sistema Integrado de Pátio & PCP</title>
     <link rel="icon" href="data:,">
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (CDNJS Estável para evitar bloqueio QUIC) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Chart.js (Gráficos Torre de Controle) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <!-- QRCodeJS (Ticket Impresso do Totem) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <!-- Firebase App (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <!-- Firebase Realtime Database (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
         .hidden { display: none !important; }
         input[type="date"], input[type="month"] { color-scheme: dark; }
-        
         option { background-color: #0f172a !important; color: #f1f5f9 !important; }
-        
-        .btn-perfil-card, .btn-perfil-card span, #modalLoginGlobal button span {
-            color: #ffffff !important; font-weight: 800 !important;
-        }
-
+        .btn-perfil-card, .btn-perfil-card span, #modalLoginGlobal button span { color: #ffffff !important; font-weight: 800 !important; }
         #modalLoginGlobal button span.txt-purple { color: #d8b4fe !important; }
-
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
 
-        /* ANIMAÇÕES DO PAINEL 2D E PAGER DO MOTORISTA */
-        @keyframes pulse-red-border {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        .dock-card-red-pulse { border-color: #ef4444 !important; animation: pulse-red-border 2s infinite; }
+        /* GUIDELINE TIMELINE CSS */
+        .timeline-step { display: flex; align-items: flex-start; gap: 16px; position: relative; padding-bottom: 28px; }
+        .timeline-step::before { content: ''; position: absolute; left: 19px; top: 40px; bottom: 0; width: 2px; background: #1e293b; z-index: 0; }
+        .timeline-step:last-child::before { display: none; }
+        .timeline-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 1; border: 2px solid #334155; background: #0f172a; transition: all 0.4s ease; }
+        
+        .step-done .timeline-icon { border-color: #6366f1; background: #4f46e5; color: white; }
+        .step-done::before { background: #6366f1; }
+        .step-done .step-title { color: #818cf8; }
+        
+        .step-active .timeline-icon { border-color: #10b981; background: #059669; box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); animation: pulse-green 2s infinite; color: white; }
+        .step-active .step-title { color: #10b981; font-weight: 900; }
+        .step-active .step-desc { color: #e2e8f0; }
 
-        @keyframes bg-piscar {
-            0% { background-color: #0f172a; }
-            50% { background-color: #059669; }
-            100% { background-color: #0f172a; }
-        }
-        .tela-chamando { animation: bg-piscar 1s infinite; }
+        .step-alert .timeline-icon { border-color: #ef4444; background: #dc2626; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); animation: pulse-red 2s infinite; color: white; }
+        .step-alert .step-title { color: #ef4444; font-weight: 900; }
+        
+        .step-future .timeline-icon { border-color: #334155; background: #0f172a; opacity: 0.5; }
+        .step-future .step-text { opacity: 0.5; }
 
-        /* REGRAS BLINDADAS PARA IMPRESSÃO DO TICKET */
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        @keyframes bg-piscar { 0% { background-color: #0f172a; } 50% { background-color: #064e3b; } 100% { background-color: #0f172a; } }
+        .tela-chamando { animation: bg-piscar 1.5s infinite; }
+
         @media screen { #ticketImpressao { display: none !important; } }
         @media print {
-            @page { margin: 0; }
-            body { background: white !important; margin: 0; padding: 0; }
+            @page { margin: 0; } body { background: white !important; margin: 0; padding: 0; }
             body > *:not(#ticketImpressao) { display: none !important; }
-            #ticketImpressao {
-                display: block !important; position: absolute; left: 0; top: 0; width: 80mm; 
-                padding: 5mm; color: black !important; background: white !important; font-family: monospace;
-            }
+            #ticketImpressao { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; padding: 5mm; color: black !important; background: white !important; font-family: monospace; }
         }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between select-none">
 
-    <!-- MODAL INICIAL DE LOGIN / SELEÇÃO DE PERFIL -->
+    <!-- MODAL INICIAL DE LOGIN -->
     <div id="modalLoginGlobal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center p-4 sm:p-6 z-50 overflow-y-auto py-8 items-start sm:items-center">
         <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-4 my-auto">
             <div class="text-center space-y-1">
@@ -75,13 +67,12 @@
                 <p class="text-xs text-slate-400">Selecione seu perfil para acessar o sistema</p>
             </div>
 
-            <!-- BOTÃO DO PAGER DO MOTORISTA -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 border-b border-slate-800 pb-4">
                 <button type="button" onclick="window.solicitarAcessoPerfil('pager')" class="col-span-2 md:col-span-4 bg-emerald-900/50 hover:bg-emerald-600/50 border-2 border-emerald-500 p-4 rounded-2xl text-center transition cursor-pointer flex justify-center items-center gap-3 group">
                     <span class="text-3xl group-hover:scale-110 transition-transform">📱</span>
                     <div class="text-left">
-                        <span class="text-base block text-emerald-400">Motorista: Acompanhar Carga</span>
-                        <span class="text-[10px] text-emerald-200 font-normal">Acompanhe do seu celular quando a doca chamar</span>
+                        <span class="text-base block text-emerald-400 font-black">Guideline do Motorista</span>
+                        <span class="text-[10px] text-emerald-200 font-normal">Acompanhe a jornada e a chamada da doca pelo celular</span>
                     </div>
                 </button>
             </div>
@@ -152,13 +143,13 @@
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
             <button type="button" onclick="window.mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
             <button type="button" onclick="window.mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
-            <button type="button" onclick="window.mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
-            <button type="button" onclick="window.mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
-            <button type="button" onclick="window.mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
-            <button type="button" onclick="window.mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
-            <button type="button" onclick="window.mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
-            <button type="button" onclick="window.mudarPerfil('docas2d')" id="btn-docas2d" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🕹️ Gestão 2D Docas</button>
-            <button type="button" onclick="window.mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
+            <button type="button" onclick="window.mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem</button>
+            <button type="button" onclick="window.mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Triagem Fiscal</button>
+            <button type="button" onclick="window.mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador Doca</button>
+            <button type="button" onclick="window.mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out</button>
+            <button type="button" onclick="window.mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Motoristas</button>
+            <button type="button" onclick="window.mudarPerfil('docas2d')" id="btn-docas2d" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🕹️ Gestão 2D</button>
+            <button type="button" onclick="window.mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre</button>
         </nav>
 
         <div class="flex items-center gap-3">
@@ -171,32 +162,55 @@
         </div>
     </header>
 
-    <div class="flex-1 flex flex-col relative">
+    <div class="flex-1 flex flex-col relative overflow-hidden">
 
         <!-- ========================================================================= -->
-        <!-- MÓDULO PAGER (APP DO MOTORISTA) - TELA EXCLUSIVA DE NOTIFICAÇÃO           -->
+        <!-- MÓDULO PAGER (GUIDELINE DO MOTORISTA) - TELA EXCLUSIVA                    -->
         <!-- ========================================================================= -->
-        <section id="perfil-pager" class="perfil-modulo flex-1 flex items-center justify-center p-6 hidden absolute inset-0 bg-slate-900 z-50">
-            <div id="pagerBox" class="bg-slate-800 border-4 border-slate-700 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6 transition-all duration-300">
-                <div class="space-y-1">
-                    <span class="text-5xl inline-block" id="pagerIcone">📱</span>
-                    <h2 class="text-2xl font-black text-white tracking-wider uppercase mt-4" id="pagerTitulo">Aguardando...</h2>
-                    <p class="text-sm text-slate-400 font-bold" id="pagerSub">Fique atento a esta tela. O sistema avisará quando a sua doca for liberada.</p>
-                </div>
-
-                <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner text-left space-y-3">
-                    <p><span class="text-slate-500 font-bold text-xs uppercase block">Sua Placa:</span> <span id="pagerPlaca" class="text-yellow-400 font-mono font-black text-xl">-</span></p>
-                    <p><span class="text-slate-500 font-bold text-xs uppercase block">Doca Destino:</span> <span id="pagerDoca" class="text-white font-black text-xl">-</span></p>
-                    <div class="border-t border-slate-800 pt-3 mt-3">
-                        <span class="text-slate-500 font-bold text-xs uppercase block">Status atual:</span>
-                        <div id="pagerStatusBadge" class="inline-block bg-slate-800 text-slate-300 border border-slate-600 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1">
-                            Lendo dados...
+        <section id="perfil-pager" class="perfil-modulo flex-1 flex flex-col items-center p-4 sm:p-8 hidden absolute inset-0 bg-slate-900 z-50 overflow-y-auto">
+            
+            <div id="pagerContainerBase" class="max-w-md w-full transition-all duration-500">
+                <!-- Cabeçalho do Guideline -->
+                <div class="bg-slate-800 border border-slate-700 rounded-3xl p-5 shadow-2xl mb-6 flex flex-col gap-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">JORNADA DA CARGA</h2>
+                            <p id="pagerForn" class="text-sm font-black text-white uppercase mt-0.5">-</p>
+                        </div>
+                        <span id="pagerIcone" class="text-2xl bg-slate-900 p-2 rounded-xl border border-slate-700">🚚</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 bg-slate-950 p-3 rounded-2xl border border-slate-800/50">
+                        <div>
+                            <span class="block text-[9px] text-slate-500 font-bold uppercase">Ticket / Ordem</span>
+                            <span id="pagerOrdem" class="text-xs font-mono font-bold text-indigo-300">-</span>
+                        </div>
+                        <div>
+                            <span class="block text-[9px] text-slate-500 font-bold uppercase">Placa</span>
+                            <span id="pagerPlaca" class="text-xs font-mono font-bold text-yellow-400">-</span>
                         </div>
                     </div>
                 </div>
 
-                <button type="button" onclick="window.tocarAlertaMotorista()" class="text-[10px] text-slate-500 underline">Testar Som do Alerta</button>
+                <!-- Aviso Gigante Dinâmico -->
+                <div id="pagerAvisoHero" class="rounded-3xl p-6 shadow-2xl mb-6 text-center border-4 border-slate-700 bg-slate-800 transition-colors duration-500">
+                    <h3 id="pagerTitulo" class="text-xl font-black text-white uppercase tracking-wider">Lendo status...</h3>
+                    <p id="pagerSub" class="text-xs text-slate-300 mt-2 font-bold">Por favor, aguarde.</p>
+                </div>
+
+                <!-- LINHA DO TEMPO (GUIDELINE) -->
+                <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 shadow-2xl">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-700 pb-2">Status do Rastreamento</h3>
+                    
+                    <div id="guidelineTimeline" class="space-y-0">
+                        <!-- Injetado via JS -->
+                    </div>
+                </div>
+
+                <div class="text-center mt-6">
+                    <button type="button" onclick="window.tocarAlertaMotorista()" class="text-[10px] text-slate-500 hover:text-slate-300 transition underline">Testar Som do Alerta</button>
+                </div>
             </div>
+
         </section>
 
         <!-- ========================================================================= -->
@@ -754,7 +768,6 @@
 
     <!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
-        // Configurações Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCljoMUprqBfj9k8y0w7dE3MW7bWdjZlgA",
             authDomain: "yms-patio-6ba8c.firebaseapp.com",
@@ -813,7 +826,7 @@
             { empresa: "ISOTERM", senha: "isoterm@2026" }, { empresa: "KLABIN", senha: "klabin@2026" },
             { empresa: "KNAUF", senha: "knauf@2026" }, { empresa: "LINKPLAS", senha: "linkplas@2026" },
             { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" }, { empresa: "METALMA", senha: "metalma@2026" },
-            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" }, { empresa: "MULTILOG", multiLog: "multilog@2026" },
+            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" }, { empresa: "MULTILOG", senha: "multilog@2026" },
             { empresa: "NIDEC", senha: "nidec@2026" }, { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
             { empresa: "PARANAPANEMA", senha: "paranapanema@2026" }, { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
             { empresa: "REFREX", senha: "refrex@2026" }, { empresa: "RUDOLPH", senha: "rudolph@2026" },
@@ -974,7 +987,7 @@
             document.getElementById('boxSenhaLogin').classList.remove('hidden');
             
             if (perfil === 'pager') {
-                document.getElementById('lblPerfilSelecionadoLogin').textContent = `APP DO MOTORISTA - ACOMPANHAMENTO`;
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = `ACESSO DO MOTORISTA`;
                 document.getElementById('lblInput1').textContent = `👤 DIGITE SEU CPF (APENAS NÚMEROS) *`;
                 document.getElementById('containerSenha').classList.add('hidden');
             } else {
@@ -1086,7 +1099,7 @@
         };
 
         // ==========================================
-        // PAGER DIGITAL (APP DO MOTORISTA)
+        // PAGER DIGITAL (GUIDELINE TIMELINE DO MOTORISTA)
         // ==========================================
         window.tocarAlertaMotorista = function() {
             try {
@@ -1116,84 +1129,125 @@
                 a.status !== 'FINALIZADO'
             );
 
-            const box = document.getElementById('pagerBox');
-            const icon = document.getElementById('pagerIcone');
-            const titulo = document.getElementById('pagerTitulo');
-            const sub = document.getElementById('pagerSub');
-            const placa = document.getElementById('pagerPlaca');
-            const doca = document.getElementById('pagerDoca');
-            const statusBadge = document.getElementById('pagerStatusBadge');
+            const containerBase = document.getElementById('pagerContainerBase');
+            const fornEl = document.getElementById('pagerForn');
+            const iconeEl = document.getElementById('pagerIcone');
+            const ordemEl = document.getElementById('pagerOrdem');
+            const placaEl = document.getElementById('pagerPlaca');
+            
+            const avisoHero = document.getElementById('pagerAvisoHero');
+            const tituloEl = document.getElementById('pagerTitulo');
+            const subEl = document.getElementById('pagerSub');
+            
+            const timelineContainer = document.getElementById('guidelineTimeline');
 
             if (!carga) {
-                box.className = "bg-slate-800 border-4 border-slate-700 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
-                icon.textContent = "📭";
-                titulo.textContent = "Nenhuma Carga";
-                sub.textContent = "Você não possui agendamentos ativos ou aguardando no pátio hoje.";
-                placa.textContent = "-";
-                doca.textContent = "-";
-                statusBadge.className = "inline-block bg-slate-800 text-slate-400 border border-slate-600 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
-                statusBadge.textContent = "SEM ATIVIDADE";
+                fornEl.textContent = "-";
+                ordemEl.textContent = "-";
+                placaEl.textContent = "-";
+                iconeEl.textContent = "📭";
+                avisoHero.className = "rounded-3xl p-6 shadow-2xl mb-6 text-center border-4 border-slate-700 bg-slate-800";
+                tituloEl.textContent = "Nenhuma Carga";
+                subEl.textContent = "Você não possui agendamentos ativos para hoje.";
+                timelineContainer.innerHTML = `<div class="text-center text-slate-500 text-sm py-4">Sua jornada aparecerá aqui.</div>`;
                 return;
             }
 
-            placa.textContent = carga.placa || "NÃO INFORMADA";
-            doca.textContent = carga.docaAtual || carga.doca || "-";
+            fornEl.textContent = carga.fornecedor;
+            ordemEl.textContent = carga.ordem;
+            placaEl.textContent = carga.placa || "NÃO INF.";
 
             if (window.ymsStore.statusAnteriorPager !== carga.status) {
-                if (carga.status === 'EM OPERACAO') {
-                    window.tocarAlertaMotorista();
-                }
+                if (carga.status === 'EM OPERACAO') window.tocarAlertaMotorista();
                 window.ymsStore.statusAnteriorPager = carga.status;
             }
 
+            // MÁQUINA DE ESTADOS DO GUIDELINE
+            let steps = [
+                { id: 'agendado', label: '1. Check-in na Portaria', icon: '🏭', status: 'future', desc: 'Dirija-se ao Totem' },
+                { id: 'fiscal', label: '2. Triagem Fiscal', icon: '📑', status: 'future', desc: 'Aguarde análise da NF' },
+                { id: 'patio', label: '3. Fila do Pátio', icon: '🅿️', status: 'future', desc: 'Aguarde a doca chamar' },
+                { id: 'doca', label: '4. Doca / Descarga', icon: '🚛', status: 'future', desc: 'Em processo' },
+                { id: 'checkout', label: '5. Saída / Check-out', icon: '🏁', status: 'future', desc: 'Liberação final' }
+            ];
+
+            // Configurando Hero Banner e Status dos Steps
             if (carga.status === 'AGENDADO') {
-                box.className = "bg-slate-800 border-4 border-slate-700 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
-                icon.textContent = "🛣️";
-                titulo.textContent = "A Caminho";
-                sub.textContent = "Dirija-se ao Totem da portaria para confirmar sua chegada.";
-                statusBadge.className = "inline-block bg-blue-900/50 text-blue-400 border border-blue-500/50 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
-                statusBadge.textContent = "AGUARDANDO CHEGADA";
+                avisoHero.className = "rounded-3xl p-6 shadow-2xl mb-6 text-center border-4 border-slate-700 bg-slate-800";
+                tituloEl.textContent = "A Caminho";
+                subEl.textContent = "Vá para o Totem e imprima seu ticket.";
+                iconeEl.textContent = "🛣️";
+                steps[0].status = 'active';
             } 
-            else if (carga.status === 'AGUARDANDO FISCAL' || carga.status === 'COM PROBLEMA') {
-                box.className = "bg-slate-800 border-4 border-amber-500/50 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
-                icon.textContent = "⏳";
-                titulo.textContent = "Fila da Triagem";
-                sub.textContent = "Aguarde no pátio. O Recebimento Fiscal está analisando sua nota.";
-                statusBadge.className = "inline-block bg-amber-900/50 text-amber-400 border border-amber-500/50 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
-                statusBadge.textContent = "EM ANÁLISE FISCAL";
+            else if (carga.status === 'AGUARDANDO FISCAL') {
+                avisoHero.className = "rounded-3xl p-6 shadow-2xl mb-6 text-center border-4 border-amber-500/50 bg-slate-800";
+                tituloEl.textContent = "Triagem Fiscal";
+                subEl.textContent = "Aguarde. Sua nota está sendo validada.";
+                iconeEl.textContent = "⏳";
+                steps[0].status = 'done'; steps[0].desc = carga.horaChegadaTotem || 'Concluído';
+                steps[1].status = 'active';
+            }
+            else if (carga.status === 'COM PROBLEMA') {
+                avisoHero.className = "rounded-3xl p-6 shadow-[0_0_30px_rgba(239,68,68,0.3)] mb-6 text-center border-4 border-red-500 bg-red-950/80";
+                tituloEl.textContent = "Pendência na Nota";
+                tituloEl.className = "text-xl font-black text-red-400 uppercase tracking-wider";
+                subEl.textContent = "Vá até o Recebimento Fiscal imediatamente.";
+                subEl.className = "text-xs text-red-200 mt-2 font-bold";
+                iconeEl.textContent = "⚠️";
+                steps[0].status = 'done'; steps[0].desc = carga.horaChegadaTotem;
+                steps[1].status = 'alert'; steps[1].desc = 'Problema identificado';
             }
             else if (carga.status === 'AGUARDANDO DOCA') {
-                box.className = "bg-slate-800 border-4 border-indigo-500/50 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
-                icon.textContent = "🅿️";
-                titulo.textContent = "Pátio Interno";
-                sub.textContent = "Sua liberação fiscal foi concluída. Estacione no pátio e fique atento a esta tela.";
-                statusBadge.className = "inline-block bg-indigo-900/50 text-indigo-400 border border-indigo-500/50 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
-                statusBadge.textContent = "AGUARDE A CHAMADA DA DOCA";
+                avisoHero.className = "rounded-3xl p-6 shadow-2xl mb-6 text-center border-4 border-indigo-500/50 bg-slate-800";
+                tituloEl.textContent = "Pátio Interno";
+                subEl.textContent = "Aguarde no pátio. O sistema vai apitar quando a doca chamar.";
+                iconeEl.textContent = "🅿️";
+                steps[0].status = 'done'; steps[0].desc = carga.horaChegadaTotem;
+                steps[1].status = 'done'; steps[1].desc = carga.horaLiberacaoFiscal || 'Liberado';
+                steps[2].status = 'active';
             }
             else if (carga.status === 'EM OPERACAO') {
-                box.className = "bg-emerald-900 border-4 border-emerald-400 rounded-[3rem] max-w-sm w-full p-8 shadow-[0_0_50px_rgba(16,185,129,0.6)] text-center space-y-6 tela-chamando scale-105";
-                icon.textContent = "🟢";
-                titulo.textContent = "VÁ PARA A DOCA!";
-                sub.textContent = "Sua plataforma foi liberada! Dirija-se imediatamente para o local indicado abaixo.";
-                statusBadge.className = "inline-block bg-emerald-500 text-white border border-emerald-400 px-4 py-2 rounded-lg text-lg font-black uppercase mt-1 shadow-lg";
-                statusBadge.textContent = "LIBERADO PARA ENCOSTAR";
+                avisoHero.className = "rounded-3xl p-6 shadow-[0_0_50px_rgba(16,185,129,0.6)] mb-6 text-center border-4 border-emerald-400 bg-emerald-900 tela-chamando scale-105 transform transition-all";
+                tituloEl.textContent = "VÁ PARA A DOCA!";
+                subEl.textContent = `Destino: ${carga.docaAtual || carga.doca}`;
+                subEl.className = "text-sm text-white mt-2 font-black bg-emerald-950/50 p-2 rounded-lg border border-emerald-400 inline-block";
+                iconeEl.textContent = "🟢";
+                steps[0].status = 'done'; steps[0].desc = carga.horaChegadaTotem;
+                steps[1].status = 'done'; steps[1].desc = carga.horaLiberacaoFiscal;
+                steps[2].status = 'done'; steps[2].desc = 'Chamado!';
+                steps[3].status = 'active'; steps[3].desc = 'Vá para a doca agora';
             }
             else if (carga.status === 'RECEBIMENTO FISICO') {
-                box.className = "bg-purple-900/50 border-4 border-purple-500/50 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
-                icon.textContent = "⚙️";
-                titulo.textContent = "Em Operação";
-                sub.textContent = "Sua carga está sendo processada na doca no momento.";
-                statusBadge.className = "inline-block bg-purple-600 text-white border border-purple-400 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
-                statusBadge.textContent = "DESCARREGANDO";
+                avisoHero.className = "rounded-3xl p-6 shadow-2xl mb-6 text-center border-4 border-purple-500/50 bg-slate-800";
+                tituloEl.textContent = "Em Operação";
+                subEl.textContent = "Descarga/Triagem em andamento na doca.";
+                subEl.className = "text-xs text-slate-300 mt-2 font-bold";
+                iconeEl.textContent = "📦";
+                steps[0].status = 'done'; steps[1].status = 'done'; steps[2].status = 'done';
+                steps[3].status = 'active'; steps[3].desc = 'Descarregando';
             }
             else if (carga.status === 'AGUARDANDO CHECKOUT') {
-                box.className = "bg-slate-800 border-4 border-slate-700 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
-                icon.textContent = "🏁";
-                titulo.textContent = "Operação Concluída";
-                sub.textContent = "Dirija-se à portaria para registrar sua saída do pátio.";
-                statusBadge.className = "inline-block bg-slate-700 text-white border border-slate-500 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
-                statusBadge.textContent = "PRONTO PARA SAÍDA";
+                avisoHero.className = "rounded-3xl p-6 shadow-2xl mb-6 text-center border-4 border-slate-500 bg-slate-800";
+                tituloEl.textContent = "Operação Concluída";
+                subEl.textContent = "Dirija-se à portaria para registrar sua saída.";
+                iconeEl.textContent = "🏁";
+                steps[0].status = 'done'; steps[1].status = 'done'; steps[2].status = 'done'; steps[3].status = 'done'; steps[3].desc = carga.horaFimOperacao || 'Concluído';
+                steps[4].status = 'active';
             }
+
+            // Renderizar os Steps
+            timelineContainer.innerHTML = steps.map(s => {
+                let classWrapper = `timeline-step step-${s.status}`;
+                return `
+                    <div class="${classWrapper}">
+                        <div class="timeline-icon shadow-lg">${s.icon}</div>
+                        <div class="pt-1.5 flex-1">
+                            <h4 class="text-sm step-title text-slate-500 font-bold uppercase tracking-wider">${s.label}</h4>
+                            <p class="text-[11px] step-desc text-slate-600 font-mono mt-0.5">${s.desc}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         };
 
         // ==========================================
@@ -1865,12 +1919,9 @@
             }
 
             aguardando.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
-
-                // DESEMPATE POR FIFO (Hora de Chegada)
+                if (pA !== pB) return pB - pA; 
                 const hA = window.horaParaMinutos(a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -1905,7 +1956,6 @@
                 const badgeProblema = isComProblema ? `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">⚠️ PENDÊNCIA NF</span>` : '';
                 const boxProblema = isComProblema ? `<div class="mt-2 bg-red-950/50 border border-red-500/30 p-2 rounded-lg text-[10px] text-red-300 break-words"><strong>MOTIVO:</strong> ${item.motivoProblema}</div>` : '';
 
-                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2079,7 +2129,7 @@
         };
 
         // ==========================================
-        // OPERADOR DE DOCA LOGIC COM "MÁQUINA DE ESTADOS" E SMS NATIVO
+        // OPERADOR DE DOCA LOGIC COM "MÁQUINA DE ESTADOS"
         // ==========================================
         window.renderizarOperadorDoca = function() {
             const container = document.getElementById('listaDoca');
@@ -2096,12 +2146,9 @@
             });
 
             fila.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
-
-                // DESEMPATE POR FIFO
+                if (pA !== pB) return pB - pA;
                 const hA = window.horaParaMinutos(a.horaLiberacaoFiscal || a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaLiberacaoFiscal || b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -2135,12 +2182,11 @@
                     botaoAcao = `<button type="button" onclick="window.iniciarRecebimentoFisico('${item.ordem}')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-amber-800 active:border-b-0 active:translate-y-1">📦 Iniciar Recebimento / Triagem</button>`;
                 } else {
                     badgeStatus = '<span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold">⏳ AGUARDANDO DOCA</span>';
-                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar</button>`;
+                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar (Avisa Pager)</button>`;
                 }
 
                 const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
 
-                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2184,7 +2230,7 @@
         };
 
         window.iniciarOperacaoDoca = function(ordem) {
-            if(!confirm("Chamar veículo para a doca? Isso fará o Pager apitar e abrirá seu app de SMS para enviar a mensagem.")) return;
+            if(!confirm("Chamar veículo e iniciar DESCARGA na plataforma? (Isso atualizará o Guideline do motorista)")) return;
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
                 const agora = new Date();
@@ -2195,30 +2241,10 @@
                     carga.horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
                 }
                 
-                // LÓGICA DO SMS GRATUITO (OPÇÃO 1)
-                if (carga.celular) {
-                    let celularLimpo = carga.celular.replace(/\D/g, '');
-                    // Algumas operadoras/celulares precisam do +55, outras só o DDD. Colocando +55 por padrão no BR.
-                    if (celularLimpo.length === 10 || celularLimpo.length === 11) celularLimpo = '+55' + celularLimpo;
-                    
-                    const docaDestino = carga.docaAtual || carga.doca;
-                    // Formatando a mensagem (sem acentos difíceis para evitar quebra no SMS antigo)
-                    const mensagem = encodeURIComponent(`YMS ALERTA: ${carga.nomeMotorista || 'Motorista'}, doca liberada! Dirija-se para: ${docaDestino}`);
-                    
-                    // Detectar se é iOS (iPhone) para usar '&body' no lugar de '?body' (macete clássico de frontend)
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                    const separador = isIOS ? '&' : '?';
-                    
-                    const linkSms = `sms:${celularLimpo}${separador}body=${mensagem}`;
-                    
-                    // Dispara a abertura do aplicativo de mensagens nativo
-                    window.location.href = linkSms;
-                } else {
-                    alert("Atenção: Este motorista não tem celular cadastrado. O Pager digital vai apitar, mas a tela de envio SMS não será aberta.");
-                }
-
+                // OPCIONAL: SMS NATIVO PODE SER DESCOMENTADO AQUI SE DESEJAR. COMO O PAGER AGORA É UM GUIDELINE, ELE JÁ É SUFICIENTE.
+                
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Veículo Chamado!", "O Pager foi notificado.", "⚙️");
+                window.exibirToast("Veículo Chamado!", "O Guideline do motorista foi atualizado.", "⚙️");
                 window.renderizarOperadorDoca();
             }
         };
@@ -2404,12 +2430,9 @@
             }
 
             fila.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
-
-                // DESEMPATE POR FIFO
+                if (pA !== pB) return pB - pA; 
                 const hA = window.horaParaMinutos(a.horaFimOperacao || '23:59');
                 const hB = window.horaParaMinutos(b.horaFimOperacao || '23:59');
                 return hA - hB;
@@ -2427,7 +2450,6 @@
             }
 
             fila.forEach(item => {
-                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2479,7 +2501,7 @@
         };
 
         // ==========================================
-        // GESTÃO 2D DE DOCAS (RECEBIMENTO E STATUS EM TEMPO REAL)
+        // GESTÃO 2D DE DOCAS
         // ==========================================
         window.filtroDoca2DSelecionada = 'todas';
 
@@ -2617,7 +2639,7 @@
         };
 
         // ==========================================
-        // TORRE DE CONTROLE (KPIs e Exportação)
+        // TORRE DE CONTROLE
         // ==========================================
         window.calcularTurno = function(horaStr) {
             if (!horaStr || horaStr === '--:--' || horaStr === '') return "-";
