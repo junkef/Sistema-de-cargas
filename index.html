@@ -813,7 +813,7 @@
             { empresa: "ISOTERM", senha: "isoterm@2026" }, { empresa: "KLABIN", senha: "klabin@2026" },
             { empresa: "KNAUF", senha: "knauf@2026" }, { empresa: "LINKPLAS", senha: "linkplas@2026" },
             { empresa: "MARCEGAGLIA", senha: "marcegaglia@2026" }, { empresa: "METALMA", senha: "metalma@2026" },
-            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" }, { empresa: "MULTILOG", senha: "multilog@2026" },
+            { empresa: "MICROJUNTAS", senha: "microjuntas@2026" }, { empresa: "MULTILOG", multiLog: "multilog@2026" },
             { empresa: "NIDEC", senha: "nidec@2026" }, { empresa: "NIDEC ITAIÓPOLIS", senha: "nidecitaiopolis@2026" },
             { empresa: "PARANAPANEMA", senha: "paranapanema@2026" }, { empresa: "PLASTICOVILLE", senha: "plasticoville@2026" },
             { empresa: "REFREX", senha: "refrex@2026" }, { empresa: "RUDOLPH", senha: "rudolph@2026" },
@@ -1086,7 +1086,7 @@
         };
 
         // ==========================================
-        // NOVO: PAGER DIGITAL (APP DO MOTORISTA)
+        // PAGER DIGITAL (APP DO MOTORISTA)
         // ==========================================
         window.tocarAlertaMotorista = function() {
             try {
@@ -1140,7 +1140,7 @@
             doca.textContent = carga.docaAtual || carga.doca || "-";
 
             if (window.ymsStore.statusAnteriorPager !== carga.status) {
-                if (carga.status === 'AGUARDANDO DOCA' || carga.status === 'EM OPERACAO' || carga.status === 'RECEBIMENTO FISICO') {
+                if (carga.status === 'EM OPERACAO') {
                     window.tocarAlertaMotorista();
                 }
                 window.ymsStore.statusAnteriorPager = carga.status;
@@ -1163,6 +1163,14 @@
                 statusBadge.textContent = "EM ANÁLISE FISCAL";
             }
             else if (carga.status === 'AGUARDANDO DOCA') {
+                box.className = "bg-slate-800 border-4 border-indigo-500/50 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
+                icon.textContent = "🅿️";
+                titulo.textContent = "Pátio Interno";
+                sub.textContent = "Sua liberação fiscal foi concluída. Estacione no pátio e fique atento a esta tela.";
+                statusBadge.className = "inline-block bg-indigo-900/50 text-indigo-400 border border-indigo-500/50 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
+                statusBadge.textContent = "AGUARDE A CHAMADA DA DOCA";
+            }
+            else if (carga.status === 'EM OPERACAO') {
                 box.className = "bg-emerald-900 border-4 border-emerald-400 rounded-[3rem] max-w-sm w-full p-8 shadow-[0_0_50px_rgba(16,185,129,0.6)] text-center space-y-6 tela-chamando scale-105";
                 icon.textContent = "🟢";
                 titulo.textContent = "VÁ PARA A DOCA!";
@@ -1170,7 +1178,7 @@
                 statusBadge.className = "inline-block bg-emerald-500 text-white border border-emerald-400 px-4 py-2 rounded-lg text-lg font-black uppercase mt-1 shadow-lg";
                 statusBadge.textContent = "LIBERADO PARA ENCOSTAR";
             }
-            else if (carga.status === 'EM OPERACAO' || carga.status === 'RECEBIMENTO FISICO') {
+            else if (carga.status === 'RECEBIMENTO FISICO') {
                 box.className = "bg-purple-900/50 border-4 border-purple-500/50 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
                 icon.textContent = "⚙️";
                 titulo.textContent = "Em Operação";
@@ -1359,9 +1367,10 @@
             db.ref('yms_agendamentos_oficiais').get().then(snap => {
                 const atual = snap.val();
                 let lista = atual ? (Array.isArray(atual) ? atual : Object.values(atual)) : [];
+                let historico = lista.filter(a => !window.isDataPassada(a.data));
                 const novos = window.ymsStore.rascunhoAgendamentos.map(r => ({ ...r, isRascunho: false }));
                 
-                db.ref('yms_agendamentos_oficiais').set([...lista, ...novos]).then(() => {
+                db.ref('yms_agendamentos_oficiais').set([...historico, ...novos]).then(() => {
                     window.ymsStore.rascunhoAgendamentos = [];
                     localStorage.removeItem('yms_rascunho_temp');
                     window.renderizarGradePCP();
@@ -2014,7 +2023,7 @@
 
                 window.salvarAgendamentosNaMemoria();
                 window.exibirToast("Fiscal Liberado!", "Rota confirmada. Caminhão enviado para o pátio.", "✅");
-                
+
                 window.ymsStore.fiscalCargaSelecionada = null;
                 document.getElementById('fiscalInfoMotorista').textContent = '-';
                 document.getElementById('fiscalInfoPlaca').textContent = '-';
@@ -2070,7 +2079,7 @@
         };
 
         // ==========================================
-        // OPERADOR DE DOCA LOGIC COM "MÁQUINA DE ESTADOS"
+        // OPERADOR DE DOCA LOGIC COM "MÁQUINA DE ESTADOS" E SMS NATIVO
         // ==========================================
         window.renderizarOperadorDoca = function() {
             const container = document.getElementById('listaDoca');
@@ -2126,7 +2135,7 @@
                     botaoAcao = `<button type="button" onclick="window.iniciarRecebimentoFisico('${item.ordem}')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-amber-800 active:border-b-0 active:translate-y-1">📦 Iniciar Recebimento / Triagem</button>`;
                 } else {
                     badgeStatus = '<span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold">⏳ AGUARDANDO DOCA</span>';
-                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar (Notifica Pager)</button>`;
+                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar</button>`;
                 }
 
                 const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
@@ -2175,18 +2184,41 @@
         };
 
         window.iniciarOperacaoDoca = function(ordem) {
-            if(!confirm("Chamar veículo e iniciar DESCARGA na plataforma? (Isso enviará um bipe para o Pager do motorista)")) return;
+            if(!confirm("Chamar veículo para a doca? Isso fará o Pager apitar e abrirá seu app de SMS para enviar a mensagem.")) return;
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
                 const agora = new Date();
-                window.ymsStore.agendamentos[idx].status = 'EM OPERACAO';
+                const carga = window.ymsStore.agendamentos[idx];
                 
-                if(!window.ymsStore.agendamentos[idx].horaInicioOperacao || window.ymsStore.agendamentos[idx].etapaRotaAtual === 0) {
-                    window.ymsStore.agendamentos[idx].horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                carga.status = 'EM OPERACAO';
+                if(!carga.horaInicioOperacao || carga.etapaRotaAtual === 0) {
+                    carga.horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
                 }
                 
+                // LÓGICA DO SMS GRATUITO (OPÇÃO 1)
+                if (carga.celular) {
+                    let celularLimpo = carga.celular.replace(/\D/g, '');
+                    // Algumas operadoras/celulares precisam do +55, outras só o DDD. Colocando +55 por padrão no BR.
+                    if (celularLimpo.length === 10 || celularLimpo.length === 11) celularLimpo = '+55' + celularLimpo;
+                    
+                    const docaDestino = carga.docaAtual || carga.doca;
+                    // Formatando a mensagem (sem acentos difíceis para evitar quebra no SMS antigo)
+                    const mensagem = encodeURIComponent(`YMS ALERTA: ${carga.nomeMotorista || 'Motorista'}, doca liberada! Dirija-se para: ${docaDestino}`);
+                    
+                    // Detectar se é iOS (iPhone) para usar '&body' no lugar de '?body' (macete clássico de frontend)
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    const separador = isIOS ? '&' : '?';
+                    
+                    const linkSms = `sms:${celularLimpo}${separador}body=${mensagem}`;
+                    
+                    // Dispara a abertura do aplicativo de mensagens nativo
+                    window.location.href = linkSms;
+                } else {
+                    alert("Atenção: Este motorista não tem celular cadastrado. O Pager digital vai apitar, mas a tela de envio SMS não será aberta.");
+                }
+
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Veículo Chamado!", "O Pager do motorista foi notificado.", "⚙️");
+                window.exibirToast("Veículo Chamado!", "O Pager foi notificado.", "⚙️");
                 window.renderizarOperadorDoca();
             }
         };
