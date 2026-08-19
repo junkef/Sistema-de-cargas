@@ -782,7 +782,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CENTRAL UNIFICADO -->
+<!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
         // INIT PWA (GERA O MANIFEST E O SERVICE WORKER DINAMICAMENTE NO HTML)
         window.initPWA = function() {
@@ -1053,6 +1053,16 @@
 
         window.solicitarAcessoPerfil = function(perfil) {
             window.ymsStore.perfilSolicitadoTemp = perfil;
+            
+            // ATUALIZAÇÃO: Se clicar no TOTEM, pula a tela de senha e vai direto!
+            if (perfil === 'totem') {
+                window.ymsStore.usuarioLogado = { nome: 'TOTEM PUBLICO', perfil: 'totem' };
+                document.getElementById('modalLoginGlobal').classList.add('hidden');
+                document.getElementById('lblNomeUsuarioLogado').textContent = 'TOTEM PORTARIA';
+                window.mudarPerfil('totem');
+                return;
+            }
+
             document.getElementById('boxSenhaLogin').classList.remove('hidden');
             
             if (perfil === 'pager') {
@@ -1988,9 +1998,12 @@
             }
 
             aguardando.sort((a, b) => {
+                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; 
+                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
+
+                // DESEMPATE POR FIFO (Hora de Chegada)
                 const hA = window.horaParaMinutos(a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -2308,10 +2321,11 @@
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
                 const agora = new Date();
-                window.ymsStore.agendamentos[idx].status = 'EM OPERACAO';
+                const carga = window.ymsStore.agendamentos[idx];
                 
-                if(!window.ymsStore.agendamentos[idx].horaInicioOperacao || window.ymsStore.agendamentos[idx].etapaRotaAtual === 0) {
-                    window.ymsStore.agendamentos[idx].horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+                carga.status = 'EM OPERACAO';
+                if(!carga.horaInicioOperacao || carga.etapaRotaAtual === 0) {
+                    carga.horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
                 }
                 
                 window.salvarAgendamentosNaMemoria();
@@ -2576,7 +2590,7 @@
         };
 
         // ==========================================
-        // GESTÃO 2D DE DOCAS (RECEBIMENTO E STATUS EM TEMPO REAL)
+        // GESTÃO 2D DE DOCAS
         // ==========================================
         window.filtroDoca2DSelecionada = 'todas';
 
