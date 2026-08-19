@@ -23,70 +23,43 @@
         .hidden { display: none !important; }
         input[type="date"], input[type="month"] { color-scheme: dark; }
         
-        /* FORÇA TODOS OS MENUS DROPDOWN (SELECTS) A FICAREM NO MODO ESCURO */
-        option {
-            background-color: #0f172a !important; 
-            color: #f1f5f9 !important; 
-        }
+        option { background-color: #0f172a !important; color: #f1f5f9 !important; }
         
-        .btn-perfil-card, 
-        .btn-perfil-card span,
-        #modalLoginGlobal button span {
-            color: #ffffff !important;
-            font-weight: 800 !important;
+        .btn-perfil-card, .btn-perfil-card span, #modalLoginGlobal button span {
+            color: #ffffff !important; font-weight: 800 !important;
         }
 
-        #modalLoginGlobal button span.txt-purple {
-            color: #d8b4fe !important;
-        }
+        #modalLoginGlobal button span.txt-purple { color: #d8b4fe !important; }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0f172a;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #4f46e5;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
 
-        /* ANIMAÇÃO DE PULSO PARA DOCAS EM ATRASO NO PAINEL 2D */
+        /* ANIMAÇÕES DO PAINEL 2D E PAGER DO MOTORISTA */
         @keyframes pulse-red-border {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        .dock-card-red-pulse {
-            border-color: #ef4444 !important;
-            animation: pulse-red-border 2s infinite;
+        .dock-card-red-pulse { border-color: #ef4444 !important; animation: pulse-red-border 2s infinite; }
+
+        @keyframes bg-piscar {
+            0% { background-color: #0f172a; }
+            50% { background-color: #059669; }
+            100% { background-color: #0f172a; }
         }
+        .tela-chamando { animation: bg-piscar 1s infinite; }
 
         /* REGRAS BLINDADAS PARA IMPRESSÃO DO TICKET */
-        @media screen {
-            #ticketImpressao { display: none !important; }
-        }
-
+        @media screen { #ticketImpressao { display: none !important; } }
         @media print {
             @page { margin: 0; }
             body { background: white !important; margin: 0; padding: 0; }
             body > *:not(#ticketImpressao) { display: none !important; }
-            
             #ticketImpressao {
-                display: block !important; 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 80mm; 
-                padding: 5mm; 
-                color: black !important; 
-                background: white !important; 
-                font-family: monospace;
+                display: block !important; position: absolute; left: 0; top: 0; width: 80mm; 
+                padding: 5mm; color: black !important; background: white !important; font-family: monospace;
             }
         }
     </style>
@@ -99,63 +72,64 @@
             <div class="text-center space-y-1">
                 <span class="bg-indigo-600/20 text-indigo-400 p-2 rounded-2xl text-2xl inline-block border border-indigo-500/30">🏭</span>
                 <h1 class="text-xl font-black text-white tracking-wider">YMS ECOSYSTEM - CONTROLE DE ACESSO</h1>
-                <p class="text-xs text-slate-400">Selecione seu perfil operacional para acessar os módulos permitidos</p>
+                <p class="text-xs text-slate-400">Selecione seu perfil para acessar o sistema</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 border-b border-slate-800 pb-4">
+                <button type="button" onclick="window.solicitarAcessoPerfil('pager')" class="col-span-2 md:col-span-4 bg-emerald-900/50 hover:bg-emerald-600/50 border-2 border-emerald-500 p-4 rounded-2xl text-center transition cursor-pointer flex justify-center items-center gap-3 group">
+                    <span class="text-3xl group-hover:scale-110 transition-transform">📱</span>
+                    <div class="text-left">
+                        <span class="text-base block text-emerald-400">Motorista: Acompanhar Carga</span>
+                        <span class="text-[10px] text-emerald-200 font-normal">Acompanhe do seu celular quando a doca chamar</span>
+                    </div>
+                </button>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <button type="button" onclick="window.solicitarAcessoPerfil('pcp')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span>
-                    <span class="text-xs">PCP Programador</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">🗓️</span><span class="text-xs">PCP Programador</span>
                 </button>
                 <button type="button" onclick="window.solicitarAcessoPerfil('fornecedor')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🏢</span>
-                    <span class="text-xs">Portal Fornecedor</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">🏢</span><span class="text-xs">Portal Fornecedor</span>
                 </button>
                 <button type="button" onclick="window.solicitarAcessoPerfil('totem')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🏭</span>
-                    <span class="text-xs">Totem Portaria</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">🏭</span><span class="text-xs">Totem Portaria</span>
                 </button>
                 <button type="button" onclick="window.solicitarAcessoPerfil('fiscal')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">📑</span>
-                    <span class="text-xs">Triagem Fiscal</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">📑</span><span class="text-xs">Triagem Fiscal</span>
                 </button>
                 <button type="button" onclick="window.solicitarAcessoPerfil('doca')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🚛</span>
-                    <span class="text-xs">Operador Doca</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">🚛</span><span class="text-xs">Operador Doca</span>
                 </button>
                 <button type="button" onclick="window.solicitarAcessoPerfil('checkout')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🚪</span>
-                    <span class="text-xs">Check-out Portaria</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">🚪</span><span class="text-xs">Check-out Portaria</span>
                 </button>
                 <button type="button" onclick="window.solicitarAcessoPerfil('motoristas')" class="btn-perfil-card bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🪪</span>
-                    <span class="text-xs">Cad. Motoristas</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">🪪</span><span class="text-xs">Cad. Motoristas</span>
                 </button>
                 <button type="button" onclick="window.solicitarAcessoPerfil('docas2d')" class="btn-perfil-card bg-slate-800 hover:bg-amber-600/30 border border-slate-700 hover:border-amber-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group">
-                    <span class="text-xl group-hover:scale-110 transition-transform">🕹️</span>
-                    <span class="text-xs text-amber-400">Gestão 2D Docas</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">🕹️</span><span class="text-xs text-amber-400">Gestão 2D Docas</span>
                 </button>
                 <button type="button" onclick="window.solicitarAcessoPerfil('torre')" class="btn-perfil-card bg-slate-800 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500 p-3 rounded-2xl text-center transition cursor-pointer flex flex-col items-center gap-1 group col-span-2 md:col-span-4">
-                    <span class="text-xl group-hover:scale-110 transition-transform">📡</span>
-                    <span class="text-xs txt-purple">Torre de Controle</span>
+                    <span class="text-xl group-hover:scale-110 transition-transform">📡</span><span class="text-xs txt-purple">Torre de Controle</span>
                 </button>
             </div>
 
             <div id="boxSenhaLogin" class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/40 hidden space-y-3 shadow-lg">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO DE OPERADOR</span>
+                    <span id="lblPerfilSelecionadoLogin" class="text-xs font-black text-indigo-400 uppercase tracking-wider">AUTENTICAÇÃO</span>
                 </div>
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
-                        <input type="text" id="inputUserLogin" placeholder="Digite seu usuário..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
+                        <label id="lblInput1" class="block text-[11px] font-bold text-slate-300 uppercase mb-1">👤 Usuário / Login *</label>
+                        <input type="text" id="inputUserLogin" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white outline-none focus:border-indigo-500">
                     </div>
-                    <div>
+                    <div id="containerSenha">
                         <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🔑 Senha do Operador *</label>
-                        <input type="password" id="inputPinLogin" placeholder="Digite sua senha individual..." onkeydown="if(event.key==='Enter') window.confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
+                        <input type="password" id="inputPinLogin" onkeydown="if(event.key==='Enter') window.confirmarLoginComSenha();" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-white outline-none focus:border-indigo-500">
                     </div>
                     <button type="button" onclick="window.confirmarLoginComSenha()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition cursor-pointer">
-                        🔓 ENTRAR NO SISTEMA
+                        🔓 ENTRAR
                     </button>
                 </div>
             </div>
@@ -163,7 +137,7 @@
     </div>
 
     <!-- BARRA SUPERIOR -->
-    <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40">
+    <header class="bg-slate-950 border-b border-slate-800 p-3 px-6 flex flex-wrap justify-between items-center shadow-2xl z-40" id="headerPrincipal">
         <div class="flex items-center gap-3">
             <span class="bg-indigo-600 p-2 rounded-xl text-xl shadow-lg shadow-indigo-500/30">🏭</span>
             <div>
@@ -175,15 +149,7 @@
         </div>
 
         <nav id="navBarPerfis" class="flex gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto my-1 sm:my-0">
-            <button type="button" onclick="window.mudarPerfil('pcp')" id="btn-pcp" class="btn-perfil px-3 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow">🗓️ PCP Programador</button>
-            <button type="button" onclick="window.mudarPerfil('fornecedor')" id="btn-fornecedor" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏢 Portal Fornecedor</button>
-            <button type="button" onclick="window.mudarPerfil('totem')" id="btn-totem" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🏭 Totem Autoatendimento</button>
-            <button type="button" onclick="window.mudarPerfil('fiscal')" id="btn-fiscal" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📑 Recebimento Fiscal</button>
-            <button type="button" onclick="window.mudarPerfil('doca')" id="btn-doca" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚛 Operador de Doca</button>
-            <button type="button" onclick="window.mudarPerfil('checkout')" id="btn-checkout" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🚪 Check-out Portaria</button>
-            <button type="button" onclick="window.mudarPerfil('motoristas')" id="btn-motoristas" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🪪 Cad. Motoristas</button>
-            <button type="button" onclick="window.mudarPerfil('docas2d')" id="btn-docas2d" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">🕹️ Gestão 2D Docas</button>
-            <button type="button" onclick="window.mudarPerfil('torre')" id="btn-torre" class="btn-perfil px-3 py-1.5 rounded-lg font-bold text-xs text-slate-400 hover:text-white">📡 Torre de Controle</button>
+            <!-- Botões Injetados pelo JS -->
         </nav>
 
         <div class="flex items-center gap-3">
@@ -196,11 +162,39 @@
         </div>
     </header>
 
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col relative">
+
+        <!-- ========================================================================= -->
+        <!-- MÓDULO PAGER (APP DO MOTORISTA) - TELA EXCLUSIVA DE NOTIFICAÇÃO           -->
+        <!-- ========================================================================= -->
+        <section id="perfil-pager" class="perfil-modulo flex-1 flex items-center justify-center p-6 hidden absolute inset-0 bg-slate-900 z-50">
+            <div id="pagerBox" class="bg-slate-800 border-4 border-slate-700 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6 transition-all duration-300">
+                <div class="space-y-1">
+                    <span class="text-5xl inline-block" id="pagerIcone">📱</span>
+                    <h2 class="text-2xl font-black text-white tracking-wider uppercase mt-4" id="pagerTitulo">Aguardando...</h2>
+                    <p class="text-sm text-slate-400 font-bold" id="pagerSub">Fique atento a esta tela. O sistema avisará quando a sua doca for liberada.</p>
+                </div>
+
+                <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner text-left space-y-3">
+                    <p><span class="text-slate-500 font-bold text-xs uppercase block">Sua Placa:</span> <span id="pagerPlaca" class="text-yellow-400 font-mono font-black text-xl">-</span></p>
+                    <p><span class="text-slate-500 font-bold text-xs uppercase block">Doca Destino:</span> <span id="pagerDoca" class="text-white font-black text-xl">-</span></p>
+                    <div class="border-t border-slate-800 pt-3 mt-3">
+                        <span class="text-slate-500 font-bold text-xs uppercase block">Status atual:</span>
+                        <div id="pagerStatusBadge" class="inline-block bg-slate-800 text-slate-300 border border-slate-600 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1">
+                            Lendo dados...
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" onclick="window.tocarAlertaMotorista()" class="text-[10px] text-slate-500 underline">Testar Som do Alerta</button>
+            </div>
+        </section>
+
         <!-- ========================================================================= -->
         <!-- MÓDULO 1: PCP PROGRAMADOR                                                 -->
         <!-- ========================================================================= -->
         <section id="perfil-pcp" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-12 gap-6 hidden">
+            <!-- (Conteúdo original do PCP preservado) -->
             <div class="col-span-12 lg:col-span-5 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-700/80 mb-4">
@@ -214,22 +208,14 @@
                             <h2 class="text-base font-black text-white">Ofertar Nova Janela Manual</h2>
                             <span id="badgeTipoJanela" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase">🟢 Cotidiano</span>
                         </div>
-
                         <div>
                             <label class="block text-[10px] font-black text-amber-400 uppercase tracking-wider mb-1.5">⚡ SELECIONE O TIPO DE OPERAÇÃO *</label>
                             <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
-                                <button type="button" id="btnTipoCotidiano" onclick="window.selecionarTipoCarga('cotidiano')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟢</span> <span>Cotidiano</span>
-                                </button>
-                                <button type="button" id="btnTipoExtra" onclick="window.selecionarTipoCarga('extra')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🟡</span> <span>Extra</span>
-                                </button>
-                                <button type="button" id="btnTipoCritica" onclick="window.selecionarTipoCarga('critica')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer">
-                                    <span>🔴</span> <span>Crítica</span>
-                                </button>
+                                <button type="button" id="btnTipoCotidiano" onclick="window.selecionarTipoCarga('cotidiano')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer"><span>🟢</span> <span>Cotidiano</span></button>
+                                <button type="button" id="btnTipoExtra" onclick="window.selecionarTipoCarga('extra')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer"><span>🟡</span> <span>Extra</span></button>
+                                <button type="button" id="btnTipoCritica" onclick="window.selecionarTipoCarga('critica')" class="py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer"><span>🔴</span> <span>Crítica</span></button>
                             </div>
                         </div>
-
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">FORNECEDOR *</label>
@@ -240,11 +226,9 @@
                                     <span class="text-xs">🔍</span>
                                     <input type="text" id="filtroForn" placeholder="Filtrar fornecedor..." oninput="window.filtrarOpcoesFornecedor()" class="w-full bg-transparent text-xs text-slate-200 outline-none font-bold">
                                 </div>
-                                <select id="inpFornecedor" size="4" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1">
-                                </select>
+                                <select id="inpFornecedor" size="4" class="w-full bg-slate-950 text-xs text-slate-200 font-bold outline-none cursor-pointer custom-scrollbar p-1"></select>
                             </div>
                         </div>
-
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Doca de Recebimento</label>
@@ -255,7 +239,6 @@
                                 <input type="date" id="inpData" onclick="this.min = window.obterDataHojeISO()" onchange="window.atualizarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white outline-none">
                             </div>
                         </div>
-
                         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px] font-bold">
                                 <span class="text-indigo-400 uppercase">📊 Disponibilidade da Doca (Clique p/ selecionar)</span>
@@ -263,7 +246,6 @@
                             </div>
                             <div id="gridTimelineHorarios" class="grid grid-cols-6 gap-1 max-h-28 overflow-y-auto pr-1 custom-scrollbar"></div>
                         </div>
-
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Início</label>
@@ -276,8 +258,6 @@
                         </div>
                         <button type="button" onclick="window.criarJanelaManual(event)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl shadow cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">➕ ADICIONAR Á GRADE DE RASCUNHO</button>
                     </div>
-
-                    <!-- UPLOAD PLANILHA -->
                     <div id="conteudoMassa" class="space-y-4 hidden">
                         <div id="dropZonePlanilha" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-2xl p-8 text-center cursor-pointer transition-all">
                             <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="window.lerPlanilhaExcel(event)">
@@ -286,8 +266,6 @@
                             <p class="text-[11px] text-slate-400">O YMS identificará as colunas de "DIA", "FORNECEDOR" e "HORA" automaticamente!</p>
                         </div>
                     </div>
-
-                    <!-- COLAR TEXTO -->
                     <div id="conteudoTexto" class="space-y-3 hidden">
                         <textarea id="txtBruto" rows="6" placeholder="Cole o extrato da planilha aqui..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-300 outline-none"></textarea>
                         <button type="button" onclick="window.processarTextoBruto()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 rounded-xl cursor-pointer">⚡ PROCESSAR TEXTO PARA RASCUNHO</button>
@@ -295,7 +273,6 @@
                 </div>
             </div>
 
-            <!-- GRADE DE JANELAS -->
             <div class="col-span-12 lg:col-span-7 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex flex-wrap justify-between items-center mb-3 pb-3 border-b border-slate-700/60 gap-2">
@@ -307,26 +284,19 @@
                             <span id="contadorJanelas" class="bg-indigo-600 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow">0</span>
                         </div>
                     </div>
-
                     <div class="mb-4">
                         <button type="button" onclick="window.limparJanelasSubidas()" class="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xs py-2.5 px-4 rounded-xl border border-red-400/50 shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
                             <span>🗑️</span> ZERAR / APAGAR TODAS AS JANELAS SUBIDAS DO FIREBASE
                         </button>
                     </div>
-
                     <div id="containerJanelas" class="space-y-3 max-h-[24rem] overflow-y-auto pr-1 custom-scrollbar">
                         <p class="text-xs text-slate-500 text-center py-10" id="msgVazio">Nenhuma janela carregada.</p>
                     </div>
                 </div>
-
                 <div id="painelAcaoSubir" class="hidden border-t border-slate-700 pt-4 mt-4 space-y-2">
                     <div class="grid grid-cols-12 gap-3">
-                        <button type="button" onclick="window.limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5">
-                            <span>🗑️</span> LIMPAR RASCUNHO
-                        </button>
-                        <button type="button" onclick="window.confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2">
-                            <span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA
-                        </button>
+                        <button type="button" onclick="window.limparGradeTotal()" class="col-span-3 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-pointer flex items-center justify-center gap-1.5"><span>🗑️</span> LIMPAR RASCUNHO</button>
+                        <button type="button" onclick="window.confirmarESubirJanelas()" class="col-span-9 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 cursor-pointer flex items-center justify-center gap-2"><span>🚀</span> CONFIRMAR E SUBIR TODAS AS JANELAS PARA O SISTEMA</button>
                     </div>
                 </div>
             </div>
@@ -341,14 +311,12 @@
                     <h2 class="text-2xl font-black text-white flex items-center gap-2">🏢 Portal do Fornecedor</h2>
                     <p class="text-sm text-slate-400 mt-1" id="lblBemVindoFornecedor">Carregando seus agendamentos...</p>
                 </div>
-                
                 <div class="flex items-center gap-4 flex-wrap">
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
                         <span class="text-xs px-1" title="Filtrar por data">📅</span>
                         <input type="date" id="filtroDataFornecedor" onclick="this.min = window.obterDataHojeISO()" onchange="window.renderizarPortalFornecedor()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer">
                         <button type="button" onclick="document.getElementById('filtroDataFornecedor').value=''; window.renderizarPortalFornecedor();" class="text-slate-500 hover:text-red-400 px-2 text-sm font-bold transition" title="Limpar Filtro de Data">&times;</button>
                     </div>
-
                     <div class="bg-indigo-600/20 border border-indigo-500/30 px-5 py-3 rounded-2xl text-center shadow-inner min-w-[150px]">
                         <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Cargas Agendadas</span>
                         <span class="text-3xl font-black text-white" id="contadorFornecedor">0</span>
@@ -358,7 +326,6 @@
 
             <div id="listaAgendamentosFornecedor" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2"></div>
 
-            <!-- MODAL DADOS DE TRANSPORTE E MOTORISTA -->
             <div id="modalDadosTransporte" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex justify-center items-center p-4 z-50 hidden">
                 <div class="bg-slate-900 border border-indigo-500/50 rounded-3xl max-w-sm w-full p-6 shadow-2xl">
                     <div class="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
@@ -404,17 +371,14 @@
         <section id="perfil-totem" class="perfil-modulo flex-1 flex items-center justify-center p-6 hidden">
             <div id="totemInterface" class="bg-slate-900 border-4 border-indigo-500/30 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6 relative overflow-hidden mx-auto my-auto">
                 <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50 blur-sm"></div>
-
                 <div class="space-y-1">
                     <span class="text-4xl inline-block drop-shadow-[0_0_15px_rgba(99,102,241,0.8)]">🏭</span>
                     <h2 class="text-2xl font-black text-white tracking-wider uppercase">Autoatendimento</h2>
                     <p class="text-xs text-slate-400">Digite seu CPF para imprimir o ticket</p>
                 </div>
-
                 <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner">
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">CPF DO MOTORISTA</label>
                     <input type="text" id="inpTotemCpf" readonly placeholder="000.000.000-00" class="w-full bg-slate-900 border-2 border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-4 text-xl text-center text-white font-black tracking-widest outline-none shadow-lg mb-5 cursor-default">
-                    
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="window.tecladoTotem('1')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">1</button>
                         <button type="button" onclick="window.tecladoTotem('2')" class="bg-slate-800 hover:bg-slate-700 text-white text-2xl font-black py-4 rounded-xl active:scale-95 transition shadow">2</button>
@@ -430,13 +394,11 @@
                         <button type="button" onclick="window.tecladoTotem('back')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-400 border border-amber-500/30 text-xl font-black py-4 rounded-xl active:scale-95 transition shadow flex items-center justify-center">⌫</button>
                     </div>
                 </div>
-
                 <button type="button" onclick="window.buscarCargaTotem()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-4 rounded-2xl uppercase tracking-widest shadow-[0_10px_20px_-10px_rgba(79,70,229,1)] transition transform active:scale-95 flex items-center justify-center gap-3">
                     <span>🔍</span> BUSCAR AGENDAMENTO
                 </button>
             </div>
 
-            <!-- MODAL DE CONFIRMAÇÃO DO TICKET -->
             <div id="modalTicketPreview" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex justify-center items-center p-4 z-50 hidden">
                 <div class="bg-slate-900 border border-emerald-500/50 rounded-3xl max-w-md w-full p-8 shadow-2xl text-center space-y-6">
                     <div class="space-y-1">
@@ -444,7 +406,6 @@
                         <h3 class="text-xl font-black text-white">Carga Encontrada!</h3>
                         <p class="text-xs text-emerald-400 font-bold" id="lblTotemStatusChegada">Calculando SLA...</p>
                     </div>
-
                     <div class="bg-slate-950 rounded-2xl p-4 border border-slate-800 text-left space-y-2 text-sm shadow-inner">
                         <p><span class="text-slate-500 font-bold">Motorista:</span> <span id="lblTotemNomeMotorista" class="text-white font-bold ml-1"></span> <span id="lblTotemCpf" class="text-slate-400 text-xs ml-1 font-mono"></span></p>
                         <p><span class="text-slate-500 font-bold">Placa:</span> <span id="lblTotemPlaca" class="text-yellow-400 font-bold font-mono ml-1"></span></p>
@@ -455,14 +416,9 @@
                             <span id="lblTotemHora" class="text-emerald-400 font-bold"></span>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
-                        <button type="button" onclick="document.getElementById('modalTicketPreview').classList.add('hidden')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition text-xs uppercase tracking-wider">
-                            Cancelar
-                        </button>
-                        <button type="button" onclick="window.confirmarEImprimirTicket()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition shadow-lg text-xs uppercase tracking-wider border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-2">
-                            <span>🖨️</span> Imprimir Ticket
-                        </button>
+                        <button type="button" onclick="document.getElementById('modalTicketPreview').classList.add('hidden')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition text-xs uppercase tracking-wider">Cancelar</button>
+                        <button type="button" onclick="window.confirmarEImprimirTicket()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition shadow-lg text-xs uppercase tracking-wider border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-2"><span>🖨️</span> Imprimir Ticket</button>
                     </div>
                 </div>
             </div>
@@ -477,12 +433,10 @@
                     <h2 class="text-base font-black text-white flex items-center gap-2">⏳ Fila do Pátio (Check-in)</h2>
                     <span id="contadorFiscal" class="bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full shadow">0</span>
                 </div>
-                
                 <div class="bg-slate-900 border border-slate-700 p-2 rounded-xl flex items-center gap-2 shadow-inner focus-within:border-indigo-500 transition">
                     <span class="text-xs px-2">🔍</span>
                     <input type="text" id="inpBuscaFiscal" placeholder="Bipar Ticket ou Placa..." oninput="window.renderizarFiscal()" class="bg-transparent text-xs text-white font-bold outline-none w-full">
                 </div>
-
                 <div id="listaFiscal" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1"></div>
             </div>
 
@@ -492,7 +446,6 @@
                         <h2 class="text-xl font-black text-white">Triagem Fiscal & Roteirizador de Docas</h2>
                         <span id="lblRotaAlerta" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Selecione um Ticket</span>
                     </div>
-
                     <div class="bg-slate-900/50 border border-slate-700 rounded-2xl p-5 grid grid-cols-3 gap-4 mb-6 shadow-inner">
                         <div>
                             <span class="block text-[10px] font-bold text-slate-500 uppercase mb-1">MOTORISTA</span>
@@ -511,7 +464,6 @@
                             <span id="fiscalInfoAgendada" class="text-xs font-bold text-slate-300">-</span>
                         </div>
                     </div>
-
                     <div class="space-y-3">
                         <div class="flex justify-between items-end mb-2">
                             <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-widest">CLIQUE NAS DOCAS NA SEQUÊNCIA DESEJADA:</label>
@@ -526,13 +478,12 @@
                         <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-1">ROTA SEQUENCIAL:</span>
                         <span id="fiscalRotaDisplay" class="text-sm font-black text-white">Nenhuma doca selecionada</span>
                     </div>
-
                     <div class="grid grid-cols-12 gap-3">
                         <button type="button" id="btnFiscalReprovar" disabled onclick="window.relatarProblemaFiscal()" class="col-span-4 bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow transition cursor-not-allowed opacity-50 flex items-center justify-center gap-1.5">
                             ⚠️ Relatar Problema
                         </button>
                         <button type="button" id="btnFiscalAprovar" disabled onclick="window.aprovarFiscal()" class="col-span-8 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-2xl uppercase tracking-wider shadow-lg transition border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 cursor-not-allowed opacity-50 flex items-center justify-center gap-2">
-                            ✅ Liberar Rota e Doca
+                            ✅ Liberar Rota e Doca (Notifica Pager)
                         </button>
                     </div>
                 </div>
@@ -548,32 +499,24 @@
                     <h2 class="text-2xl font-black text-white flex items-center gap-2">🚛 Operador de Doca</h2>
                     <p class="text-sm text-slate-400 mt-1">Gerencie a fila de veículos e a operação na sua doca.</p>
                 </div>
-                
                 <div class="flex items-center gap-4 flex-wrap">
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
                         <span class="text-xs px-2">📍</span>
-                        <select id="filtroDocaOperador" onchange="window.renderizarOperadorDoca()" class="bg-transparent text-sm text-white font-bold outline-none w-64 cursor-pointer custom-scrollbar">
-                            <!-- Options Injetadas via JS -->
-                        </select>
+                        <select id="filtroDocaOperador" onchange="window.renderizarOperadorDoca()" class="bg-transparent text-sm text-white font-bold outline-none w-64 cursor-pointer custom-scrollbar"></select>
                     </div>
-
                     <div class="bg-indigo-600/20 border border-indigo-500/30 px-5 py-3 rounded-2xl text-center shadow-inner min-w-[120px]">
                         <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Na Fila</span>
                         <span class="text-3xl font-black text-white" id="contadorDoca">0</span>
                     </div>
                 </div>
             </div>
-
-            <div id="listaDoca" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
-                <!-- Cards Injetados via JS -->
-            </div>
+            <div id="listaDoca" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2"></div>
         </section>
 
         <!-- ========================================================================= -->
         <!-- MÓDULO 6: CADASTRO DE MOTORISTAS (BLOCKLIST)                              -->
         <!-- ========================================================================= -->
         <section id="perfil-motoristas" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden grid grid-cols-12 gap-6">
-            <!-- FORMULARIO -->
             <div class="col-span-12 lg:col-span-4 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4 h-fit">
                 <div class="border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-black text-white flex items-center gap-2">🪪 Gestão de Motoristas</h2>
@@ -599,16 +542,11 @@
                             <option value="BLOQUEADO">🚫 Bloqueado (Restrição)</option>
                         </select>
                     </div>
-                    <button type="button" onclick="window.salvarCadastroMotorista()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-4 rounded-xl uppercase shadow-lg transition border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
-                        💾 Salvar Motorista
-                    </button>
-                    <button type="button" onclick="window.limparFormMotorista()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold text-xs py-2 rounded-xl transition mt-2">
-                        Limpar Formulário
-                    </button>
+                    <button type="button" onclick="window.salvarCadastroMotorista()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm py-4 rounded-xl uppercase shadow-lg transition border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">💾 Salvar Motorista</button>
+                    <button type="button" onclick="window.limparFormMotorista()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold text-xs py-2 rounded-xl transition mt-2">Limpar Formulário</button>
                 </div>
             </div>
 
-            <!-- LISTA DE MOTORISTAS -->
             <div class="col-span-12 lg:col-span-8 bg-slate-800/80 rounded-3xl p-6 border border-slate-700/60 shadow-xl flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-black text-white flex items-center gap-2">📋 Base de Motoristas</h2>
@@ -620,10 +558,7 @@
                         <span id="contadorMotoristasCadastrados" class="bg-indigo-600 text-white text-xs font-black px-3 py-1.5 rounded-full shadow">0</span>
                     </div>
                 </div>
-                
-                <div id="listaMotoristasGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
-                    <!-- Cards -->
-                </div>
+                <div id="listaMotoristasGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2"></div>
             </div>
         </section>
 
@@ -636,80 +571,61 @@
                     <h2 class="text-2xl font-black text-white flex items-center gap-2">🚪 Check-out Portaria</h2>
                     <p class="text-sm text-slate-400 mt-1">Registre a saída dos veículos que já concluíram a operação.</p>
                 </div>
-                
                 <div class="flex items-center gap-4 flex-wrap">
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
                         <span class="text-xs px-2">🔍</span>
                         <input type="text" id="inpBuscaCheckout" placeholder="Buscar Placa ou Ticket..." oninput="window.renderizarCheckout()" class="bg-transparent text-sm text-white font-bold outline-none w-64 cursor-text">
                     </div>
-
                     <div class="bg-emerald-600/20 border border-emerald-500/30 px-5 py-3 rounded-2xl text-center shadow-inner min-w-[120px]">
                         <span class="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Prontos para Sair</span>
                         <span class="text-3xl font-black text-white" id="contadorCheckout">0</span>
                     </div>
                 </div>
             </div>
-
-            <div id="listaCheckout" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2">
-                <!-- Cards Injetados via JS -->
-            </div>
+            <div id="listaCheckout" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-y-auto custom-scrollbar max-h-[60vh] pr-2"></div>
         </section>
 
         <!-- ========================================================================= -->
         <!-- MÓDULO 8: GESTÃO 2D DE DOCAS (NOVA TELA INTEGRADA)                       -->
         <!-- ========================================================================= -->
         <section id="perfil-docas2d" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
-            <!-- CABEÇALHO E FILTROS DO PAINEL 2D -->
             <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-5 rounded-3xl border border-slate-700/60 shadow-xl gap-4 border-l-4 border-l-amber-500">
                 <div>
                     <h2 class="text-xl font-black text-white flex items-center gap-2">🕹️ Painel de Gestão 2D de Docas</h2>
                     <p class="text-xs text-slate-400 mt-0.5">Visão simplificada à vista em tempo real do pátio e das plataformas de descarga.</p>
                 </div>
-
                 <div class="flex items-center gap-3 flex-wrap">
                     <label style="font-size: 13px; color: #a0aec0;">Filtrar / Selecionar Doca:</label>
                     <select id="selectFiltroDoca2D" onchange="window.filtrarDoca2D(this.value)" class="bg-slate-900 text-white border border-slate-700 px-3 py-2 rounded-xl text-xs font-bold outline-none cursor-pointer">
                         <option value="todas">Ver Todas as Docas</option>
-                        <!-- Options injetadas via JS -->
                     </select>
                 </div>
             </div>
 
-            <!-- CONTAINER PRINCIPAL DO MAPA 2D -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- GRID DE CARDS SIMPLIFICADOS DAS DOCAS -->
                 <div class="lg:col-span-9 bg-slate-800/80 border border-slate-700/60 rounded-3xl p-5 shadow-xl">
-                    <div id="gridDocas2D" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <!-- Cards injetados via JS -->
-                    </div>
+                    <div id="gridDocas2D" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
                 </div>
-
-                <!-- PAINEL DE RESUMO EXECUTIVO DO TURNO -->
                 <div class="lg:col-span-3 bg-slate-800/80 border border-slate-700/60 rounded-3xl p-5 shadow-xl flex flex-col justify-between gap-4">
                     <h3 class="text-sm font-black text-amber-400 uppercase tracking-wider border-b border-slate-700 pb-3">Resumo Operacional</h3>
-
                     <div class="space-y-3">
                         <div class="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center shadow-inner">
                             <span class="text-xs font-bold text-slate-400">Docas Ativas</span>
                             <span id="stat2DAtivas" class="text-lg font-black text-emerald-400">0 / 0</span>
                         </div>
-
                         <div class="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center shadow-inner">
                             <span class="text-xs font-bold text-slate-400">Docas em Atraso</span>
                             <span id="stat2DAtraso" class="text-lg font-black text-red-400">0</span>
                         </div>
-
                         <div class="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center shadow-inner">
                             <span class="text-xs font-bold text-slate-400">Docas Livres</span>
                             <span id="stat2DLivres" class="text-lg font-black text-slate-400">0</span>
                         </div>
-
                         <div class="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center shadow-inner">
                             <span class="text-xs font-bold text-slate-400">Acurácia SLA</span>
                             <span id="stat2DSla" class="text-lg font-black text-yellow-400">100%</span>
                         </div>
                     </div>
-
                     <div class="bg-slate-950/60 border border-slate-800 p-3 rounded-2xl text-[10px] text-slate-500 text-center">
                         Sincronização em tempo real via Firebase Realtime Database.
                     </div>
@@ -721,19 +637,14 @@
         <!-- MÓDULO 9: TORRE DE CONTROLE                                               -->
         <!-- ========================================================================= -->
         <section id="perfil-torre" class="perfil-modulo flex-1 max-w-7xl w-full mx-auto p-6 hidden flex-col gap-6">
-            <!-- HEADER DA TORRE -->
             <div class="flex flex-wrap justify-between items-center bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 shadow-xl gap-4">
                 <div>
                     <h2 class="text-2xl font-black text-white flex items-center gap-2">📡 Torre de Controle (KPIs)</h2>
                     <p class="text-sm text-slate-400 mt-1">Visão analítica da operação e exportação de dados.</p>
                 </div>
-                
                 <div class="flex items-center gap-4 flex-wrap">
                     <div class="bg-slate-900 border border-slate-700 p-2 rounded-2xl flex items-center gap-2 shadow-inner">
-                        <select id="filtroTorreDoca" onchange="window.renderizarTorre()" class="bg-transparent text-xs text-white font-bold outline-none cursor-pointer px-2">
-                            <option value="TODAS">Todas as Docas</option>
-                            <!-- Injetado via JS -->
-                        </select>
+                        <select id="filtroTorreDoca" onchange="window.renderizarTorre()" class="bg-transparent text-xs text-white font-bold outline-none cursor-pointer px-2"></select>
                         <div class="w-px h-6 bg-slate-700 mx-1"></div>
                         <select id="tipoFiltroTorre" onchange="window.mudarTipoFiltroTorre()" class="bg-transparent text-xs text-indigo-300 font-bold outline-none cursor-pointer">
                             <option value="dia">Visão por Dia</option>
@@ -743,62 +654,42 @@
                         <input type="date" id="filtroTorreData" onchange="window.renderizarTorre()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer">
                         <input type="month" id="filtroTorreMes" onchange="window.renderizarTorre()" class="bg-transparent text-xs text-white font-mono font-bold outline-none cursor-pointer hidden">
                     </div>
-
                     <button type="button" onclick="window.exportarTorreExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm px-5 py-3 rounded-2xl shadow-lg transition border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 flex items-center gap-2">
                         <span>📊</span> Baixar Relatório (Excel)
                     </button>
                 </div>
             </div>
 
-            <!-- CARDS DE KPIS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col justify-center">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total de Agendamentos</span>
-                    <div class="flex items-end gap-3">
-                        <span class="text-4xl font-black text-white" id="kpiTorreTotal">0</span>
-                        <span class="text-xs text-indigo-400 font-bold mb-1">Veículos</span>
-                    </div>
+                    <div class="flex items-end gap-3"><span class="text-4xl font-black text-white" id="kpiTorreTotal">0</span><span class="text-xs text-indigo-400 font-bold mb-1">Veículos</span></div>
                 </div>
                 <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col justify-center">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Concluídos (Check-out)</span>
-                    <div class="flex items-end gap-3">
-                        <span class="text-4xl font-black text-emerald-400" id="kpiTorreConcluidos">0</span>
-                        <span class="text-xs text-emerald-600 font-bold mb-1 border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 rounded" id="kpiTorreConcluidosPct">0%</span>
-                    </div>
+                    <div class="flex items-end gap-3"><span class="text-4xl font-black text-emerald-400" id="kpiTorreConcluidos">0</span><span class="text-xs text-emerald-600 font-bold mb-1 border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 rounded" id="kpiTorreConcluidosPct">0%</span></div>
                 </div>
                 <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col justify-center">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Média Duração (Programada)</span>
-                    <div class="flex items-end gap-3">
-                        <span class="text-3xl font-black text-blue-400" id="kpiTorreDuracaoProg">00:00</span>
-                        <span class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Horas</span>
-                    </div>
+                    <div class="flex items-end gap-3"><span class="text-3xl font-black text-blue-400" id="kpiTorreDuracaoProg">00:00</span><span class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Horas</span></div>
                 </div>
                 <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-lg flex flex-col justify-center">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Média Duração (Realizada)</span>
-                    <div class="flex items-end gap-3">
-                        <span class="text-3xl font-black text-yellow-400" id="kpiTorreDuracaoReal">00:00</span>
-                        <span class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Horas</span>
-                    </div>
+                    <div class="flex items-end gap-3"><span class="text-3xl font-black text-yellow-400" id="kpiTorreDuracaoReal">00:00</span><span class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Horas</span></div>
                 </div>
             </div>
 
-            <!-- GRÁFICOS CHART.JS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-3xl shadow-xl flex flex-col">
                     <h3 class="text-sm font-black text-white uppercase tracking-wider mb-4 text-center">Volume de Cargas por Turno</h3>
-                    <div class="flex-1 relative min-h-[220px]">
-                        <canvas id="chartVolumeTurno"></canvas>
-                    </div>
+                    <div class="flex-1 relative min-h-[220px]"><canvas id="chartVolumeTurno"></canvas></div>
                 </div>
                 <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-3xl shadow-xl flex flex-col">
                     <h3 class="text-sm font-black text-white uppercase tracking-wider mb-4 text-center">Tempo Médio: Prog vs Real (em Horas)</h3>
-                    <div class="flex-1 relative min-h-[220px]">
-                        <canvas id="chartTempoTurno"></canvas>
-                    </div>
+                    <div class="flex-1 relative min-h-[220px]"><canvas id="chartTempoTurno"></canvas></div>
                 </div>
             </div>
 
-            <!-- TABELA DE DADOS -->
             <div class="bg-slate-800/80 border border-slate-700 rounded-3xl shadow-xl overflow-hidden flex flex-col flex-1 min-h-[400px]">
                 <div class="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800">
                     <h3 class="text-sm font-black text-white uppercase tracking-wider">Detalhamento Operacional</h3>
@@ -808,44 +699,21 @@
                     <table class="w-full text-left text-xs whitespace-nowrap">
                         <thead class="text-[10px] uppercase text-slate-400 bg-slate-900/50">
                             <tr>
-                                <th class="p-3 font-black rounded-tl-xl">Status</th>
-                                <th class="p-3 font-black">Ordem</th>
-                                <th class="p-3 font-black">Placa</th>
-                                <th class="p-3 font-black">Fornecedor</th>
-                                <th class="p-3 font-black text-indigo-300">Turno</th>
-                                <th class="p-3 font-black">Local / Doca</th>
-                                <th class="p-3 font-black text-blue-400 text-center border-l border-slate-700">Prog. Início</th>
-                                <th class="p-3 font-black text-blue-400 text-center">Prog. Fim</th>
-                                <th class="p-3 font-black text-blue-400 text-center font-mono">Duração (Prog)</th>
-                                <th class="p-3 font-black text-yellow-400 text-center border-l border-slate-700">Real Início</th>
-                                <th class="p-3 font-black text-yellow-400 text-center">Real Fim</th>
-                                <th class="p-3 font-black text-yellow-400 text-center font-mono rounded-tr-xl">Duração (Real)</th>
+                                <th class="p-3 font-black rounded-tl-xl">Status</th><th class="p-3 font-black">Ordem</th><th class="p-3 font-black">Placa</th><th class="p-3 font-black">Fornecedor</th>
+                                <th class="p-3 font-black text-indigo-300">Turno</th><th class="p-3 font-black">Local / Doca</th><th class="p-3 font-black text-blue-400 text-center border-l border-slate-700">Prog. Início</th>
+                                <th class="p-3 font-black text-blue-400 text-center">Prog. Fim</th><th class="p-3 font-black text-blue-400 text-center font-mono">Duração (Prog)</th><th class="p-3 font-black text-yellow-400 text-center border-l border-slate-700">Real Início</th>
+                                <th class="p-3 font-black text-yellow-400 text-center">Real Fim</th><th class="p-3 font-black text-yellow-400 text-center font-mono rounded-tr-xl">Duração (Real)</th>
                             </tr>
                         </thead>
-                        <tbody id="tabelaTorreBody" class="divide-y divide-slate-700/50">
-                            <!-- Linhas injetadas via JS -->
-                        </tbody>
+                        <tbody id="tabelaTorreBody" class="divide-y divide-slate-700/50"></tbody>
                     </table>
                 </div>
-            </div>
-        </section>
-
-        <!-- ========================================================================= -->
-        <!-- MÓDULOS EXTRAS (PLACEHOLDERS) -->
-        <!-- ========================================================================= -->
-        <section id="perfil-admin" class="perfil-modulo flex-1 max-w-6xl w-full mx-auto p-6 hidden">
-            <div class="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-xl text-center py-20">
-                <h2 class="text-2xl font-black text-white mb-2">👑 Painel do Administrador</h2>
-                <p class="text-slate-400">Área exclusiva da gestão YMS. Escolha um módulo na barra superior para operar.</p>
             </div>
         </section>
         
         <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 z-50 min-w-[320px] pointer-events-none">
             <span id="toastIcon" class="text-2xl">✨</span>
-            <div>
-                <p id="toastTitulo" class="font-black text-sm uppercase tracking-wider"></p>
-                <p id="toastSub" class="text-xs text-indigo-200 font-bold"></p>
-            </div>
+            <div><p id="toastTitulo" class="font-black text-sm uppercase tracking-wider"></p><p id="toastSub" class="text-xs text-indigo-200 font-bold"></p></div>
         </div>
     </div>
 
@@ -856,32 +724,27 @@
             <h2 style="margin: 0; font-size: 18px; text-transform: uppercase;">YMS Ecosystem</h2>
             <p style="margin: 5px 0 0 0; font-size: 11px;">Controle de Pátio e Docas</p>
         </div>
-        
         <p style="margin: 5px 0; font-size: 13px;"><strong>ORDEM:</strong> <span id="printOrdem"></span></p>
         <p style="margin: 5px 0; font-size: 13px;"><strong>EMPRESA:</strong> <span id="printForn"></span></p>
         <p style="margin: 5px 0; font-size: 13px;"><strong>MOTORISTA:</strong> <span id="printNomeMotorista"></span></p>
         <p style="margin: 5px 0; font-size: 13px;"><strong>CPF:</strong> <span id="printCpf"></span></p>
         <p style="margin: 5px 0; font-size: 13px;"><strong>PLACA:</strong> <span id="printPlaca"></span></p>
-        
         <div style="border: 2px solid black; padding: 5px; margin: 15px 0; text-align: center;">
             <p style="margin: 0; font-size: 10px;">DESTINO / DOCA</p>
             <h3 style="margin: 5px 0 0 0; font-size: 15px; font-weight: bold;" id="printDoca"></h3>
         </div>
-        
         <p style="margin: 5px 0; font-size: 11px;">AGENDADO: <strong id="printAgendado"></strong></p>
         <p style="margin: 5px 0; font-size: 11px;">CHEGADA REAL: <strong id="printChegada"></strong></p>
-        
         <div style="border: 2px dashed black; padding: 8px; margin: 10px 0; text-align: center; background-color: #f0f0f0 !important;">
             <p style="margin: 0; font-size: 13px; font-weight: bold; text-transform: uppercase;" id="printStatus"></p>
         </div>
-
         <div style="margin-top: 15px; text-align: center;">
             <div id="printQrCode" style="display: inline-block;"></div>
             <p style="font-size: 10px; margin-top: 8px;">Apresente este ticket na portaria e recepção fiscal.</p>
         </div>
     </div>
 
-  <!-- SCRIPT CENTRAL UNIFICADO -->
+    <!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
         // Configurações Firebase
         const firebaseConfig = {
@@ -906,19 +769,13 @@
             cargaEmProcessoTotem: null,
             fiscalCargaSelecionada: null,
             fiscalRotaSelecionada: [],
-            tipoCargaSelecionado: 'cotidiano'
+            tipoCargaSelecionado: 'cotidiano',
+            statusAnteriorPager: null
         };
 
         window.listaTodasDocas = [
-            'Doca - (04N/06N)', 
-            'Doca - Comp. F3 CN4', 
-            'Doca - Rua F2 (7S)', 
-            'Doca - 1 F2 (7S)', 
-            'Doca - 2 F2 (7S)', 
-            'Doca - Basico F2 (5S)', 
-            'Doca - Basico F3 (CS1)', 
-            'Doca - Inflamáveis', 
-            'Doca - Devolução'
+            'Doca - (04N/06N)', 'Doca - Comp. F3 CN4', 'Doca - Rua F2 (7S)', 'Doca - 1 F2 (7S)', 
+            'Doca - 2 F2 (7S)', 'Doca - Basico F2 (5S)', 'Doca - Basico F3 (CS1)', 'Doca - Inflamáveis', 'Doca - Devolução'
         ];
         
         window.slotsDia24h = [];
@@ -1070,8 +927,6 @@
             db.ref('yms_agendamentos_oficiais').on('value', (snapshot) => {
                 const data = snapshot.val();
                 let listaBruta = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                
-                // MUDANÇA: Não apaga os dados do passado da memória geral! Guarda histórico.
                 window.ymsStore.agendamentos = listaBruta;
                 
                 if(!document.getElementById('perfil-pcp').classList.contains('hidden')) window.renderizarGradePCP();
@@ -1081,6 +936,7 @@
                 if(!document.getElementById('perfil-checkout').classList.contains('hidden')) window.renderizarCheckout();
                 if(!document.getElementById('perfil-docas2d').classList.contains('hidden')) window.renderizarPainelDocas2D();
                 if(!document.getElementById('perfil-torre').classList.contains('hidden')) window.renderizarTorre();
+                if(!document.getElementById('perfil-pager').classList.contains('hidden')) window.renderizarPagerMotorista();
             });
 
             db.ref('yms_motoristas').on('value', (snapshot) => {
@@ -1108,36 +964,41 @@
         window.solicitarAcessoPerfil = function(perfil) {
             window.ymsStore.perfilSolicitadoTemp = perfil;
             document.getElementById('boxSenhaLogin').classList.remove('hidden');
-            document.getElementById('lblPerfilSelecionadoLogin').textContent = `AUTENTICAÇÃO: ${perfil.toUpperCase()}`;
+            
+            if (perfil === 'pager') {
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = `APP DO MOTORISTA - ACOMPANHAMENTO`;
+                document.getElementById('lblInput1').textContent = `👤 DIGITE SEU CPF (APENAS NÚMEROS) *`;
+                document.getElementById('containerSenha').classList.add('hidden');
+            } else {
+                document.getElementById('lblPerfilSelecionadoLogin').textContent = `AUTENTICAÇÃO: ${perfil.toUpperCase()}`;
+                document.getElementById('lblInput1').textContent = `👤 Usuário / Login *`;
+                document.getElementById('containerSenha').classList.remove('hidden');
+            }
+            
             document.getElementById('inputUserLogin').focus();
         };
 
-        window.aplicarPermissoesMenu = function() {
-            const perfil = window.ymsStore.usuarioLogado?.perfil;
-            const botoes = document.querySelectorAll('.btn-perfil');
-            botoes.forEach(btn => {
-                if (perfil === 'admin' || perfil === 'pcp') btn.classList.remove('hidden');
-                else {
-                    if (btn.id === `btn-${perfil}`) btn.classList.remove('hidden');
-                    else btn.classList.add('hidden');
-                }
-            });
-        };
-
         window.confirmarLoginComSenha = function() {
-            const user = document.getElementById('inputUserLogin').value.trim();
+            let user = document.getElementById('inputUserLogin').value.trim();
             const pass = document.getElementById('inputPinLogin').value.trim();
-            if(!user || !pass) return alert("Preencha login e senha!");
             let perfilSelecionado = window.ymsStore.perfilSolicitadoTemp;
-            const userNormalizado = window.normalizarTexto(user);
-            const isFornecedor = window.listaPadrao60Fornecedores.some(f => window.normalizarTexto(f.empresa) === userNormalizado);
-            if (isFornecedor) perfilSelecionado = 'fornecedor';
-            else if (user.toUpperCase() === 'ADMIN' || user.toUpperCase() === 'PCP') perfilSelecionado = user.toLowerCase();
+            
+            if (perfilSelecionado === 'pager') {
+                user = user.replace(/[^\d]/g, '');
+                if(user.length !== 11) return alert("Por favor, digite os 11 números do seu CPF!");
+                user = user.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); // Aplica máscara para buscar certo
+            } else {
+                if(!user || !pass) return alert("Preencha login e senha!");
+                const userNormalizado = window.normalizarTexto(user);
+                const isFornecedor = window.listaPadrao60Fornecedores.some(f => window.normalizarTexto(f.empresa) === userNormalizado);
+                if (isFornecedor) perfilSelecionado = 'fornecedor';
+                else if (user.toUpperCase() === 'ADMIN' || user.toUpperCase() === 'PCP') perfilSelecionado = user.toLowerCase();
+            }
 
             window.ymsStore.usuarioLogado = { nome: user, perfil: perfilSelecionado };
             document.getElementById('modalLoginGlobal').classList.add('hidden');
             document.getElementById('lblNomeUsuarioLogado').textContent = user.toUpperCase();
-            window.aplicarPermissoesMenu();
+            
             window.mudarPerfil(perfilSelecionado);
         };
 
@@ -1145,29 +1006,41 @@
             window.ymsStore.usuarioLogado = null;
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
             document.getElementById('boxSenhaLogin').classList.add('hidden');
+            document.getElementById('headerPrincipal').classList.remove('hidden');
             document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.btn-perfil').forEach(btn => btn.classList.remove('hidden'));
+            
+            // Limpa o som
+            if(window.ymsStore.audioInterval) clearInterval(window.ymsStore.audioInterval);
         };
 
         window.mudarPerfil = function(p) {
             const perfilUser = window.ymsStore.usuarioLogado?.perfil;
-            if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal' && p !== 'doca' && p !== 'motoristas' && p !== 'checkout' && p !== 'docas2d' && p !== 'torre') {
-                window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
-                return;
+            
+            if (p === 'pager') {
+                document.getElementById('headerPrincipal').classList.add('hidden');
+            } else {
+                document.getElementById('headerPrincipal').classList.remove('hidden');
+                window.aplicarPermissoesMenu();
+                
+                if (perfilUser && perfilUser !== 'admin' && perfilUser !== 'pcp' && p !== perfilUser && p !== 'totem' && p !== 'fiscal' && p !== 'doca' && p !== 'motoristas' && p !== 'checkout' && p !== 'docas2d' && p !== 'torre') {
+                    window.exibirToast("Acesso Negado", "Você não tem permissão para este módulo.", "🚫");
+                    return;
+                }
+                
+                document.querySelectorAll('.btn-perfil').forEach(btn => {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
+                    btn.classList.add('text-slate-400', 'hover:text-white', 'rounded-lg');
+                });
+                
+                const btnAtivo = document.getElementById(`btn-${p}`);
+                if(btnAtivo) {
+                    btnAtivo.classList.remove('text-slate-400', 'hover:text-white', 'rounded-lg');
+                    btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
+                }
             }
 
             document.querySelectorAll('.perfil-modulo').forEach(s => s.classList.add('hidden'));
-            document.querySelectorAll('.btn-perfil').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
-                btn.classList.add('text-slate-400', 'hover:text-white', 'rounded-lg');
-            });
-            
-            const btnAtivo = document.getElementById(`btn-${p}`);
-            if(btnAtivo) {
-                btnAtivo.classList.remove('text-slate-400', 'hover:text-white', 'rounded-lg');
-                btnAtivo.classList.add('bg-indigo-600', 'text-white', 'shadow', 'rounded-xl');
-            }
-
             const target = document.getElementById(`perfil-${p}`);
             if(target) target.classList.remove('hidden');
             
@@ -1189,199 +1062,128 @@
                 document.getElementById('inpTotemCpf').value = "";
                 setTimeout(() => document.getElementById('inpTotemCpf').focus(), 100);
             }
-
-            if (window.ymsStore.usuarioLogado) window.aplicarPermissoesMenu();
+            if(p === 'pager') {
+                window.tocarAlertaMotorista(); // Pede permissão de som no primeiro clique do login
+                window.renderizarPagerMotorista();
+            }
         };
+
+        // ==========================================
+        // NOVO: PAGER DIGITAL (APP DO MOTORISTA)
+        // ==========================================
+        window.tocarAlertaMotorista = function() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, ctx.currentTime); // Frequência aguda de alerta
+                gain.gain.setValueAtTime(1, ctx.currentTime);
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 1.5);
+                osc.stop(ctx.currentTime + 1.5);
+            } catch(e) { console.log("Áudio bloqueado pelo navegador."); }
+        };
+
+        window.renderizarPagerMotorista = function() {
+            if (!window.ymsStore.usuarioLogado || window.ymsStore.usuarioLogado.perfil !== 'pager') return;
+            
+            const cpfMotorista = window.ymsStore.usuarioLogado.nome;
+            const hoje = window.obterDataHojePtBR();
+
+            // Busca a carga do motorista de hoje que não esteja finalizada
+            const carga = window.ymsStore.agendamentos.find(a => 
+                a.cpf === cpfMotorista && 
+                a.data === hoje &&
+                a.status !== 'FINALIZADO'
+            );
+
+            const box = document.getElementById('pagerBox');
+            const icon = document.getElementById('pagerIcone');
+            const titulo = document.getElementById('pagerTitulo');
+            const sub = document.getElementById('pagerSub');
+            const placa = document.getElementById('pagerPlaca');
+            const doca = document.getElementById('pagerDoca');
+            const statusBadge = document.getElementById('pagerStatusBadge');
+
+            if (!carga) {
+                box.className = "bg-slate-800 border-4 border-slate-700 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
+                icon.textContent = "📭";
+                titulo.textContent = "Nenhuma Carga";
+                sub.textContent = "Você não possui agendamentos ativos ou aguardando no pátio hoje.";
+                placa.textContent = "-";
+                doca.textContent = "-";
+                statusBadge.className = "inline-block bg-slate-800 text-slate-400 border border-slate-600 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
+                statusBadge.textContent = "SEM ATIVIDADE";
+                return;
+            }
+
+            placa.textContent = carga.placa || "NÃO INFORMADA";
+            doca.textContent = carga.docaAtual || carga.doca || "-";
+
+            // Se o status mudou desde a última leitura, toca o alarme
+            if (window.ymsStore.statusAnteriorPager !== carga.status) {
+                if (carga.status === 'AGUARDANDO DOCA' || carga.status === 'EM OPERACAO' || carga.status === 'RECEBIMENTO FISICO') {
+                    window.tocarAlertaMotorista();
+                }
+                window.ymsStore.statusAnteriorPager = carga.status;
+            }
+
+            // Renderiza conforme o status
+            if (carga.status === 'AGENDADO') {
+                box.className = "bg-slate-800 border-4 border-slate-700 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
+                icon.textContent = "🛣️";
+                titulo.textContent = "A Caminho";
+                sub.textContent = "Dirija-se ao Totem da portaria para confirmar sua chegada.";
+                statusBadge.className = "inline-block bg-blue-900/50 text-blue-400 border border-blue-500/50 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
+                statusBadge.textContent = "AGUARDANDO CHEGADA";
+            } 
+            else if (carga.status === 'AGUARDANDO FISCAL' || carga.status === 'COM PROBLEMA') {
+                box.className = "bg-slate-800 border-4 border-amber-500/50 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
+                icon.textContent = "⏳";
+                titulo.textContent = "Fila da Triagem";
+                sub.textContent = "Aguarde no pátio. O Recebimento Fiscal está analisando sua nota.";
+                statusBadge.className = "inline-block bg-amber-900/50 text-amber-400 border border-amber-500/50 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
+                statusBadge.textContent = "EM ANÁLISE FISCAL";
+            }
+            else if (carga.status === 'AGUARDANDO DOCA') {
+                // CHAMA O MOTORISTA! TELA VERDE PISCANDO!
+                box.className = "bg-emerald-900 border-4 border-emerald-400 rounded-[3rem] max-w-sm w-full p-8 shadow-[0_0_50px_rgba(16,185,129,0.6)] text-center space-y-6 tela-chamando scale-105";
+                icon.textContent = "🟢";
+                titulo.textContent = "VÁ PARA A DOCA!";
+                sub.textContent = "Sua plataforma foi liberada! Dirija-se imediatamente para o local indicado abaixo.";
+                statusBadge.className = "inline-block bg-emerald-500 text-white border border-emerald-400 px-4 py-2 rounded-lg text-lg font-black uppercase mt-1 shadow-lg";
+                statusBadge.textContent = "LIBERADO PARA ENCOSTAR";
+            }
+            else if (carga.status === 'EM OPERACAO' || carga.status === 'RECEBIMENTO FISICO') {
+                box.className = "bg-purple-900/50 border-4 border-purple-500/50 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
+                icon.textContent = "⚙️";
+                titulo.textContent = "Em Operação";
+                sub.textContent = "Sua carga está sendo processada na doca no momento.";
+                statusBadge.className = "inline-block bg-purple-600 text-white border border-purple-400 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
+                statusBadge.textContent = "DESCARREGANDO";
+            }
+            else if (carga.status === 'AGUARDANDO CHECKOUT') {
+                box.className = "bg-slate-800 border-4 border-slate-700 rounded-[3rem] max-w-sm w-full p-8 shadow-2xl text-center space-y-6";
+                icon.textContent = "🏁";
+                titulo.textContent = "Operação Concluída";
+                sub.textContent = "Dirija-se à portaria para registrar sua saída do pátio.";
+                statusBadge.className = "inline-block bg-slate-700 text-white border border-slate-500 px-3 py-1 rounded-lg text-sm font-black uppercase mt-1";
+                statusBadge.textContent = "PRONTO PARA SAÍDA";
+            }
+        };
+
 
         // ==========================================
         // PCP PROGRAMADOR
         // ==========================================
-        window.obterListaNomesFornecedores = function() {
-            const conjuntoUnico = new Set();
-            window.listaPadrao60Fornecedores.forEach(item => conjuntoUnico.add(window.limparNomeFornecedor(item.empresa)));
-            return Array.from(conjuntoUnico).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-        };
-
-        window.popularSelectFornecedores = function(lista) {
-            const selForn = document.getElementById('inpFornecedor');
-            if (!selForn) return;
-            selForn.innerHTML = "";
-            lista.forEach((f, idx) => {
-                const opt = document.createElement('option');
-                opt.value = f; opt.textContent = `${idx + 1}. ${f}`;
-                if (idx === 0) opt.selected = true;
-                selForn.appendChild(opt);
-            });
-            const lbl = document.getElementById('lblContadorForn');
-            if(lbl) lbl.textContent = `(${lista.length} CADASTRADOS)`;
-        };
-
-        window.filtrarOpcoesFornecedor = function() {
-            const termo = document.getElementById('filtroForn').value.toLowerCase().trim();
-            const filtrados = window.obterListaNomesFornecedores().filter(f => f.toLowerCase().includes(termo));
-            window.popularSelectFornecedores(filtrados);
-        };
-
-        window.selecionarTipoCarga = function(t) { 
-            window.ymsStore.tipoCargaSelecionado = t;
-            document.getElementById('btnTipoCotidiano').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-emerald-400 flex flex-col items-center gap-0.5 cursor-pointer";
-            document.getElementById('btnTipoExtra').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-amber-400 flex flex-col items-center gap-0.5 cursor-pointer";
-            document.getElementById('btnTipoCritica').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 flex flex-col items-center gap-0.5 cursor-pointer";
-
-            const badge = document.getElementById('badgeTipoJanela');
-            if (t === 'cotidiano') {
-                document.getElementById('btnTipoCotidiano').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-emerald-600 border-emerald-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                if(badge) { badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; badge.innerHTML = "🟢 Cotidiano"; }
-            } else if (t === 'extra') {
-                document.getElementById('btnTipoExtra').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-amber-600 border-amber-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                if(badge) { badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; badge.innerHTML = "🟡 Extra"; }
-            } else if (t === 'critica') {
-                document.getElementById('btnTipoCritica').className = "py-2.5 px-2 rounded-xl text-[11px] font-black transition border bg-red-600 border-red-400 text-white shadow flex flex-col items-center gap-0.5 cursor-pointer";
-                if(badge) { badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono uppercase"; badge.innerHTML = "🔴 Crítica"; }
-            }
-        };
-
-        window.criarJanelaManual = function(e) {
-            if(e) e.preventDefault();
-            let fornecedor = document.getElementById('inpFornecedor')?.value;
-            const doca = document.getElementById('inpDoca')?.value;
-            const dataRaw = document.getElementById('inpData')?.value; 
-            const horaIni = document.getElementById('inpHora')?.value;
-            const horaFim = document.getElementById('inpHoraFim')?.value;
-
-            if(!fornecedor || !doca || !dataRaw || !horaIni || !horaFim) return alert("Preencha todos os campos obrigatórios da janela!");
-            const dataFormatada = window.normalizarDataPtBR(dataRaw);
-            if (window.isDataPassada(dataFormatada)) return alert("⚠️ Bloqueio YMS: Não é permitido agendar janelas para datas do passado!");
-
-            const tipo = window.ymsStore.tipoCargaSelecionado || 'cotidiano';
-            if (tipo === 'extra') fornecedor = `EXTRA - ${fornecedor}`;
-            else if (tipo === 'critica') fornecedor = `CRÍTICA - ${fornecedor}`;
-
-            const numOrdem = Math.floor(Math.random() * 90000) + 10000;
-            let obj = {
-                ordem: `REQ-${numOrdem}`, fornecedor: fornecedor, doca: doca,
-                data: dataFormatada, horaIni: horaIni, horaFim: horaFim,
-                tipo: tipo.toUpperCase(), status: 'AGENDADO', isRascunho: true,
-                notaFiscal: '', placa: '', cpf: '', celular: '', nomeMotorista: ''
-            };
-
-            if(!window.ymsStore.rascunhoAgendamentos) window.ymsStore.rascunhoAgendamentos = [];
-            window.ymsStore.rascunhoAgendamentos.push(obj);
-            localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
-
-            window.exibirToast("Rascunho Adicionado", "Janela pronta para subida.", "📝");
-            window.selecionarTipoCarga('cotidiano');
-            window.renderizarGradePCP();
-            window.atualizarHorariosDisponiveis();
-        };
-
-        window.lerPlanilhaExcel = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, {type: 'array', cellDates: true});
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet, {header: 1}); 
-
-                    if (json.length < 2) return alert("A planilha está vazia!");
-                    const cabecalho = json[0];
-                    let cData = -1, cForn = -1, cDoca = -1, cHIni = -1, cHFim = -1;
-
-                    cabecalho.forEach((txt, idx) => {
-                        if(!txt) return;
-                        let nome = String(txt).toUpperCase().trim();
-                        if (nome === 'DIA' || nome === 'DATA') cData = idx;
-                        if (nome.includes('FORNECEDOR') || nome.includes('EMPRESA')) cForn = idx;
-                        if (nome.includes('DOCA') || nome.includes('LOCAL')) cDoca = idx;
-                        if (nome === 'ENTRADA' || nome.includes('INICIO') || nome.includes('INÍCIO') || nome.includes('HORA')) cHIni = idx;
-                        if (nome === 'SAÍDA' || nome === 'SAIDA' || nome.includes('FIM')) cHFim = idx;
-                    });
-
-                    if (cData === -1) cData = 0;
-                    if (cForn === -1) cForn = 1;
-                    if (cDoca === -1) cDoca = 2;
-                    if (cHIni === -1) cHIni = 3;
-                    if (cHFim === -1) cHFim = 4;
-
-                    let janelasAdicionadas = 0;
-                    json.slice(1).forEach(row => {
-                        if (!row || row.length === 0 || !row[cForn]) return;
-                        const dataPlanilha = window.normalizarDataPtBR(row[cData]);
-                        if (window.isDataPassada(dataPlanilha)) return;
-
-                        window.ymsStore.rascunhoAgendamentos.push({
-                            ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
-                            fornecedor: String(row[cForn] || 'NÃO INFORMADO').trim(),
-                            doca: String(row[cDoca] || 'Doca - (04N/06N)').trim(),
-                            data: dataPlanilha,
-                            horaIni: window.normalizarHoraExcel(row[cHIni]),
-                            horaFim: row[cHFim] ? window.normalizarHoraExcel(row[cHFim]) : "10:00",
-                            tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true,
-                            notaFiscal: '', placa: '', cpf: '', celular: '', nomeMotorista: ''
-                        });
-                        janelasAdicionadas++;
-                    });
-                    
-                    localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
-                    window.renderizarGradePCP();
-                    if (janelasAdicionadas > 0) window.exibirToast("Planilha Carregada", `${janelasAdicionadas} Rascunhos lidos com sucesso.`, "📊");
-                    e.target.value = ''; 
-                } catch(err) { alert("Erro ao ler a planilha. Verifique o formato do arquivo."); }
-            };
-            reader.readAsArrayBuffer(file);
-        };
-
-        window.processarTextoBruto = function() {
-            const texto = document.getElementById('txtBruto')?.value.trim();
-            if(!texto) return alert("Cole o texto!");
-            texto.split('\n').forEach(linha => {
-                const col = linha.split(/\t|;| ,/);
-                if(col.length >= 2) {
-                    const dataTxt = window.normalizarDataPtBR(col[2] || window.obterDataHojePtBR());
-                    if (window.isDataPassada(dataTxt)) return;
-
-                    window.ymsStore.rascunhoAgendamentos.push({
-                        ordem: `REQ-${Math.floor(Math.random() * 90000) + 10000}`,
-                        fornecedor: String(col[0]).trim(), doca: String(col[1]).trim(), data: dataTxt,
-                        horaIni: window.normalizarHoraExcel(col[3]), horaFim: window.normalizarHoraExcel(col[4]),
-                        tipo: 'COTIDIANO', status: 'AGENDADO', isRascunho: true,
-                        notaFiscal: '', placa: '', cpf: '', celular: '', nomeMotorista: ''
-                    });
-                }
-            });
-            localStorage.setItem('yms_rascunho_temp', JSON.stringify(window.ymsStore.rascunhoAgendamentos));
-            window.renderizarGradePCP();
-            document.getElementById('txtBruto').value = '';
-        };
-
-        window.confirmarESubirJanelas = function() {
-            if(window.ymsStore.rascunhoAgendamentos.length === 0) return alert("Rascunho vazio!");
-            if(!confirm("Subir para o Firebase? O Portal do Fornecedor será atualizado!")) return;
-
-            db.ref('yms_agendamentos_oficiais').get().then(snap => {
-                const atual = snap.val();
-                let lista = atual ? (Array.isArray(atual) ? atual : Object.values(atual)) : [];
-                // MUDANÇA: Mantendo histórico para a Torre de Controle ao subir novos agendamentos!
-                const novos = window.ymsStore.rascunhoAgendamentos.map(r => ({ ...r, isRascunho: false }));
-                
-                db.ref('yms_agendamentos_oficiais').set([...lista, ...novos]).then(() => {
-                    window.ymsStore.rascunhoAgendamentos = [];
-                    localStorage.removeItem('yms_rascunho_temp');
-                    window.renderizarGradePCP();
-                    window.exibirToast("Sucesso!", "Janelas enviadas para o Fornecedor.", "🚀");
-                });
-            });
-        };
-
         window.renderizarGradePCP = function() {
             const container = document.getElementById('containerJanelas');
             if (!container) return;
             container.innerHTML = "";
 
-            // MUDANÇA: O PCP só visualiza os agendamentos de Hoje para o futuro para não poluir a tela
             let historicoOcultoAgendamentos = (window.ymsStore.agendamentos || []).filter(a => !window.isDataPassada(a.data));
             const todasJanelasExibicao = [...(window.ymsStore.rascunhoAgendamentos || []), ...historicoOcultoAgendamentos];
             
@@ -1404,13 +1206,13 @@
             todasJanelasExibicao.forEach(item => {
                 const ehRascunho = item.isRascunho || (window.ymsStore.rascunhoAgendamentos || []).some(r => r.ordem === item.ordem);
                 let badgeTag = ehRascunho 
-                    ? `<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-500/50 px-2 py-0.5 rounded">RASCUNHO</span>`
+                    ? `<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-500/50 px-2 py-0.5 rounded">📝 RASCUNHO</span>`
                     : (item.status === 'COM PROBLEMA' 
-                        ? `<span class="text-[10px] font-mono font-bold text-red-400 bg-red-950/80 border border-red-500/50 px-2 py-0.5 rounded animate-pulse">PENDÊNCIA NF</span>`
-                        : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">${item.status || 'AGENDADO'}</span>`);
+                        ? `<span class="text-[10px] font-mono font-bold text-red-400 bg-red-950/80 border border-red-500/50 px-2 py-0.5 rounded animate-pulse">⚠️ PENDÊNCIA NF</span>`
+                        : `<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded">🟢 ${item.status || 'AGENDADO'}</span>`);
 
                 const motivoInfo = item.status === 'COM PROBLEMA' ? `<p class="text-[10px] text-red-400 mt-1 font-bold bg-red-950/50 p-1.5 rounded border border-red-500/30">⚠️ Motivo: ${item.motivoProblema}</p>` : '';
-                const baseBorder = item.status === 'COM PROBLEMA' ? 'border-red-500/80' : (ehRascunho ? 'border-amber-500/50' : 'border-slate-700');
+                const baseBorder = item.status === 'COM PROBLEMA' ? 'border-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : (ehRascunho ? 'border-amber-500/50' : 'border-slate-700');
 
                 let bgForn = 'bg-indigo-500/20 text-indigo-300';
                 if(String(item.fornecedor).includes('EXTRA -')) bgForn = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
@@ -1424,7 +1226,7 @@
                                 ${badgeTag}
                                 <span class="text-[10px] font-mono text-slate-400 font-bold">${item.ordem}</span>
                             </div>
-                            <p class="text-sm font-black text-white">${item.doca}</p>
+                            <p class="text-sm font-black text-white">📍 ${item.doca}</p>
                             ${motivoInfo}
                         </div>
                         <div class="flex items-center gap-3">
@@ -1561,7 +1363,6 @@
                 lblBemVindo.innerHTML = `Bem-vindo(a), <span class="text-indigo-400 font-bold uppercase">${user.nome}</span>. Adicione os dados de transporte nas suas cargas.`;
             }
 
-            // MUDANÇA: O Fornecedor só vê agendamentos de hoje para frente
             let agendamentosValidos = (window.ymsStore.agendamentos || []).filter(a => !a.isRascunho && !window.isDataPassada(a.data));
 
             if (!isAdmin) {
@@ -1712,137 +1513,6 @@
         };
 
         // ==========================================
-        // TOTEM (AUTOATENDIMENTO) LOGIC
-        // ==========================================
-        window.tecladoTotemRaw = "";
-
-        window.tecladoTotem = function(val) {
-            if (val === 'C') {
-                window.tecladoTotemRaw = "";
-            } else if (val === 'back') {
-                window.tecladoTotemRaw = window.tecladoTotemRaw.slice(0, -1);
-            } else {
-                if (window.tecladoTotemRaw.length < 11) {
-                    window.tecladoTotemRaw += val;
-                }
-            }
-
-            let formatado = window.tecladoTotemRaw;
-            if (formatado.length > 9) {
-                formatado = formatado.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, "$1.$2.$3-$4");
-            } else if (formatado.length > 6) {
-                formatado = formatado.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
-            } else if (formatado.length > 3) {
-                formatado = formatado.replace(/(\d{3})(\d{1,3})/, "$1.$2");
-            }
-
-            document.getElementById('inpTotemCpf').value = formatado;
-        };
-
-        window.calcularStatusChegadaSLA = function(horaAgendada) {
-            const agora = new Date();
-            const minAtual = (agora.getHours() * 60) + agora.getMinutes();
-            
-            const pIni = horaAgendada.split(':');
-            const minAgendado = (parseInt(pIni[0], 10) * 60) + parseInt(pIni[1], 10);
-
-            if (minAtual < (minAgendado - 60)) {
-                return { status: "ANTECIPADO", cor: "text-blue-500", corBg: "bg-blue-100" };
-            } else if (minAtual > minAgendado) {
-                return { status: "FORNECEDOR ATRASADO", cor: "text-red-600", corBg: "bg-red-100" };
-            } else {
-                return { status: "NO HORÁRIO", cor: "text-emerald-600", corBg: "bg-emerald-100" };
-            }
-        };
-
-        window.buscarCargaTotem = function() {
-            const cpfDigitado = window.normalizarTexto(document.getElementById('inpTotemCpf').value);
-            if(!cpfDigitado || cpfDigitado.length < 11) return alert("Por favor, digite o CPF completo (11 números)!");
-
-            const motBlocked = window.ymsStore.motoristas.find(m => window.normalizarTexto(m.cpf) === cpfDigitado && m.status === 'BLOQUEADO');
-            if (motBlocked) {
-                 window.tecladoTotemRaw = "";
-                 document.getElementById('inpTotemCpf').value = "";
-                 return alert("⚠️ ACESSO NEGADO: Identificamos uma restrição para o seu CPF. Por favor, dirija-se à portaria para regularização.");
-            }
-
-            const hoje = window.obterDataHojePtBR();
-            
-            const cargaEncontrada = window.ymsStore.agendamentos.find(a => 
-                window.normalizarTexto(a.cpf) === cpfDigitado && 
-                a.data === hoje &&
-                a.status === 'AGENDADO'
-            );
-
-            if (!cargaEncontrada) {
-                return alert("Nenhum agendamento ativo encontrado para este CPF na data de hoje. Verifique se os dados de transporte foram enviados no Portal do Fornecedor.");
-            }
-
-            window.ymsStore.cargaEmProcessoTotem = cargaEncontrada;
-
-            const sla = window.calcularStatusChegadaSLA(cargaEncontrada.horaIni);
-            
-            document.getElementById('lblTotemNomeMotorista').textContent = cargaEncontrada.nomeMotorista || 'NÃO INFORMADO';
-            document.getElementById('lblTotemCpf').textContent = `(${cargaEncontrada.cpf})`;
-            document.getElementById('lblTotemPlaca').textContent = cargaEncontrada.placa;
-            document.getElementById('lblTotemForn').textContent = cargaEncontrada.fornecedor;
-            document.getElementById('lblTotemDoca').textContent = cargaEncontrada.doca;
-            document.getElementById('lblTotemHora').textContent = `${cargaEncontrada.horaIni} às ${cargaEncontrada.horaFim}`;
-            
-            const lblStatus = document.getElementById('lblTotemStatusChegada');
-            lblStatus.textContent = sla.status;
-            lblStatus.className = `text-xs font-black px-3 py-1 rounded-full border ${sla.cor} border-${sla.cor.split('-')[1]}-500/30 bg-${sla.cor.split('-')[1]}-950/50`;
-
-            document.getElementById('modalTicketPreview').classList.remove('hidden');
-        };
-
-        window.confirmarEImprimirTicket = function() {
-            const carga = window.ymsStore.cargaEmProcessoTotem;
-            if(!carga) return;
-
-            const agora = new Date();
-            const horaChegadaReal = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
-            const sla = window.calcularStatusChegadaSLA(carga.horaIni);
-
-            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === carga.ordem);
-            if(idx > -1) {
-                window.ymsStore.agendamentos[idx].status = 'AGUARDANDO FISCAL';
-                window.ymsStore.agendamentos[idx].horaChegadaTotem = horaChegadaReal;
-                window.ymsStore.agendamentos[idx].statusSlaChegada = sla.status;
-                window.salvarAgendamentosNaMemoria();
-            }
-
-            document.getElementById('printOrdem').textContent = carga.ordem;
-            document.getElementById('printForn').textContent = carga.fornecedor;
-            document.getElementById('printNomeMotorista').textContent = carga.nomeMotorista || 'NÃO INFORMADO';
-            document.getElementById('printPlaca').textContent = carga.placa;
-            document.getElementById('printCpf').textContent = carga.cpf;
-            document.getElementById('printDoca').textContent = carga.doca;
-            document.getElementById('printAgendado').textContent = `${carga.horaIni} às ${carga.horaFim}`;
-            document.getElementById('printChegada').textContent = horaChegadaReal;
-            
-            const printStatus = document.getElementById('printStatus');
-            printStatus.textContent = `SLA: ${sla.status}`;
-
-            document.getElementById('printQrCode').innerHTML = "";
-            new QRCode(document.getElementById("printQrCode"), {
-                text: carga.ordem,
-                width: 120, height: 120,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-
-            document.getElementById('modalTicketPreview').classList.add('hidden');
-            window.tecladoTotemRaw = "";
-            document.getElementById('inpTotemCpf').value = "";
-            
-            setTimeout(() => {
-                window.print();
-            }, 300);
-        };
-
-        // ==========================================
         // RECEBIMENTO FISCAL LOGIC E ROTEIRIZADOR
         // ==========================================
         window.renderizarFiscal = function() {
@@ -1864,12 +1534,10 @@
             }
 
             aguardando.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
+                if (pA !== pB) return pB - pA; 
 
-                // DESEMPATE POR FIFO (Hora de Chegada)
                 const hA = window.horaParaMinutos(a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -1904,7 +1572,6 @@
                 const badgeProblema = isComProblema ? `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">⚠️ PENDÊNCIA NF</span>` : '';
                 const boxProblema = isComProblema ? `<div class="mt-2 bg-red-950/50 border border-red-500/30 p-2 rounded-lg text-[10px] text-red-300 break-words"><strong>MOTIVO:</strong> ${item.motivoProblema}</div>` : '';
 
-                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2095,12 +1762,10 @@
             });
 
             fila.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
                 const pA = window.obterPesoPrioridade(a.fornecedor);
                 const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
+                if (pA !== pB) return pB - pA;
 
-                // DESEMPATE POR FIFO
                 const hA = window.horaParaMinutos(a.horaLiberacaoFiscal || a.horaChegadaTotem || '23:59');
                 const hB = window.horaParaMinutos(b.horaLiberacaoFiscal || b.horaChegadaTotem || '23:59');
                 return hA - hB;
@@ -2134,12 +1799,11 @@
                     botaoAcao = `<button type="button" onclick="window.iniciarRecebimentoFisico('${item.ordem}')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-amber-800 active:border-b-0 active:translate-y-1">📦 Iniciar Recebimento / Triagem</button>`;
                 } else {
                     badgeStatus = '<span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold">⏳ AGUARDANDO DOCA</span>';
-                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar</button>`;
+                    botaoAcao = `<button type="button" onclick="window.iniciarOperacaoDoca('${item.ordem}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1">⚙️ Chamar Veículo e Descarregar (Notifica Pager)</button>`;
                 }
 
                 const etapaTxt = item.rotaArray && item.rotaArray.length > 1 ? `Etapa ${item.etapaRotaAtual + 1} de ${item.rotaArray.length}` : 'Destino Único';
 
-                // Destaque visual se for Extra ou Critica
                 let bgForn = 'text-indigo-300';
                 if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
                 if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
@@ -2183,7 +1847,7 @@
         };
 
         window.iniciarOperacaoDoca = function(ordem) {
-            if(!confirm("Chamar veículo e iniciar DESCARGA na plataforma?")) return;
+            if(!confirm("Chamar veículo e iniciar DESCARGA na plataforma? (Isso enviará um bipe para o Pager do motorista)")) return;
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
                 const agora = new Date();
@@ -2194,7 +1858,7 @@
                 }
                 
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Operação Iniciada!", "A plataforma de descarga foi liberada.", "⚙️");
+                window.exibirToast("Veículo Chamado!", "O Pager do motorista foi notificado.", "⚙️");
                 window.renderizarOperadorDoca();
             }
         };
@@ -2238,224 +1902,7 @@
         };
 
         // ==========================================
-        // CADASTRO DE MOTORISTAS LOGIC
-        // ==========================================
-        window.renderizarMotoristas = function() {
-            const container = document.getElementById('listaMotoristasGrid');
-            const contador = document.getElementById('contadorMotoristasCadastrados');
-            const busca = window.normalizarTexto(document.getElementById('inpBuscaMotorista')?.value || "");
-
-            if (!container) return;
-            container.innerHTML = '';
-
-            let filtrados = window.ymsStore.motoristas || [];
-
-            if (busca) {
-                filtrados = filtrados.filter(m => 
-                    window.normalizarTexto(m.nome).includes(busca) || 
-                    window.normalizarTexto(m.cpf).includes(busca)
-                );
-            }
-
-            filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
-
-            if (contador) contador.textContent = filtrados.length;
-
-            if (filtrados.length === 0) {
-                container.innerHTML = `<div class="col-span-full bg-slate-800/50 border border-slate-700 p-8 rounded-2xl text-center shadow-inner text-slate-400 text-sm">Nenhum motorista encontrado.</div>`;
-                return;
-            }
-
-            filtrados.forEach(m => {
-                const isBlocked = m.status === 'BLOQUEADO';
-                const borderClass = isBlocked ? 'border-red-500/50' : 'border-slate-700';
-                const bgStatus = isBlocked 
-                    ? '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">🚫 BLOQUEADO</span>' 
-                    : '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">✅ LIBERADO</span>';
-                
-                const toggleBtn = isBlocked 
-                    ? `<button type="button" onclick="window.alternarStatusMotorista('${m.cpf}', 'LIBERADO')" class="flex-1 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 font-bold py-2 rounded-lg text-xs transition border border-emerald-500/30 hover:border-emerald-500">✅ Liberar Acesso</button>`
-                    : `<button type="button" onclick="window.alternarStatusMotorista('${m.cpf}', 'BLOQUEADO')" class="flex-1 bg-red-950/80 hover:bg-red-900 text-red-400 font-bold py-2 rounded-lg text-xs transition border border-red-500/30 hover:border-red-500">🚫 Bloquear</button>`;
-
-                const card = `
-                    <div class="bg-slate-900 border ${borderClass} hover:shadow-lg p-4 rounded-xl flex flex-col justify-between transition group">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-10 h-10 rounded-full bg-indigo-900/50 text-indigo-400 flex items-center justify-center font-black border border-indigo-500/30 text-lg">
-                                🪪
-                            </div>
-                            <div class="flex-1 overflow-hidden">
-                                <h4 class="text-sm font-black text-white truncate" title="${m.nome}">${m.nome}</h4>
-                                <p class="text-xs font-mono text-slate-400">${m.cpf}</p>
-                            </div>
-                            <div>
-                                ${bgStatus}
-                            </div>
-                        </div>
-                        <div class="bg-slate-950 rounded-lg p-2 border border-slate-800 flex justify-between items-center text-xs mb-3 shadow-inner">
-                            <span class="text-slate-500 font-bold uppercase">Cel:</span>
-                            <span class="text-slate-300 font-bold">${m.celular || '-'}</span>
-                        </div>
-                        <div class="flex gap-2">
-                            ${toggleBtn}
-                            <button type="button" onclick="window.editarMotorista('${m.cpf}')" class="bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white font-bold px-3 py-2 rounded-lg text-xs transition border border-slate-700 hover:border-indigo-500" title="Editar">✏️</button>
-                            <button type="button" onclick="window.excluirMotorista('${m.cpf}')" class="bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-3 py-2 rounded-lg text-xs transition border border-slate-700 hover:border-red-500" title="Excluir">🗑️</button>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', card);
-            });
-        };
-
-        window.salvarCadastroMotorista = function() {
-            let cpf = document.getElementById('inpCadMotoristaCpf').value.trim();
-            const nome = document.getElementById('inpCadMotoristaNome').value.trim().toUpperCase();
-            const celular = document.getElementById('inpCadMotoristaCelular').value.trim();
-            const status = document.getElementById('inpCadMotoristaStatus').value;
-
-            if(!cpf || !nome) return alert("CPF e Nome são campos obrigatórios!");
-            
-            cpf = cpf.replace(/[^\d]/g, '');
-            if(cpf.length !== 11) return alert("CPF inválido! Preencha os 11 números.");
-            cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-
-            window.salvarMotoristaNaMemoria(cpf, nome, celular, status);
-            window.exibirToast("Sucesso", "Motorista salvo na base de dados.", "✅");
-            window.limparFormMotorista();
-        };
-
-        window.editarMotorista = function(cpf) {
-            const mot = window.ymsStore.motoristas.find(m => m.cpf === cpf);
-            if(mot) {
-                document.getElementById('inpCadMotoristaCpf').value = mot.cpf;
-                document.getElementById('inpCadMotoristaNome').value = mot.nome;
-                document.getElementById('inpCadMotoristaCelular').value = mot.celular || '';
-                document.getElementById('inpCadMotoristaStatus').value = mot.status || 'LIBERADO';
-            }
-        };
-
-        window.alternarStatusMotorista = function(cpf, novoStatus) {
-            let lista = [...window.ymsStore.motoristas];
-            const idx = lista.findIndex(m => m.cpf === cpf);
-            if(idx > -1) {
-                lista[idx].status = novoStatus;
-                db.ref('yms_motoristas').set(lista);
-                window.exibirToast("Status Atualizado", `Motorista agora está ${novoStatus}.`, "🔄");
-            }
-        };
-
-        window.excluirMotorista = function(cpf) {
-            if(!confirm("Tem certeza que deseja excluir este motorista da base de dados?")) return;
-            let lista = [...window.ymsStore.motoristas];
-            lista = lista.filter(m => m.cpf !== cpf);
-            db.ref('yms_motoristas').set(lista);
-            window.exibirToast("Excluído", "Motorista removido com sucesso.", "🗑️");
-        };
-
-        window.limparFormMotorista = function() {
-            document.getElementById('inpCadMotoristaCpf').value = '';
-            document.getElementById('inpCadMotoristaNome').value = '';
-            document.getElementById('inpCadMotoristaCelular').value = '';
-            document.getElementById('inpCadMotoristaStatus').value = 'LIBERADO';
-        };
-
-        // ==========================================
-        // CHECK-OUT PORTARIA LOGIC
-        // ==========================================
-        window.renderizarCheckout = function() {
-            const container = document.getElementById('listaCheckout');
-            const contador = document.getElementById('contadorCheckout');
-            const busca = window.normalizarTexto(document.getElementById('inpBuscaCheckout')?.value || "");
-
-            if (!container) return;
-            container.innerHTML = '';
-
-            let fila = (window.ymsStore.agendamentos || []).filter(a => a.status === 'AGUARDANDO CHECKOUT');
-
-            if (busca) {
-                fila = fila.filter(a => 
-                    window.normalizarTexto(a.ordem).includes(busca) || 
-                    window.normalizarTexto(a.placa).includes(busca) ||
-                    window.normalizarTexto(a.fornecedor).includes(busca)
-                );
-            }
-
-            fila.sort((a, b) => {
-                // ORDENAÇÃO POR PRIORIDADE PRIMEIRO
-                const pA = window.obterPesoPrioridade(a.fornecedor);
-                const pB = window.obterPesoPrioridade(b.fornecedor);
-                if (pA !== pB) return pB - pA; // Maior peso desce primeiro (3 > 2 > 1)
-
-                // DESEMPATE POR FIFO
-                const hA = window.horaParaMinutos(a.horaFimOperacao || '23:59');
-                const hB = window.horaParaMinutos(b.horaFimOperacao || '23:59');
-                return hA - hB;
-            });
-
-            if (contador) contador.textContent = fila.length;
-
-            if (fila.length === 0) {
-                container.innerHTML = `<div class="col-span-full bg-slate-800/50 border border-slate-700 p-10 rounded-3xl text-center shadow-inner">
-                    <span class="text-4xl block mb-3 opacity-50">🚪</span>
-                    <h3 class="text-lg font-bold text-slate-300">Pátio Limpo!</h3>
-                    <p class="text-xs text-slate-500 mt-1">Nenhum veículo aguardando liberação de saída no momento.</p>
-                </div>`;
-                return;
-            }
-
-            fila.forEach(item => {
-                // Destaque visual se for Extra ou Critica
-                let bgForn = 'text-indigo-300';
-                if(item.fornecedor.includes('EXTRA -')) bgForn = 'text-amber-300';
-                if(item.fornecedor.includes('CRÍTICA -')) bgForn = 'text-red-300';
-
-                const card = `
-                    <div class="bg-slate-800/80 border border-emerald-500/50 hover:border-emerald-400 p-5 rounded-2xl shadow-xl flex flex-col justify-between gap-4 relative overflow-hidden transition-all group">
-                        <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
-                        <div>
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="text-[11px] font-black ${bgForn} uppercase truncate pr-2 tracking-wider">🏢 ${item.fornecedor}</span>
-                                <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">🏁 LIBERADO</span>
-                            </div>
-                            <div class="bg-slate-950/50 rounded-xl p-3 border border-slate-700/50 text-[11px] space-y-1.5 shadow-inner mb-3">
-                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Motorista:</span> <span class="text-slate-300 truncate max-w-[150px] text-right">${item.nomeMotorista || 'Não inf.'}</span></p>
-                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Placa:</span> <span class="text-yellow-400 font-mono font-bold text-sm">${item.placa}</span></p>
-                                <p class="flex justify-between"><span class="text-slate-500 font-bold uppercase">Ticket:</span> <span class="text-white font-mono">${item.ordem}</span></p>
-                                <div class="border-t border-slate-800 pt-1 mt-1 flex flex-col gap-1.5">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-slate-500 font-bold uppercase">Entrada (Totem):</span> 
-                                        <span class="text-white font-bold">${item.horaChegadaTotem || '--:--'}</span>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-slate-500 font-bold uppercase">Fim da Operação:</span> 
-                                        <span class="text-emerald-400 font-bold">${item.horaFimOperacao || '--:--'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" onclick="window.realizarCheckout('${item.ordem}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-4 rounded-xl uppercase transition shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-2">
-                            🚪 Registrar Saída
-                        </button>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', card);
-            });
-        };
-
-        window.realizarCheckout = function(ordem) {
-            if(!confirm("Tem certeza que deseja registrar a SAÍDA deste veículo? Ele será removido do pátio ativo.")) return;
-            const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
-            if(idx > -1) {
-                const agora = new Date();
-                window.ymsStore.agendamentos[idx].status = 'FINALIZADO';
-                window.ymsStore.agendamentos[idx].horaCheckout = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
-                window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Check-out Realizado!", "Veículo liberado da portaria com sucesso.", "👋");
-                window.renderizarCheckout();
-            }
-        };
-
-        // ==========================================
-        // GESTÃO 2D DE DOCAS (RECEBIMENTO E STATUS EM TEMPO REAL)
+        // GESTÃO 2D DE DOCAS
         // ==========================================
         window.filtroDoca2DSelecionada = 'todas';
 
@@ -2593,7 +2040,7 @@
         };
 
         // ==========================================
-        // TORRE DE CONTROLE (KPIs e Exportação)
+        // TORRE DE CONTROLE
         // ==========================================
         window.calcularTurno = function(horaStr) {
             if (!horaStr || horaStr === '--:--' || horaStr === '') return "-";
@@ -2874,14 +2321,7 @@
             setInterval(window.atualizarRelogioDigital, 1000);
             
             const dt = document.getElementById('inpData');
-            if(dt) {
-                dt.value = window.obterDataHojeISO();
-            }
-
-            const dtFiltro = document.getElementById('filtroDataFornecedor');
-            if(dtFiltro) {
-                dtFiltro.value = ''; 
-            }
+            if(dt) dt.value = window.obterDataHojeISO();
 
             const sel = document.getElementById('inpDoca');
             const selOp = document.getElementById('filtroDocaOperador');
@@ -2890,12 +2330,8 @@
             
             if(sel) sel.innerHTML = "";
             if(selOp) selOp.innerHTML = "";
-            if(selTorre) {
-                selTorre.innerHTML = '<option value="TODAS">Todas as Docas</option>';
-            }
-            if(sel2D) {
-                sel2D.innerHTML = '<option value="todas">Ver Todas as Docas</option>';
-            }
+            if(selTorre) selTorre.innerHTML = '<option value="TODAS">Todas as Docas</option>';
+            if(sel2D) sel2D.innerHTML = '<option value="todas">Ver Todas as Docas</option>';
 
             window.listaTodasDocas.forEach((d, idx) => {
                 const opt = document.createElement('option');
@@ -2918,7 +2354,8 @@
             document.getElementById('modalLoginGlobal').classList.remove('hidden');
             
             window.ymsStore.tipoCargaSelecionado = 'cotidiano';
-            
             window.atualizarHorariosDisponiveis();
         };
     </script>
+</body>
+</html>
