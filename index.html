@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>YMS Ecosystem - Pátio & PCP</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2760/2760147.png">
+    
+    <!-- NOVO LOGO DA WHIRLPOOL APLICADO AQUI -->
+    <link rel="icon" href="logo.png">
     
     <!-- TAGS PARA PWA (APP NATIVO) -->
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="YMS Motorista">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2760/2760147.png">
+    <!-- NOVO LOGO PARA O ÍCONE DO IPHONE AQUI -->
+    <link rel="apple-touch-icon" href="logo.png">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -758,7 +761,8 @@
     <!-- TICKET INVISÍVEL NA TELA, VISÍVEL SÓ NA IMPRESSORA -->
     <div id="ticketImpressao">
         <div style="text-align: center; border-bottom: 2px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/2760/2760147.png" alt="Logo YMS" style="width: 45px; height: 45px; margin: 0 auto 5px auto; filter: grayscale(100%);">
+            <!-- NOVO LOGO NO TICKET DE IMPRESSÃO AQUI -->
+            <img src="logo.png" alt="Logo Whirlpool" style="width: 100px; height: auto; margin: 0 auto 5px auto; filter: grayscale(100%); object-fit: contain;">
             <h2 style="margin: 0; font-size: 18px; text-transform: uppercase;">YMS Ecosystem</h2>
             <p style="margin: 5px 0 0 0; font-size: 11px;">Controle de Pátio e Docas</p>
         </div>
@@ -782,12 +786,12 @@
         </div>
     </div>
 
-<!-- SCRIPT CENTRAL UNIFICADO -->
+    <!-- SCRIPT CENTRAL UNIFICADO -->
     <script>
         // INIT PWA (GERA O MANIFEST E O SERVICE WORKER DINAMICAMENTE NO HTML)
         window.initPWA = function() {
             try {
-                // 1. Cria e injeta o Manifest.json
+                // 1. Cria e injeta o Manifest.json (ATUALIZADO PARA USAR LOGO DA WHIRLPOOL)
                 const manifestJSON = {
                     "name": "YMS Motorista",
                     "short_name": "YMS",
@@ -795,7 +799,7 @@
                     "display": "standalone",
                     "background_color": "#0f172a",
                     "theme_color": "#0f172a",
-                    "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/2760/2760147.png","sizes": "512x512","type": "image/png"}]
+                    "icons": [{"src": "logo.png","sizes": "512x512","type": "image/png"}]
                 };
                 const manifestURL = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestJSON));
                 const linkManifest = document.createElement('link');
@@ -2317,7 +2321,7 @@
         };
 
         window.iniciarOperacaoDoca = function(ordem) {
-            if(!confirm("Chamar veículo e iniciar DESCARGA na plataforma? (Isso atualizará o App PWA do motorista)")) return;
+            if(!confirm("Chamar veículo para a doca? Isso fará o Pager apitar e abrirá seu app de SMS para enviar a mensagem.")) return;
             const idx = window.ymsStore.agendamentos.findIndex(a => a.ordem === ordem);
             if(idx > -1) {
                 const agora = new Date();
@@ -2328,8 +2332,36 @@
                     carga.horaInicioOperacao = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
                 }
                 
+                // LÓGICA DO SMS GRATUITO (OPÇÃO 1)
+                if (carga.celular) {
+                    let celularLimpo = carga.celular.replace(/\D/g, '');
+                    // Algumas operadoras/celulares precisam do +55, outras só o DDD. Colocando +55 por padrão no BR.
+                    if (celularLimpo.length === 10 || celularLimpo.length === 11) celularLimpo = '+55' + celularLimpo;
+                    
+                    const docaDestino = carga.docaAtual || carga.doca;
+                    // Formatando a mensagem (sem acentos difíceis para evitar quebra no SMS antigo)
+                    const mensagem = encodeURIComponent(`YMS ALERTA: ${carga.nomeMotorista || 'Motorista'}, doca liberada! Dirija-se para: ${docaDestino}`);
+                    
+                    // Detectar se é iOS (iPhone) para usar '&body' no lugar de '?body' (macete clássico de frontend)
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    const separador = isIOS ? '&' : '?';
+                    
+                    const linkSms = `sms:${celularLimpo}${separador}body=${mensagem}`;
+                    
+                    // FORÇA O CLIQUE PARA EVITAR BLOQUEIO DO CHROME
+                    const a = document.createElement('a');
+                    a.href = linkSms;
+                    a.target = '_blank';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                } else {
+                    alert("Atenção: Este motorista não tem celular cadastrado. O Pager digital vai apitar, mas a tela de envio SMS não será aberta.");
+                }
+
                 window.salvarAgendamentosNaMemoria();
-                window.exibirToast("Veículo Chamado!", "O Pager PWA foi notificado.", "⚙️");
+                window.exibirToast("Veículo Chamado!", "O Pager foi notificado.", "⚙️");
                 window.renderizarOperadorDoca();
             }
         };
@@ -2590,7 +2622,7 @@
         };
 
         // ==========================================
-        // GESTÃO 2D DE DOCAS
+        // GESTÃO 2D DE DOCAS (RECEBIMENTO E STATUS EM TEMPO REAL)
         // ==========================================
         window.filtroDoca2DSelecionada = 'todas';
 
